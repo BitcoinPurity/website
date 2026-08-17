@@ -1,0 +1,16 @@
+{
+  "name": "Bitcoin Purity",
+  "short_name": "Purity",
+  "description": "Bitcoin Purity is a Bitcoin full node focused on preserving Bitcoin as peer-to-peer electronic cash.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#080808",
+  "theme_color": "#080808",
+  "icons": [
+    {
+      "src": "/brand/logo-128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    }
+  ]
+}
