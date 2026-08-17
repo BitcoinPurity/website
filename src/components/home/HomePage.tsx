@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Container } from "@/components/Container";
+import { DevelopmentStatus } from "@/components/DevelopmentStatus";
 import { ExternalLink } from "@/components/ExternalLink";
 import { FAQAccordion } from "@/components/FAQAccordion";
 import { Logo } from "@/components/Logo";
@@ -63,6 +64,7 @@ export function HomePage() {
             peer-to-peer electronic cash — not a general-purpose data-storage
             or application platform.
           </p>
+          <DevelopmentStatus className="mt-8 max-w-xl" />
           <div className="mt-9 flex flex-wrap gap-3">
             <CtaLink href="/run" primary>
               Run Bitcoin Purity

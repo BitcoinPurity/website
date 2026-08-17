@@ -1,4 +1,5 @@
 import { Container } from "@/components/Container";
+import { DevelopmentStatus } from "@/components/DevelopmentStatus";
 import { ExternalLink } from "@/components/ExternalLink";
 import { PageHeader } from "@/components/PageHeader";
 import { CodeBlock } from "@/components/CodeBlock";
@@ -16,8 +17,12 @@ export default function RunPage() {
   return (
     <>
       <PageHeader eyebrow="Run a node" title="Build from source. Verify it yourself.">
-        There is currently no official binary release of Bitcoin Purity. Do not
-        look for a download button here. Clone the repository and build it.
+        <p>
+          There is currently no official binary release of Bitcoin Purity. Do
+          not look for a download button here. Clone the repository and build
+          it.
+        </p>
+        <DevelopmentStatus className="mt-8 max-w-xl" />
       </PageHeader>
       <Container className="space-y-14 py-16 sm:py-20">
         <section>

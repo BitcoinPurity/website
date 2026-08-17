@@ -2,6 +2,12 @@ import { protocol } from "./protocol";
 
 export const faqItems = [
   {
+    id: "mainnet",
+    question: "Is Bitcoin Purity live on mainnet?",
+    answer:
+      "No. Bitcoin Purity is actively under development. There is no live mainnet launch yet. This website describes the protocol and source tree, not a production network.",
+  },
+  {
     id: "new-coin",
     question: "Is Bitcoin Purity a new cryptocurrency?",
     answer:
@@ -29,7 +35,7 @@ export const faqItems = [
     id: "mempool",
     question: "Do the two chains share a mempool?",
     answer:
-      "No. Each node maintains its own mempool. There is not one shared mempool across histories. Compatible transactions may be valid on both histories and may propagate to nodes on both, depending on each node’s rules, policy, and chain state.",
+      "Not as a single shared pool. Purity and Core nodes do not share a mempool directly — each node still keeps its own. Purity transactions are fully compatible with Core, so anyone can relay transactions that satisfy both consensus rules from one mempool to the other. That forwarding path produces the practical effect of a shared mempool.",
   },
   {
     id: "migrate-later",
@@ -70,6 +76,7 @@ export const faqItems = [
 ] as const;
 
 export const homeFaqIds = [
+  "mainnet",
   "new-coin",
   "hard-fork",
   "replay",
