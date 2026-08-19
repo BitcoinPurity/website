@@ -31,6 +31,16 @@ export function LaunchBanner() {
           </p>
           <p className="flex min-w-0 max-w-full flex-wrap items-baseline gap-x-2">
             <span className="shrink-0 tracking-[0.12em] text-bg/70 uppercase">
+              Source
+            </span>
+            <CopyableMono value={launch.releaseTag} invert>
+              <span className="font-sans font-bold tracking-tight text-[1.05rem] text-bg">
+                {launch.releaseTag}
+              </span>
+            </CopyableMono>
+          </p>
+          <p className="flex min-w-0 max-w-full flex-wrap items-baseline gap-x-2">
+            <span className="shrink-0 tracking-[0.12em] text-bg/70 uppercase">
               Set
             </span>
             <CopyableMono value={activationConf} invert>

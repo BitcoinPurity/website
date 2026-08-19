@@ -21,6 +21,7 @@ export const protocol = {
     timeLabel: "10:00 UTC",
     activationHeight: 961637,
     trialSoloPool: "stratum+tcp://pool.bitcoinpurity.org:3333",
+    releaseTag: "v29.4.purity20260819",
   },
   rdts: {
     maxOutputScriptSize: 34,
@@ -59,3 +60,5 @@ export const activationConf =
   `${protocol.activationOption}=${protocol.launch.activationHeight}` as const;
 
 export const activationCli = `-${activationConf}` as const;
+
+export const releaseTagUrl = `${protocol.github}/tree/${protocol.launch.releaseTag}` as const;

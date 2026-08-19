@@ -33,7 +33,9 @@ export default function DevelopersPage() {
           <ExternalLink href={protocol.docs.consensus} className="text-gold">
             doc/purity-consensus.md
           </ExternalLink>
-          . This node is a fork of Bitcoin Knots {protocol.knotsBase}.
+          . This node is a fork of Bitcoin Knots {protocol.knotsBase}. The
+          official source release for this launch is{" "}
+          <span className="font-mono text-ink">{protocol.launch.releaseTag}</span>.
         </aside>
 
         <section>

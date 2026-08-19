@@ -20,8 +20,9 @@ export default function RunPage() {
       <PageHeader eyebrow="Run a node" title="Build from source. Verify it yourself.">
         <p>
           There is currently no official binary release of Bitcoin Purity. Do
-          not look for a download button here. Clone the repository and build
-          it.
+          not look for a download button here. Clone tagged source{" "}
+          <span className="font-mono text-ink">{protocol.launch.releaseTag}</span>{" "}
+          and build it.
         </p>
         <LaunchPanel className="mt-8 max-w-2xl" />
         <DevelopmentStatus className="mt-8 max-w-xl" />
@@ -46,7 +47,8 @@ export default function RunPage() {
             <CodeBlock
               label="Git clone"
               code={`git clone ${protocol.github}.git
-cd bitcoinpurity`}
+cd bitcoinpurity
+git checkout ${protocol.launch.releaseTag}`}
             />
           </div>
         </section>

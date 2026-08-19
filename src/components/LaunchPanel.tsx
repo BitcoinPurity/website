@@ -1,5 +1,6 @@
 import { CopyableMono } from "@/components/CopyableMono";
-import { activationConf, protocol } from "@/content/protocol";
+import { ExternalLink } from "@/components/ExternalLink";
+import { activationConf, protocol, releaseTagUrl } from "@/content/protocol";
 
 export function LaunchPanel({ className = "" }: { className?: string }) {
   const { launch } = protocol;
@@ -31,6 +32,29 @@ export function LaunchPanel({ className = "" }: { className?: string }) {
             </time>
             <p className="mt-2 font-mono text-sm text-muted">{launch.dateLabel}</p>
           </dd>
+        </div>
+        <div className="border-b border-line-gold px-5 py-5 sm:px-6">
+          <dt className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
+            Source release
+          </dt>
+          <dd className="mt-3">
+            <div className="flex flex-wrap items-end gap-3">
+              <p className="font-sans text-2xl font-bold leading-none tracking-tight text-ink sm:text-3xl">
+                {launch.releaseTag}
+              </p>
+              <CopyableMono value={launch.releaseTag}>
+                <span className="sr-only">{launch.releaseTag}</span>
+              </CopyableMono>
+            </div>
+          </dd>
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            Official tagged source for this launch. There is no official binary
+            release — clone{" "}
+            <ExternalLink href={releaseTagUrl} className="font-mono text-gold">
+              {launch.releaseTag}
+            </ExternalLink>{" "}
+            and build it.
+          </p>
         </div>
         <div className="border-b border-line-gold px-5 py-5 sm:px-6">
           <dt className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">

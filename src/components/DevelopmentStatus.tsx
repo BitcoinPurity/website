@@ -1,3 +1,5 @@
+import { protocol } from "@/content/protocol";
+
 export function DevelopmentStatus({ className = "" }: { className?: string }) {
   return (
     <aside
@@ -8,8 +10,9 @@ export function DevelopmentStatus({ className = "" }: { className?: string }) {
         Build from source
       </p>
       <p className="mt-2 text-[0.95rem] leading-relaxed text-muted">
-        There is no official binary release. Clone the repository, build it, and
-        verify the software yourself before the activation height.
+        There is no official binary release. Clone tagged source{" "}
+        <span className="font-mono text-ink">{protocol.launch.releaseTag}</span>,
+        build it, and verify the software yourself.
       </p>
     </aside>
   );
