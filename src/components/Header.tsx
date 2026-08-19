@@ -31,7 +31,7 @@ export function Header() {
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-bg">
+    <header className="border-b border-line bg-bg">
       <div className="mx-auto flex max-w-[1180px] items-center gap-4 px-5 py-3 sm:px-8">
         <Link href="/" className="flex min-w-0 items-center gap-2.5">
           <Logo size={36} />

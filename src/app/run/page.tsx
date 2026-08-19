@@ -1,10 +1,11 @@
 import { Container } from "@/components/Container";
 import { DevelopmentStatus } from "@/components/DevelopmentStatus";
 import { ExternalLink } from "@/components/ExternalLink";
+import { LaunchPanel } from "@/components/LaunchPanel";
 import { PageHeader } from "@/components/PageHeader";
 import { CodeBlock } from "@/components/CodeBlock";
 import { OsBuildTabs } from "@/components/OsBuildTabs";
-import { protocol } from "@/content/protocol";
+import { activationCli, activationConf, protocol } from "@/content/protocol";
 import { pageMeta } from "@/lib/meta";
 
 export const metadata = pageMeta(
@@ -22,6 +23,7 @@ export default function RunPage() {
           not look for a download button here. Clone the repository and build
           it.
         </p>
+        <LaunchPanel className="mt-8 max-w-2xl" />
         <DevelopmentStatus className="mt-8 max-w-xl" />
       </PageHeader>
       <Container className="space-y-14 py-16 sm:py-20">
@@ -80,14 +82,19 @@ cd bitcoinpurity`}
         </section>
 
         <section>
-          <h2 className="text-3xl text-ink">Activation height</h2>
+          <h2 className="text-3xl text-ink">Activation parameter</h2>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
             Operators set{" "}
-            <span className="font-mono text-ink">-{protocol.activationOption}</span>
+            <span className="font-mono text-ink">{activationCli}</span>
             . Until that value is locked into the datadir, the hard fork remains
-            inactive. See the consensus document before setting it. This website
-            does not announce a live mainnet launch.
+            inactive. See the consensus document before setting it.
           </p>
+          <div className="mt-5 max-w-2xl">
+            <CodeBlock
+              label="bitcoin.conf"
+              code={activationConf}
+            />
+          </div>
           <p className="mt-4">
             <ExternalLink href={protocol.docs.consensus} className="text-gold">
               Consensus specification

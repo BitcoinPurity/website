@@ -72,11 +72,15 @@ export default function HowItWorksPage() {
             the option to leave the hard fork inactive.
           </p>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">
-            A provisional value such as{" "}
-            <span className="font-mono text-ink">{protocol.provisionalActivationHeight}</span>{" "}
-            (enforcement-chain split at {protocol.enforcementHeight} plus margin)
-            may be used before a formal mainnet launch. This website does not
-            treat that number as a public launch announcement.
+            Mainnet activation is scheduled for{" "}
+            <time dateTime={protocol.launch.isoUtc} className="font-mono text-ink">
+              {protocol.launch.timeLabel} on {protocol.launch.dateLabel}
+            </time>
+            . Operators should set{" "}
+            <span className="font-mono text-ink">
+              {protocol.activationOption}={protocol.launch.activationHeight}
+            </span>{" "}
+            for this launch. The enforcement-chain split is at {protocol.enforcementHeight}.
           </p>
         </section>
 

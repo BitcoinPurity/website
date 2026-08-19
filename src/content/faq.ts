@@ -1,11 +1,11 @@
-import { protocol } from "./protocol";
+import { activationConf, protocol } from "./protocol";
 
 export const faqItems = [
   {
     id: "mainnet",
     question: "Is Bitcoin Purity live on mainnet?",
     answer:
-      "No. Bitcoin Purity is actively under development. There is no live mainnet launch yet. This website describes the protocol and source tree, not a production network.",
+      `Activation is scheduled for ${protocol.launch.dateLabel} at ${protocol.launch.timeLabel}. Operators set ${activationConf} on first start; that value locks into the datadir. A trial solo mining pool is at ${protocol.launch.trialSoloPool}. There is no official binary release — build from source.`,
   },
   {
     id: "new-coin",

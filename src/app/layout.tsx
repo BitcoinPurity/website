@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { LaunchBanner } from "@/components/LaunchBanner";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/site";
 import { protocol } from "@/content/protocol";
 import "./globals.css";
@@ -85,7 +86,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <a href="#main" className="skip-link">
           Skip to content
         </a>
-        <Header />
+        <div className="sticky top-0 z-40">
+          <LaunchBanner />
+          <Header />
+        </div>
         <main id="main" className="flex-1">
           {children}
         </main>

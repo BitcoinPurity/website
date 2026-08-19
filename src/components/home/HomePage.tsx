@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Container } from "@/components/Container";
-import { DevelopmentStatus } from "@/components/DevelopmentStatus";
+import { LaunchPanel } from "@/components/LaunchPanel";
 import { ExternalLink } from "@/components/ExternalLink";
 import { FAQAccordion } from "@/components/FAQAccordion";
 import { Logo } from "@/components/Logo";
@@ -59,16 +59,17 @@ export function HomePage() {
             <br />
             Keep it that way.
           </h1>
+          <LaunchPanel className="mt-8 max-w-2xl" />
           <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted">
             Bitcoin Purity is a Bitcoin full node built to preserve Bitcoin as
             peer-to-peer electronic cash — not a general-purpose data-storage
             or application platform.
           </p>
-          <DevelopmentStatus className="mt-8 max-w-xl" />
           <div className="mt-9 flex flex-wrap gap-3">
             <CtaLink href="/run" primary>
               Run Bitcoin Purity
             </CtaLink>
+            <CtaLink href="/miners">For Miners</CtaLink>
             <CtaLink href="/why-purity">Read the Vision</CtaLink>
           </div>
           <p className="mt-5">
@@ -366,8 +367,9 @@ export function HomePage() {
           <div className="mt-10">
             <SpecificationRow index="01" title="Permanent RDTS" status="consensus">
               BIP110 / Reduced Data rules become permanently active under the
-              Purity hard-fork rules at the operator-set activation height, and
-              they do not expire.
+              Purity hard-fork rules at the operator-set activation height
+              ({protocol.activationOption}={protocol.launch.activationHeight}),
+              and they do not expire.
             </SpecificationRow>
             <SpecificationRow index="02" title="SHA256d" status="unchanged">
               Proof-of-work remains SHA256d.

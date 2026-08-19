@@ -12,9 +12,16 @@ export const protocol = {
   pow: "SHA256d",
   blockIntervalSeconds: 600,
   enforcementHeight: 961632,
-  provisionalActivationHeight: 961636,
+  provisionalActivationHeight: 961637,
   activationOption: "purityactivationheight",
   activationFile: "purity_activation_height",
+  launch: {
+    isoUtc: "2026-08-19T10:00:00Z",
+    dateLabel: "19 August 2026",
+    timeLabel: "10:00 UTC",
+    activationHeight: 961637,
+    trialSoloPool: "stratum+tcp://pool.bitcoinpurity.org:3333",
+  },
   rdts: {
     maxOutputScriptSize: 34,
     maxOpReturnSize: 83,
@@ -47,3 +54,8 @@ export const protocol = {
 } as const;
 
 export type Protocol = typeof protocol;
+
+export const activationConf =
+  `${protocol.activationOption}=${protocol.launch.activationHeight}` as const;
+
+export const activationCli = `-${activationConf}` as const;
