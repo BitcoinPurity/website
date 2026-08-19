@@ -4,11 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && node scripts/copy-css-fallback.mjs",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "deploy": "wrangler deploy",
+    "deploy": "npm run build && wrangler pages deploy out --project-name=bitcoinpurity --commit-dirty=true",
     "preview": "wrangler dev"
   },
   "dependencies": {
