@@ -24,6 +24,7 @@ writeFileSync(
 
 const stylesheet =
   '<link rel="stylesheet" href="/css/site.css" data-precedence="site"/>';
+const copyScript = '<script src="/copy.js" defer></script>';
 
 function inject(dir) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -38,6 +39,9 @@ function inject(dir) {
     html = html.replace(/<link rel="stylesheet" href="\/_next\/static\/chunks\/[^"]+\.css"[^>]*>/g, "");
     if (!html.includes('href="/css/site.css"')) {
       html = html.replace("</head>", `${stylesheet}</head>`);
+    }
+    if (!html.includes('src="/copy.js"')) {
+      html = html.replace("</body>", `${copyScript}</body>`);
     }
     writeFileSync(path, html);
   }

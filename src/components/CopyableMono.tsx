@@ -1,6 +1,4 @@
-"use client";
-
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 export function CopyableMono({
   value,
@@ -13,18 +11,6 @@ export function CopyableMono({
   className?: string;
   children?: ReactNode;
 }) {
-  const [copied, setCopied] = useState(false);
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1600);
-    } catch {
-      setCopied(false);
-    }
-  }
-
   const buttonClass = invert
     ? "min-h-9 shrink-0 px-2 font-mono text-[11px] tracking-[0.12em] uppercase text-bg/80 hover:text-bg"
     : "min-h-9 shrink-0 px-2 font-mono text-[11px] tracking-[0.12em] uppercase text-gold";
@@ -36,11 +22,11 @@ export function CopyableMono({
       </span>
       <button
         type="button"
-        onClick={copy}
+        data-copy={value}
         className={buttonClass}
-        aria-label={copied ? `${value} copied` : `Copy ${value}`}
+        aria-label={`Copy ${value}`}
       >
-        {copied ? "Copied" : "Copy"}
+        Copy
       </button>
     </span>
   );
