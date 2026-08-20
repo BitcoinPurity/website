@@ -10,7 +10,7 @@ import { pageMeta } from "@/lib/meta";
 export const metadata = pageMeta(
   "For Miners",
   "/miners",
-  `Bitcoin Purity keeps SHA256d proof-of-work. Activation is scheduled for ${protocol.launch.dateLabel} at ${protocol.launch.timeLabel}. Set ${activationConf} on first start.`,
+  `Bitcoin Purity keeps SHA256d proof-of-work. Mainnet launched ${protocol.launch.dateLabel} at ${protocol.launch.timeLabel}. Set ${activationConf} on first start.`,
 );
 
 export default function MinersPage() {
@@ -34,9 +34,10 @@ export default function MinersPage() {
           <p>
             Mining involves substantial technical and economic risk. This page
             does not promise returns. The trial solo pool is provided for
-            operators who want to point SHA256d hardware at Purity around
-            activation; verify the endpoint independently before committing
-            hash rate.
+            operators who want to point SHA256d hardware at Purity mainnet.
+            Use the high-hash-rate endpoint by default, or the low-hash-rate
+            endpoint for smaller hardware. Verify the endpoint independently
+            before committing hash rate.
           </p>
           <p>
             The design avoids unnecessarily invalidating existing SHA256 mining
@@ -71,11 +72,34 @@ export default function MinersPage() {
             </dd>
           </div>
           <div>
-            <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">Start</dt>
+            <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">
+              Mainnet launch
+            </dt>
             <dd className="mt-2 text-ink">
               <time dateTime={protocol.launch.isoUtc}>
                 {protocol.launch.timeLabel} · {protocol.launch.dateLabel}
               </time>
+            </dd>
+          </div>
+          <div className="sm:col-span-2">
+            <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">
+              Trial solo pool
+            </dt>
+            <dd className="mt-2 space-y-2 text-ink">
+              <p>
+                <span className="font-sans text-sm text-muted">
+                  For high hash rate miners
+                </span>
+                <br />
+                {protocol.launch.trialSoloPool}
+              </p>
+              <p>
+                <span className="font-sans text-sm text-muted">
+                  For low hash rate miners
+                </span>
+                <br />
+                {protocol.launch.trialSoloPoolLowHash}
+              </p>
             </dd>
           </div>
         </dl>

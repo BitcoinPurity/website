@@ -7,7 +7,7 @@ import { pageMeta } from "@/lib/meta";
 export const metadata = pageMeta(
   "FAQ",
   "/faq",
-  "Answers about Bitcoin Purity: scheduled activation, not a new coin, hard fork rationale, replay behavior, hash-rate risk, and unimplemented protections.",
+  "Answers about Bitcoin Purity: mainnet launch, not a new coin, hard fork rationale, replay behavior, hash-rate risk, and unimplemented protections.",
 );
 
 export default function FaqPage() {

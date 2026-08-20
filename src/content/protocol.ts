@@ -20,7 +20,9 @@ export const protocol = {
     dateLabel: "19 August 2026",
     timeLabel: "10:00 UTC",
     activationHeight: 961637,
+    mainnetLive: true,
     trialSoloPool: "stratum+tcp://pool.bitcoinpurity.org:3333",
+    trialSoloPoolLowHash: "stratum+tcp://pool.bitcoinpurity.org:4444",
     releaseTag: "v29.4.purity20260819",
   },
   rdts: {
@@ -62,3 +64,6 @@ export const activationConf =
 export const activationCli = `-${activationConf}` as const;
 
 export const releaseTagUrl = `${protocol.github}/tree/${protocol.launch.releaseTag}` as const;
+
+export const mainnetLaunchedAt =
+  `${protocol.launch.timeLabel} on ${protocol.launch.dateLabel}` as const;

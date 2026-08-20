@@ -1,6 +1,6 @@
 import { CopyableMono } from "@/components/CopyableMono";
 import { ExternalLink } from "@/components/ExternalLink";
-import { activationConf, protocol, releaseTagUrl } from "@/content/protocol";
+import { activationConf, mainnetLaunchedAt, protocol, releaseTagUrl } from "@/content/protocol";
 
 export function LaunchPanel({ className = "" }: { className?: string }) {
   const { launch } = protocol;
@@ -8,20 +8,20 @@ export function LaunchPanel({ className = "" }: { className?: string }) {
   return (
     <aside
       className={`border border-gold bg-gold-dim ${className}`.trim()}
-      aria-label="Launch schedule"
+      aria-label="Mainnet status"
     >
       <div className="border-b border-line-gold px-5 py-4 sm:px-6">
         <p className="font-mono text-[11px] tracking-[0.22em] text-gold uppercase">
-          Launch today
+          Mainnet live
         </p>
         <p className="mt-2 text-lg leading-snug text-ink sm:text-xl">
-          Bitcoin Purity activates at {launch.timeLabel} on {launch.dateLabel}.
+          Bitcoin Purity mainnet launched at {mainnetLaunchedAt}.
         </p>
       </div>
       <dl>
         <div className="border-b border-line-gold px-5 py-5 sm:px-6">
           <dt className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
-            Start
+            Mainnet launch
           </dt>
           <dd className="mt-2">
             <time
@@ -48,7 +48,7 @@ export function LaunchPanel({ className = "" }: { className?: string }) {
             </div>
           </dd>
           <p className="mt-3 text-sm leading-relaxed text-muted">
-            Official tagged source for this launch. There is no official binary
+            Official tagged source for mainnet. There is no official binary
             release — clone{" "}
             <ExternalLink href={releaseTagUrl} className="font-mono text-gold">
               {launch.releaseTag}
@@ -74,13 +74,16 @@ export function LaunchPanel({ className = "" }: { className?: string }) {
             </div>
           </dd>
           <p className="mt-3 text-sm leading-relaxed text-muted">
-            Set{" "}
+            Mainnet activated at height{" "}
+            <span className="font-sans font-bold text-ink">
+              {launch.activationHeight}
+            </span>
+            . New nodes should use{" "}
             <span className="font-mono text-ink">
               -{protocol.activationOption}=
               <span className="font-sans font-bold">{launch.activationHeight}</span>
             </span>{" "}
-            on first start, or the matching bitcoin.conf key. The value is written
-            to{" "}
+            or the matching bitcoin.conf key. The value is written to{" "}
             <span className="font-mono text-ink">{protocol.activationFile}</span>{" "}
             and then becomes permanent for that datadir.
           </p>
@@ -89,8 +92,19 @@ export function LaunchPanel({ className = "" }: { className?: string }) {
           <dt className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
             Trial solo pool
           </dt>
-          <dd className="mt-3 text-ink">
-            <CopyableMono value={launch.trialSoloPool} />
+          <dd className="mt-3 space-y-4 text-ink">
+            <div>
+              <p className="text-sm text-muted">For high hash rate miners</p>
+              <div className="mt-2">
+                <CopyableMono value={launch.trialSoloPool} />
+              </div>
+            </div>
+            <div>
+              <p className="text-sm text-muted">For low hash rate miners</p>
+              <div className="mt-2">
+                <CopyableMono value={launch.trialSoloPoolLowHash} />
+              </div>
+            </div>
           </dd>
         </div>
       </dl>

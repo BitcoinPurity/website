@@ -72,15 +72,17 @@ export default function HowItWorksPage() {
             the option to leave the hard fork inactive.
           </p>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">
-            Mainnet activation is scheduled for{" "}
+            Mainnet launched at{" "}
             <time dateTime={protocol.launch.isoUtc} className="font-mono text-ink">
               {protocol.launch.timeLabel} on {protocol.launch.dateLabel}
             </time>
-            . Operators should set{" "}
+            , at height{" "}
+            <span className="font-mono text-ink">{protocol.launch.activationHeight}</span>
+            . New nodes should use{" "}
             <span className="font-mono text-ink">
               {protocol.activationOption}={protocol.launch.activationHeight}
-            </span>{" "}
-            for this launch. The enforcement-chain split is at {protocol.enforcementHeight}.
+            </span>
+            . The enforcement-chain split is at {protocol.enforcementHeight}.
           </p>
         </section>
 

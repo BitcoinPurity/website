@@ -18,11 +18,11 @@ export function LaunchBanner() {
     <div className="border-b border-[#b88810] bg-gold text-bg">
       <div className="mx-auto flex max-w-[1180px] flex-col gap-2 px-5 py-3 sm:px-8 lg:flex-row lg:items-center lg:gap-8">
         <p className="shrink-0 font-mono text-[11px] font-semibold tracking-[0.22em] uppercase">
-          Launch today
+          Mainnet live
         </p>
         <div className="flex min-w-0 flex-1 flex-col gap-y-1.5 font-mono text-[13px] sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-6">
           <p>
-            <span className="tracking-[0.12em] text-bg/70 uppercase">Time</span>{" "}
+            <span className="tracking-[0.12em] text-bg/70 uppercase">Launched</span>{" "}
             <time dateTime={launch.isoUtc} className="font-medium">
               {launch.timeLabel}
               <span className="text-bg/70"> · </span>
@@ -48,12 +48,19 @@ export function LaunchBanner() {
               <HeightMark invert />
             </CopyableMono>
           </p>
-          <p className="flex min-w-0 max-w-full flex-wrap items-baseline gap-x-2">
-            <span className="shrink-0 tracking-[0.12em] text-bg/70 uppercase">
-              Trial solo pool
-            </span>
-            <CopyableMono value={launch.trialSoloPool} invert />
-          </p>
+          <div className="min-w-0 max-w-full sm:basis-full">
+            <p className="tracking-[0.12em] text-bg/70 uppercase">Trial solo pool</p>
+            <div className="mt-1 space-y-1">
+              <p className="flex min-w-0 flex-wrap items-baseline gap-x-2">
+                <span className="shrink-0 text-bg/85">For high hash rate miners</span>
+                <CopyableMono value={launch.trialSoloPool} invert />
+              </p>
+              <p className="flex min-w-0 flex-wrap items-baseline gap-x-2">
+                <span className="shrink-0 text-bg/85">For low hash rate miners</span>
+                <CopyableMono value={launch.trialSoloPoolLowHash} invert />
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

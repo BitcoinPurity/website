@@ -34,7 +34,7 @@ export default function DevelopersPage() {
             doc/purity-consensus.md
           </ExternalLink>
           . This node is a fork of Bitcoin Knots {protocol.knotsBase}. The
-          official source release for this launch is{" "}
+          official source release for mainnet is{" "}
           <span className="font-mono text-ink">{protocol.launch.releaseTag}</span>.
         </aside>
 

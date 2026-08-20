@@ -1,16 +1,17 @@
-import { protocol } from "@/content/protocol";
+import { protocol, mainnetLaunchedAt } from "@/content/protocol";
 
 export function DevelopmentStatus({ className = "" }: { className?: string }) {
   return (
     <aside
       className={`border-l-2 border-gold bg-surface px-5 py-4 ${className}`.trim()}
-      aria-label="Development status"
+      aria-label="Mainnet status"
     >
       <p className="font-mono text-[11px] tracking-[0.14em] text-gold uppercase">
-        Build from source
+        Mainnet live
       </p>
       <p className="mt-2 text-[0.95rem] leading-relaxed text-muted">
-        There is no official binary release. Clone tagged source{" "}
+        Mainnet launched at {mainnetLaunchedAt}. There is no official binary
+        release — clone tagged source{" "}
         <span className="font-mono text-ink">{protocol.launch.releaseTag}</span>,
         build it, and verify the software yourself.
       </p>
