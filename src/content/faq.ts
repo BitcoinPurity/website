@@ -1,11 +1,11 @@
-import { activationConf, mainnetLaunchedAt, protocol } from "./protocol";
+import { mainnetLaunchedAt, protocol } from "./protocol";
 
 export const faqItems = [
   {
     id: "mainnet",
     question: "Is Bitcoin Purity live on mainnet?",
     answer:
-      `Yes. Mainnet launched at ${mainnetLaunchedAt}, at block height ${protocol.launch.activationHeight}. The official source release is ${protocol.launch.releaseTag}. Operators set ${activationConf} on first start; that value locks into the datadir. Trial solo pool endpoints are ${protocol.launch.trialSoloPool} and ${protocol.launch.trialSoloPoolLowHash} (port 4444 for low-hash-rate miners). There is no official binary release — build that tag from source.`,
+      `Yes. Mainnet launched at ${mainnetLaunchedAt}, at block height ${protocol.launch.activationHeight}. Mainnet activation is hardcoded, and the activation block is consensus-pinned to ${protocol.activationBlockHash}. The official source release is ${protocol.launch.releaseTag}. If an existing block index contains a conflicting block at the activation height after upgrading, rebuild it with -reindex. Trial solo pool endpoints are ${protocol.launch.trialSoloPool} and ${protocol.launch.trialSoloPoolLowHash} (port 4444 for low-hash-rate miners). There is no official binary release — build that tag from source.`,
   },
   {
     id: "new-coin",

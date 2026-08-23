@@ -5,7 +5,7 @@ import { LaunchPanel } from "@/components/LaunchPanel";
 import { PageHeader } from "@/components/PageHeader";
 import { CodeBlock } from "@/components/CodeBlock";
 import { OsBuildTabs } from "@/components/OsBuildTabs";
-import { activationCli, activationConf, protocol } from "@/content/protocol";
+import { protocol } from "@/content/protocol";
 import { pageMeta } from "@/lib/meta";
 
 export const metadata = pageMeta(
@@ -84,19 +84,27 @@ git checkout ${protocol.launch.releaseTag}`}
         </section>
 
         <section>
-          <h2 className="text-3xl text-ink">Activation parameter</h2>
+          <h2 className="text-3xl text-ink">Activation and upgrades</h2>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
-            Operators set{" "}
-            <span className="font-mono text-ink">{activationCli}</span>
-            . Until that value is locked into the datadir, the hard fork remains
-            inactive. See the consensus document before setting it.
+            Mainnet Purity activation is hardcoded at block{" "}
+            <span className="font-mono text-ink">{protocol.launch.activationHeight}</span>.
+            No activation parameter or datadir lock file is required.
           </p>
           <div className="mt-5 max-w-2xl">
             <CodeBlock
-              label="bitcoin.conf"
-              code={activationConf}
+              label="Consensus-pinned activation block hash"
+              code={protocol.activationBlockHash}
             />
           </div>
+          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">
+            Any other block at height{" "}
+            <span className="font-mono text-ink">{protocol.launch.activationHeight}</span>{" "}
+            is invalid under consensus, independently of{" "}
+            <span className="font-mono text-ink">-checkpoints=0</span>. If an
+            existing block index contains a conflicting block from software
+            used before this pin was enforced, restart with{" "}
+            <span className="font-mono text-ink">-reindex</span> to rebuild it.
+          </p>
           <p className="mt-4">
             <ExternalLink href={protocol.docs.consensus} className="text-gold">
               Consensus specification

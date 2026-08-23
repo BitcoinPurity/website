@@ -1,5 +1,5 @@
 import { CopyableMono } from "@/components/CopyableMono";
-import { activationConf, protocol } from "@/content/protocol";
+import { protocol } from "@/content/protocol";
 
 function HeightMark({ invert = false }: { invert?: boolean }) {
   return (
@@ -41,10 +41,10 @@ export function LaunchBanner() {
           </p>
           <p className="flex min-w-0 max-w-full flex-wrap items-baseline gap-x-2">
             <span className="shrink-0 tracking-[0.12em] text-bg/70 uppercase">
-              Set
+              Activation
             </span>
-            <CopyableMono value={activationConf} invert>
-              {protocol.activationOption}=
+            <CopyableMono value={protocol.activationBlockHash} invert>
+              block{" "}
               <HeightMark invert />
             </CopyableMono>
           </p>

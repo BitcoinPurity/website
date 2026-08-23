@@ -1,6 +1,6 @@
 import { CopyableMono } from "@/components/CopyableMono";
 import { ExternalLink } from "@/components/ExternalLink";
-import { activationConf, mainnetLaunchedAt, protocol, releaseTagUrl } from "@/content/protocol";
+import { mainnetLaunchedAt, protocol, releaseTagUrl } from "@/content/protocol";
 
 export function LaunchPanel({ className = "" }: { className?: string }) {
   const { launch } = protocol;
@@ -58,34 +58,25 @@ export function LaunchPanel({ className = "" }: { className?: string }) {
         </div>
         <div className="border-b border-line-gold px-5 py-5 sm:px-6">
           <dt className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
-            Node parameter
+            Activation block
           </dt>
           <dd className="mt-3">
-            <p className="font-mono text-sm text-muted">
-              {protocol.activationOption}=
+            <p className="font-mono text-sm text-muted">Height</p>
+            <p className="mt-1 font-sans text-4xl font-bold leading-none tracking-tight text-ink sm:text-5xl">
+              {launch.activationHeight}
             </p>
-            <div className="mt-1 flex flex-wrap items-end gap-3">
-              <p className="font-sans text-4xl font-bold leading-none tracking-tight text-ink sm:text-5xl">
-                {launch.activationHeight}
-              </p>
-              <CopyableMono value={activationConf}>
-                <span className="sr-only">{activationConf}</span>
-              </CopyableMono>
+            <div className="mt-4">
+              <CopyableMono value={protocol.activationBlockHash} />
             </div>
           </dd>
           <p className="mt-3 text-sm leading-relaxed text-muted">
-            Mainnet activated at height{" "}
+            Mainnet activation is hardcoded at height{" "}
             <span className="font-sans font-bold text-ink">
               {launch.activationHeight}
-            </span>
-            . New nodes should use{" "}
-            <span className="font-mono text-ink">
-              -{protocol.activationOption}=
-              <span className="font-sans font-bold">{launch.activationHeight}</span>
-            </span>{" "}
-            or the matching bitcoin.conf key. The value is written to{" "}
-            <span className="font-mono text-ink">{protocol.activationFile}</span>{" "}
-            and then becomes permanent for that datadir.
+            </span>. The block hash above is consensus-pinned; a different block
+            at this height is invalid. If an existing block index contains a
+            conflicting block after upgrading, restart with{" "}
+            <span className="font-mono text-ink">-reindex</span>.
           </p>
         </div>
         <div className="px-5 py-5 sm:px-6">

@@ -367,25 +367,30 @@ export function HomePage() {
           <div className="mt-10">
             <SpecificationRow index="01" title="Permanent RDTS" status="consensus">
               BIP110 / Reduced Data rules become permanently active under the
-              Purity hard-fork rules at the operator-set activation height
-              ({protocol.activationOption}={protocol.launch.activationHeight}),
-              and they do not expire.
+              Purity hard-fork rules at the hardcoded mainnet activation height
+              ({protocol.launch.activationHeight}), and they do not expire.
             </SpecificationRow>
-            <SpecificationRow index="02" title="SHA256d" status="unchanged">
+            <SpecificationRow index="02" title="Pinned activation block" status="consensus">
+              Mainnet accepts only activation block{" "}
+              <span className="break-all font-mono text-ink">{protocol.activationBlockHash}</span>{" "}
+              at height {protocol.launch.activationHeight}. This consensus pin
+              remains enforced when checkpoints are disabled.
+            </SpecificationRow>
+            <SpecificationRow index="03" title="SHA256d" status="unchanged">
               Proof-of-work remains SHA256d.
             </SpecificationRow>
-            <SpecificationRow index="03" title="ASERT / 24H" status="active-in-tree">
+            <SpecificationRow index="04" title="ASERT / 24H" status="active-in-tree">
               Difficulty uses {protocol.asert.algorithm} after Purity activation.
             </SpecificationRow>
-            <SpecificationRow index="04" title="Deep-reorg parking" status="local-policy">
+            <SpecificationRow index="05" title="Deep-reorg parking" status="local-policy">
               Reorganizations deeper than {protocol.parking.depth} blocks are
               parked for operator review by default. Local policy — not consensus.
             </SpecificationRow>
-            <SpecificationRow index="05" title="Bitcoin transaction compatibility" status="unchanged">
+            <SpecificationRow index="06" title="Bitcoin transaction compatibility" status="unchanged">
               Address formats, transaction serialization, and sighash remain
               Bitcoin-compatible.
             </SpecificationRow>
-            <SpecificationRow index="06" title="No transaction-level replay protection" status="safety">
+            <SpecificationRow index="07" title="No transaction-level replay protection" status="safety">
               This is intentional.{" "}
               <Link href="/safety" className="text-gold">
                 Read the Safety explanation.

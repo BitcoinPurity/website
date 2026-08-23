@@ -4,13 +4,13 @@ import { ExternalLink } from "@/components/ExternalLink";
 import { LaunchPanel } from "@/components/LaunchPanel";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
-import { activationConf, protocol } from "@/content/protocol";
+import { protocol } from "@/content/protocol";
 import { pageMeta } from "@/lib/meta";
 
 export const metadata = pageMeta(
   "For Miners",
   "/miners",
-  `Bitcoin Purity keeps SHA256d proof-of-work. Mainnet launched ${protocol.launch.dateLabel} at ${protocol.launch.timeLabel}. Set ${activationConf} on first start.`,
+  `Bitcoin Purity keeps SHA256d proof-of-work. Mainnet launched ${protocol.launch.dateLabel} at ${protocol.launch.timeLabel}. Activation is hardcoded at block ${protocol.launch.activationHeight}.`,
 );
 
 export default function MinersPage() {
@@ -63,13 +63,12 @@ export default function MinersPage() {
             <dd className="mt-2 text-ink">enforcement-chain {protocol.asert.anchorHeight}</dd>
           </div>
           <div>
-            <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">Node parameter</dt>
-            <dd className="mt-2 text-ink">
-              {protocol.activationOption}=
-              <span className="font-sans font-bold">
-                {protocol.launch.activationHeight}
-              </span>
-            </dd>
+            <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">Activation height</dt>
+            <dd className="mt-2 font-sans font-bold text-ink">{protocol.launch.activationHeight}</dd>
+          </div>
+          <div className="sm:col-span-2">
+            <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">Activation block hash</dt>
+            <dd className="mt-2 break-all text-ink">{protocol.activationBlockHash}</dd>
           </div>
           <div>
             <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">

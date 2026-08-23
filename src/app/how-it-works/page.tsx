@@ -63,13 +63,13 @@ export default function HowItWorksPage() {
           <h2 className="text-3xl text-ink">Activation</h2>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
             Activation height <span className="font-mono text-ink">nPurityActivationHeight</span>{" "}
-            is set on mainnet via{" "}
-            <span className="font-mono text-ink">-{protocol.activationOption}</span>{" "}
-            or the matching bitcoin.conf key. On first use the value is written
-            to the datadir file{" "}
-            <span className="font-mono text-ink">{protocol.activationFile}</span>{" "}
-            and becomes permanent for that datadir. Until that first lock, omit
-            the option to leave the hard fork inactive.
+            is hardcoded on mainnet to{" "}
+            <span className="font-mono text-ink">{protocol.launch.activationHeight}</span>.
+            The first Purity consensus block is pinned to the hash{" "}
+            <span className="break-all font-mono text-ink">{protocol.activationBlockHash}</span>.
+            A different block at that height is invalid under consensus, even
+            when checkpoints are disabled with{" "}
+            <span className="font-mono text-ink">-checkpoints=0</span>.
           </p>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">
             Mainnet launched at{" "}
@@ -78,11 +78,10 @@ export default function HowItWorksPage() {
             </time>
             , at height{" "}
             <span className="font-mono text-ink">{protocol.launch.activationHeight}</span>
-            . New nodes should use{" "}
-            <span className="font-mono text-ink">
-              {protocol.activationOption}={protocol.launch.activationHeight}
-            </span>
-            . The enforcement-chain split is at {protocol.enforcementHeight}.
+            . The enforcement-chain split is at {protocol.enforcementHeight}. If
+            an upgraded node already has a conflicting block at the activation
+            height, rebuild its block index with{" "}
+            <span className="font-mono text-ink">-reindex</span>.
           </p>
         </section>
 
