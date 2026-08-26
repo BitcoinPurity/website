@@ -1,5 +1,10 @@
 export const GITHUB = "https://github.com/saltduck/bitcoinpurity" as const;
 
+export const SERVICES = {
+  poolMonitor: "https://pool.bitcoinpurity.org",
+  mempoolExplorer: "https://mempool.bitcoinpurity.org",
+} as const;
+
 export const repoFile = (path: string) => `${GITHUB}/blob/master/${path}`;
 
 export const DOCS = {

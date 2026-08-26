@@ -13,6 +13,7 @@ import { ChainSplitDiagram } from "@/components/diagrams/ChainSplitDiagram";
 import { PolicyToConsensus } from "@/components/diagrams/PolicyToConsensus";
 import { ReorgDiagram } from "@/components/diagrams/ReorgDiagram";
 import { homeFaqIds } from "@/content/faq";
+import { SERVICES } from "@/content/links";
 import { protocol } from "@/content/protocol";
 
 function CtaLink({
@@ -93,6 +94,49 @@ export function HomePage() {
           </p>
         </Container>
       </div>
+
+      <section className="border-b border-line py-20 sm:py-28">
+        <Container>
+          <SectionEyebrow>Network</SectionEyebrow>
+          <h2 className="max-w-3xl text-4xl leading-tight text-ink sm:text-5xl">
+            Live mainnet tools
+          </h2>
+          <div className="mt-12 grid gap-8 md:grid-cols-2">
+            <div className="border border-line p-6 sm:p-8">
+              <h3 className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
+                For miners
+              </h3>
+              <p className="mt-3 text-2xl text-ink">Pool monitor</p>
+              <p className="mt-4 text-[1.02rem] leading-relaxed text-muted">
+                Monitor the trial solo pool — hash rate, workers, blocks, and
+                payout status on Purity mainnet.
+              </p>
+              <ExternalLink
+                href={SERVICES.poolMonitor}
+                className="mt-6 inline-flex text-gold hover:text-ink"
+              >
+                pool.bitcoinpurity.org →
+              </ExternalLink>
+            </div>
+            <div className="border border-line p-6 sm:p-8">
+              <h3 className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
+                For everyone
+              </h3>
+              <p className="mt-3 text-2xl text-ink">Mempool explorer</p>
+              <p className="mt-4 text-[1.02rem] leading-relaxed text-muted">
+                Browse pending transactions, recent blocks, and fee estimates
+                on the Purity network.
+              </p>
+              <ExternalLink
+                href={SERVICES.mempoolExplorer}
+                className="mt-6 inline-flex text-gold hover:text-ink"
+              >
+                mempool.bitcoinpurity.org →
+              </ExternalLink>
+            </div>
+          </div>
+        </Container>
+      </section>
 
       <section className="py-20 sm:py-28">
         <Container>
