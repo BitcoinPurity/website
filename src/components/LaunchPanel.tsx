@@ -1,6 +1,11 @@
 import { CopyableMono } from "@/components/CopyableMono";
 import { ExternalLink } from "@/components/ExternalLink";
-import { mainnetLaunchedAt, protocol, releaseTagUrl } from "@/content/protocol";
+import {
+  binaryReleaseUrl,
+  mainnetLaunchedAt,
+  protocol,
+  releaseTagUrl,
+} from "@/content/protocol";
 
 export function LaunchPanel({ className = "" }: { className?: string }) {
   const { launch } = protocol;
@@ -21,7 +26,7 @@ export function LaunchPanel({ className = "" }: { className?: string }) {
       <dl>
         <div className="border-b border-line-gold px-5 py-5 sm:px-6">
           <dt className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
-            Source release
+            Release
           </dt>
           <dd className="mt-3">
             <div className="flex flex-wrap items-end gap-3">
@@ -34,12 +39,15 @@ export function LaunchPanel({ className = "" }: { className?: string }) {
             </div>
           </dd>
           <p className="mt-3 text-sm leading-relaxed text-muted">
-            Official tagged source for mainnet. There is no official binary
-            release — clone{" "}
+            Official release for mainnet. Download binaries from{" "}
+            <ExternalLink href={binaryReleaseUrl} className="font-mono text-gold">
+              {launch.releaseTag}
+            </ExternalLink>
+            , or clone{" "}
             <ExternalLink href={releaseTagUrl} className="font-mono text-gold">
               {launch.releaseTag}
             </ExternalLink>{" "}
-            and build it.
+            and build it yourself.
           </p>
         </div>
         <div className="border-b border-line-gold px-5 py-5 sm:px-6">

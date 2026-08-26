@@ -1,4 +1,9 @@
-import { protocol, mainnetLaunchedAt } from "@/content/protocol";
+import { ExternalLink } from "@/components/ExternalLink";
+import {
+  binaryReleaseUrl,
+  mainnetLaunchedAt,
+  protocol,
+} from "@/content/protocol";
 
 export function DevelopmentStatus({ className = "" }: { className?: string }) {
   return (
@@ -10,10 +15,11 @@ export function DevelopmentStatus({ className = "" }: { className?: string }) {
         Mainnet live
       </p>
       <p className="mt-2 text-[0.95rem] leading-relaxed text-muted">
-        Mainnet launched at {mainnetLaunchedAt}. There is no official binary
-        release — clone tagged source{" "}
-        <span className="font-mono text-ink">{protocol.launch.releaseTag}</span>,
-        build it, and verify the software yourself.
+        Mainnet launched at {mainnetLaunchedAt}. Official release{" "}
+        <ExternalLink href={binaryReleaseUrl} className="font-mono text-gold">
+          {protocol.launch.releaseTag}
+        </ExternalLink>{" "}
+        includes binaries; you can also clone that tag and build it yourself.
       </p>
     </aside>
   );

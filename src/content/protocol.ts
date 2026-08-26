@@ -22,7 +22,7 @@ export const protocol = {
     mainnetLive: true,
     trialSoloPool: "stratum+tcp://pool.bitcoinpurity.org:3333",
     trialSoloPoolLowHash: "stratum+tcp://pool.bitcoinpurity.org:4444",
-    releaseTag: "v29.4.purity20260823",
+    releaseTag: "v29.4.purity20260824",
   },
   rdts: {
     maxOutputScriptSize: 34,
@@ -58,6 +58,9 @@ export const protocol = {
 export type Protocol = typeof protocol;
 
 export const releaseTagUrl = `${protocol.github}/tree/${protocol.launch.releaseTag}` as const;
+
+export const binaryReleaseUrl =
+  `${protocol.github}/releases/tag/${protocol.launch.releaseTag}` as const;
 
 export const mainnetLaunchedAt =
   `${protocol.launch.timeLabel} on ${protocol.launch.dateLabel}` as const;
