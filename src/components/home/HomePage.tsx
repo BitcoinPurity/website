@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Container } from "@/components/Container";
+import { LaunchPanel } from "@/components/LaunchPanel";
 import { ExternalLink } from "@/components/ExternalLink";
 import { FAQAccordion } from "@/components/FAQAccordion";
 import { Logo } from "@/components/Logo";
@@ -59,6 +60,7 @@ export function HomePage() {
             <br />
             Keep it that way.
           </h1>
+          <LaunchPanel className="mt-8 max-w-2xl" />
           <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted">
             Bitcoin Purity is a Bitcoin full node built to preserve Bitcoin as
             peer-to-peer electronic cash — not a general-purpose data-storage
