@@ -45,7 +45,8 @@ export function Header() {
           aria-label="Primary"
         >
           {primaryNav.map((item) => {
-            const current = pathname === item.href;
+            const path = item.href.split("#")[0] ?? item.href;
+            const current = pathname === path;
             return (
               <Link
                 key={item.href}

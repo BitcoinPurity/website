@@ -70,7 +70,7 @@ export function HomePage() {
             <CtaLink href="/run" primary>
               Run Bitcoin Purity
             </CtaLink>
-            <CtaLink href="/miners">For Miners</CtaLink>
+            <CtaLink href="/miners#trial-solo-pool">For Miners</CtaLink>
             <CtaLink href="/why-purity">Read the Vision</CtaLink>
           </div>
           <p className="mt-5">
@@ -270,7 +270,7 @@ export function HomePage() {
             <StatusBadge kind="unchanged" />
           </div>
           <p className="mt-8">
-            <Link href="/miners" className="text-gold">
+            <Link href="/miners#trial-solo-pool" className="text-gold">
               For miners →
             </Link>
           </p>

@@ -3,6 +3,7 @@ import { Container } from "@/components/Container";
 import { ExternalLink } from "@/components/ExternalLink";
 import { LaunchPanel } from "@/components/LaunchPanel";
 import { PageHeader } from "@/components/PageHeader";
+import { ScrollToId } from "@/components/ScrollToId";
 import { StatusBadge } from "@/components/StatusBadge";
 import { protocol } from "@/content/protocol";
 import { pageMeta } from "@/lib/meta";
@@ -16,6 +17,7 @@ export const metadata = pageMeta(
 export default function MinersPage() {
   return (
     <>
+      <ScrollToId id="trial-solo-pool" />
       <PageHeader eyebrow="For miners" title="Keep hashing Bitcoin.">
         SHA256d remains the proof-of-work algorithm. Existing SHA256 hardware is
         not intentionally invalidated by an algorithm switch.

@@ -2,7 +2,7 @@ export const primaryNav = [
   { href: "/why-purity", label: "Why", full: "Why Purity" },
   { href: "/how-it-works", label: "How", full: "How It Works" },
   { href: "/safety", label: "Safety", full: "Safety" },
-  { href: "/miners", label: "Miners", full: "For Miners" },
+  { href: "/miners#trial-solo-pool", label: "Miners", full: "For Miners" },
   { href: "/users", label: "Users", full: "For Users" },
   { href: "/run", label: "Run", full: "Run a Node" },
   { href: "/developers", label: "Devs", full: "Developers" },

@@ -21,20 +21,6 @@ export function LaunchPanel({ className = "" }: { className?: string }) {
       <dl>
         <div className="border-b border-line-gold px-5 py-5 sm:px-6">
           <dt className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
-            Mainnet launch
-          </dt>
-          <dd className="mt-2">
-            <time
-              dateTime={launch.isoUtc}
-              className="font-mono text-2xl leading-none text-ink sm:text-3xl"
-            >
-              {launch.timeLabel}
-            </time>
-            <p className="mt-2 font-mono text-sm text-muted">{launch.dateLabel}</p>
-          </dd>
-        </div>
-        <div className="border-b border-line-gold px-5 py-5 sm:px-6">
-          <dt className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
             Source release
           </dt>
           <dd className="mt-3">
@@ -79,7 +65,10 @@ export function LaunchPanel({ className = "" }: { className?: string }) {
             <span className="font-mono text-ink">-reindex</span>.
           </p>
         </div>
-        <div className="px-5 py-5 sm:px-6">
+        <div
+          id="trial-solo-pool"
+          className="scroll-mt-28 px-5 py-5 sm:px-6"
+        >
           <dt className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
             Trial solo pool
           </dt>
