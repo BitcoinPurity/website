@@ -8,6 +8,7 @@ export const primaryNav = [
   { href: "/developers", label: "Devs", full: "Developers" },
   { href: "/roadmap", label: "Roadmap", full: "Roadmap" },
   { href: "/faq", label: "FAQ", full: "FAQ" },
+  { href: "/#contact", label: "Contact", full: "Contact" },
 ] as const;
 
 export const routes = [

@@ -20,8 +20,20 @@ export const protocol = {
     timeLabel: "10:00 UTC",
     activationHeight: 961637,
     mainnetLive: true,
-    trialSoloPool: "stratum+tcp://pool.bitcoinpurity.org:3333",
-    trialSoloPoolLowHash: "stratum+tcp://pool.bitcoinpurity.org:4444",
+    trialSoloPool: {
+      url: "stratum+tcp://pool.bitcoinpurity.org:3333",
+      port: 3333,
+      mindiff: "25M",
+      startdiff: "100M",
+      maxdiff: "0",
+    },
+    trialSoloPoolLowHash: {
+      url: "stratum+tcp://pool.bitcoinpurity.org:4444",
+      port: 4444,
+      mindiff: "200K",
+      startdiff: "500K",
+      maxdiff: "1100K",
+    },
     releaseTag: "v29.4.purity20260824",
   },
   rdts: {

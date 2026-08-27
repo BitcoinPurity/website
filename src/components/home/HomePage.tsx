@@ -505,10 +505,12 @@ export function HomePage() {
 
       <section className="py-20 sm:py-28">
         <Container>
-          <SectionEyebrow>Contact</SectionEyebrow>
-          <h2 className="max-w-3xl text-4xl leading-tight text-ink sm:text-5xl">
-            Get in touch.
-          </h2>
+          <div id="contact" className="scroll-mt-24">
+            <SectionEyebrow>Contact</SectionEyebrow>
+            <h2 className="max-w-3xl text-4xl leading-tight text-ink sm:text-5xl">
+              Get in touch.
+            </h2>
+          </div>
           <dl className="mt-10 grid gap-8 sm:grid-cols-2">
             <div>
               <dt className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">

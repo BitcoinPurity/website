@@ -80,18 +80,29 @@ export function LaunchPanel({ className = "" }: { className?: string }) {
           <dt className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
             Trial solo pool
           </dt>
-          <dd className="mt-3 space-y-4 text-ink">
+          <dd className="mt-3 space-y-5 text-ink">
             <div>
-              <p className="text-sm text-muted">For high hash rate miners</p>
+              <p className="text-sm text-muted">
+                For high hash rate miners · port {launch.trialSoloPool.port}
+              </p>
               <div className="mt-2">
-                <CopyableMono value={launch.trialSoloPool} />
+                <CopyableMono value={launch.trialSoloPool.url} />
               </div>
+              <p className="mt-2 font-mono text-[12px] leading-relaxed text-muted">
+                {`mindiff=${launch.trialSoloPool.mindiff} · startdiff=${launch.trialSoloPool.startdiff} · maxdiff=${launch.trialSoloPool.maxdiff}`}
+              </p>
             </div>
             <div>
-              <p className="text-sm text-muted">For low hash rate miners</p>
+              <p className="text-sm text-muted">
+                For low hash rate miners · port{" "}
+                {launch.trialSoloPoolLowHash.port}
+              </p>
               <div className="mt-2">
-                <CopyableMono value={launch.trialSoloPoolLowHash} />
+                <CopyableMono value={launch.trialSoloPoolLowHash.url} />
               </div>
+              <p className="mt-2 font-mono text-[12px] leading-relaxed text-muted">
+                {`mindiff=${launch.trialSoloPoolLowHash.mindiff} · startdiff=${launch.trialSoloPoolLowHash.startdiff} · maxdiff=${launch.trialSoloPoolLowHash.maxdiff}`}
+              </p>
             </div>
           </dd>
         </div>

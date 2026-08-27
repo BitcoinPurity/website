@@ -86,21 +86,27 @@ export default function MinersPage() {
             <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">
               Trial solo pool
             </dt>
-            <dd className="mt-2 space-y-2 text-ink">
-              <p>
-                <span className="font-sans text-sm text-muted">
-                  For high hash rate miners
-                </span>
-                <br />
-                {protocol.launch.trialSoloPool}
-              </p>
-              <p>
-                <span className="font-sans text-sm text-muted">
-                  For low hash rate miners
-                </span>
-                <br />
-                {protocol.launch.trialSoloPoolLowHash}
-              </p>
+            <dd className="mt-2 space-y-3 text-ink">
+              <div>
+                <p className="font-sans text-sm text-muted">
+                  For high hash rate miners · port{" "}
+                  {protocol.launch.trialSoloPool.port}
+                </p>
+                <p className="mt-1">{protocol.launch.trialSoloPool.url}</p>
+                <p className="mt-1 text-[12px] text-muted">
+                  {`mindiff=${protocol.launch.trialSoloPool.mindiff} · startdiff=${protocol.launch.trialSoloPool.startdiff} · maxdiff=${protocol.launch.trialSoloPool.maxdiff}`}
+                </p>
+              </div>
+              <div>
+                <p className="font-sans text-sm text-muted">
+                  For low hash rate miners · port{" "}
+                  {protocol.launch.trialSoloPoolLowHash.port}
+                </p>
+                <p className="mt-1">{protocol.launch.trialSoloPoolLowHash.url}</p>
+                <p className="mt-1 text-[12px] text-muted">
+                  {`mindiff=${protocol.launch.trialSoloPoolLowHash.mindiff} · startdiff=${protocol.launch.trialSoloPoolLowHash.startdiff} · maxdiff=${protocol.launch.trialSoloPoolLowHash.maxdiff}`}
+                </p>
+              </div>
             </dd>
           </div>
         </dl>

@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
 import { ExternalLink } from "./ExternalLink";
+import { HashLink } from "./HashLink";
+import { CONTACT, DOCS } from "@/content/links";
 import { protocol } from "@/content/protocol";
-import { DOCS } from "@/content/links";
 
 const footerLinks = [
   { href: "/why-purity", label: "Vision" },
@@ -11,7 +12,8 @@ const footerLinks = [
   { href: "/run", label: "Build" },
   { href: "/safety", label: "Safety" },
   { href: "/faq", label: "FAQ" },
-];
+  { href: "/#contact", label: "Contact" },
+] as const;
 
 export function Footer() {
   return (
@@ -25,23 +27,69 @@ export function Footer() {
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
             Bitcoin as pure money and a payment system.
           </p>
+          <div className="mt-6 space-y-3 text-sm">
+            <p className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
+              Contact
+            </p>
+            <p>
+              <span className="text-muted">Email · </span>
+              <a href={CONTACT.emailHref} className="text-ink hover:text-gold">
+                {CONTACT.email}
+              </a>
+            </p>
+            <p>
+              <span className="text-muted">X · </span>
+              <ExternalLink
+                href={CONTACT.xHref}
+                className="text-ink hover:text-gold"
+              >
+                {CONTACT.x}
+              </ExternalLink>
+            </p>
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-          {footerLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="text-muted hover:text-ink">
-              {link.label}
-            </Link>
-          ))}
-          <ExternalLink href={protocol.github} className="text-muted hover:text-ink">
+          {footerLinks.map((link) =>
+            link.href.includes("#") ? (
+              <HashLink
+                key={link.href}
+                href={link.href}
+                className="text-muted hover:text-ink"
+              >
+                {link.label}
+              </HashLink>
+            ) : (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-muted hover:text-ink"
+              >
+                {link.label}
+              </Link>
+            ),
+          )}
+          <ExternalLink
+            href={protocol.github}
+            className="text-muted hover:text-ink"
+          >
             GitHub
           </ExternalLink>
-          <ExternalLink href={DOCS.contributing} className="text-muted hover:text-ink">
+          <ExternalLink
+            href={DOCS.contributing}
+            className="text-muted hover:text-ink"
+          >
             Contributing
           </ExternalLink>
-          <ExternalLink href={DOCS.security} className="text-muted hover:text-ink">
+          <ExternalLink
+            href={DOCS.security}
+            className="text-muted hover:text-ink"
+          >
             Security
           </ExternalLink>
-          <ExternalLink href={DOCS.copying} className="text-muted hover:text-ink">
+          <ExternalLink
+            href={DOCS.copying}
+            className="text-muted hover:text-ink"
+          >
             MIT license
           </ExternalLink>
         </div>
