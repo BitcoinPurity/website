@@ -13,7 +13,7 @@ import { ChainSplitDiagram } from "@/components/diagrams/ChainSplitDiagram";
 import { PolicyToConsensus } from "@/components/diagrams/PolicyToConsensus";
 import { ReorgDiagram } from "@/components/diagrams/ReorgDiagram";
 import { homeFaqIds } from "@/content/faq";
-import { SERVICES } from "@/content/links";
+import { CONTACT, SERVICES } from "@/content/links";
 import { protocol } from "@/content/protocol";
 
 function CtaLink({
@@ -503,7 +503,44 @@ export function HomePage() {
         </Container>
       </section>
 
-      <section className="py-28 sm:py-36">
+      <section className="py-20 sm:py-28">
+        <Container>
+          <SectionEyebrow>Contact</SectionEyebrow>
+          <h2 className="max-w-3xl text-4xl leading-tight text-ink sm:text-5xl">
+            Get in touch.
+          </h2>
+          <dl className="mt-10 grid gap-8 sm:grid-cols-2">
+            <div>
+              <dt className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
+                Email
+              </dt>
+              <dd className="mt-3">
+                <a
+                  href={CONTACT.emailHref}
+                  className="text-lg text-ink hover:text-gold"
+                >
+                  {CONTACT.email}
+                </a>
+              </dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
+                X
+              </dt>
+              <dd className="mt-3">
+                <ExternalLink
+                  href={CONTACT.xHref}
+                  className="text-lg text-ink hover:text-gold"
+                >
+                  {CONTACT.x}
+                </ExternalLink>
+              </dd>
+            </div>
+          </dl>
+        </Container>
+      </section>
+
+      <section className="border-t border-line py-28 sm:py-36">
         <Container>
           <h2 className="max-w-3xl text-5xl leading-tight text-ink sm:text-6xl">
             Bitcoin is enough.
