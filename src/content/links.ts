@@ -3,8 +3,8 @@ export const GITHUB = "https://github.com/saltduck/bitcoinpurity" as const;
 export const CONTACT = {
   email: "contact@bitcoinpurity.org",
   emailHref: "mailto:contact@bitcoinpurity.org",
-  x: "@Hongshuning",
-  xHref: "https://x.com/Hongshuning",
+  x: "@Bitcoin_Purity",
+  xHref: "https://x.com/Bitcoin_Purity",
 } as const;
 
 export const SERVICES = {
