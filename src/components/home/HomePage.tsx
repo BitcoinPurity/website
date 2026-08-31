@@ -134,6 +134,22 @@ export function HomePage() {
                 mempool.bitcoinpurity.org →
               </ExternalLink>
             </div>
+            <div className="border border-line p-6 sm:p-8">
+              <h3 className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
+                For users
+              </h3>
+              <p className="mt-3 text-2xl text-ink">Wallet connection</p>
+              <p className="mt-4 text-[1.02rem] leading-relaxed text-muted">
+                Connect Electrum, Sparrow, or any wallet that supports custom
+                Electrum servers to view balances and send on Purity mainnet.
+              </p>
+              <Link
+                href="/users#wallet"
+                className="mt-6 inline-flex text-gold hover:text-ink"
+              >
+                Connection settings →
+              </Link>
+            </div>
           </div>
         </Container>
       </section>

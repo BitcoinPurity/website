@@ -10,6 +10,12 @@ export const CONTACT = {
 export const SERVICES = {
   poolMonitor: "https://pool.bitcoinpurity.org",
   mempoolExplorer: "https://mempool.bitcoinpurity.org",
+  electrum: {
+    host: "electrum.bitcoinpurity.org",
+    port: 50002,
+    ssl: true,
+    url: "ssl://electrum.bitcoinpurity.org:50002",
+  },
 } as const;
 
 export const repoFile = (path: string) => `${GITHUB}/blob/master/${path}`;
