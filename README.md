@@ -28,8 +28,10 @@ Workers Builds settings:
 | Setting | Value |
 |---|---|
 | Build command | `npm run build` |
-| Deploy command | `npm run deploy` |
+| Deploy command | `npx wrangler deploy` |
 | Root directory | `/` |
+
+The build step writes fresh `run.html`, `developers.html`, etc. at the root of `out/` (overwriting legacy flat HTML from older exports). Cloudflare incremental deploy updates existing asset paths reliably; do **not** rely on newly introduced filenames such as `run-page.html`.
 
 `wrangler.jsonc` uses Worker name `bitcoinpurity`. A small Worker (`worker/index.js`) runs on every request and sets cache headers: HTML is never cached (`no-store`), fingerprinted `/_next/static/*` assets are immutable, and `/css/site.css` revalidates on each deploy (with a `?v=` query param in HTML for cache busting).
 

@@ -86,16 +86,16 @@ for (const entry of readdirSync(outDir, { withFileTypes: true })) {
   const indexPath = join(outDir, entry.name, "index.html");
   if (!existsSync(indexPath)) continue;
 
-  writeFileSync(
-    join(outDir, `${entry.name}-page.html`),
-    readFileSync(indexPath, "utf8"),
-  );
+  const html = readFileSync(indexPath, "utf8");
+  // Overwrite legacy flat *.html assets (e.g. run.html). Cloudflare incremental
+  // deploy updates existing files but may not upload newly introduced paths.
+  writeFileSync(join(outDir, `${entry.name}.html`), html);
 }
 
 const requiredPages = [
-  "run-page.html",
-  "developers-page.html",
-  "faq-page.html",
+  "run.html",
+  "developers.html",
+  "faq.html",
 ];
 
 for (const page of requiredPages) {
