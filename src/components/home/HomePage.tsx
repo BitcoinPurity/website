@@ -136,6 +136,22 @@ export function HomePage() {
             </div>
             <div className="border border-line p-6 sm:p-8">
               <h3 className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
+                Community
+              </h3>
+              <p className="mt-3 text-2xl text-ink">BBS</p>
+              <p className="mt-4 text-[1.02rem] leading-relaxed text-muted">
+                Username registration bulletin board — post and reply after signing
+                up. Email optional, used only for password reset.
+              </p>
+              <ExternalLink
+                href={SERVICES.bbs}
+                className="mt-6 inline-flex text-gold hover:text-ink"
+              >
+                bbs.bitcoinpurity.org →
+              </ExternalLink>
+            </div>
+            <div className="border border-line p-6 sm:p-8">
+              <h3 className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
                 For users
               </h3>
               <p className="mt-3 text-2xl text-ink">Wallet connection</p>

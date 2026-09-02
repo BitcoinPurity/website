@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/bbs/node_modules
 /.pnp
 .pnp.*
 .yarn/*
