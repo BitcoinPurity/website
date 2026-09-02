@@ -1,6 +1,60 @@
-# Fallback header rules (Worker sets authoritative cache headers on every response).
-/*
+# HTML routes: never cache stale pages at the browser or edge.
+/
   X-Content-Type-Options: nosniff
+  Cache-Control: no-cache, no-store, must-revalidate
+  CDN-Cache-Control: no-store
+  Pragma: no-cache
+  Expires: 0
+
+/run
+  Cache-Control: no-cache, no-store, must-revalidate
+  CDN-Cache-Control: no-store
+  Pragma: no-cache
+  Expires: 0
+
+/developers
+  Cache-Control: no-cache, no-store, must-revalidate
+  CDN-Cache-Control: no-store
+  Pragma: no-cache
+  Expires: 0
+
+/faq
+  Cache-Control: no-cache, no-store, must-revalidate
+  CDN-Cache-Control: no-store
+  Pragma: no-cache
+  Expires: 0
+
+/how-it-works
+  Cache-Control: no-cache, no-store, must-revalidate
+  CDN-Cache-Control: no-store
+  Pragma: no-cache
+  Expires: 0
+
+/miners
+  Cache-Control: no-cache, no-store, must-revalidate
+  CDN-Cache-Control: no-store
+  Pragma: no-cache
+  Expires: 0
+
+/roadmap
+  Cache-Control: no-cache, no-store, must-revalidate
+  CDN-Cache-Control: no-store
+  Pragma: no-cache
+  Expires: 0
+
+/safety
+  Cache-Control: no-cache, no-store, must-revalidate
+  CDN-Cache-Control: no-store
+  Pragma: no-cache
+  Expires: 0
+
+/users
+  Cache-Control: no-cache, no-store, must-revalidate
+  CDN-Cache-Control: no-store
+  Pragma: no-cache
+  Expires: 0
+
+/why-purity
   Cache-Control: no-cache, no-store, must-revalidate
   CDN-Cache-Control: no-store
   Pragma: no-cache

@@ -26,23 +26,21 @@ export default {
   /** @param {Request} request @param {Env} env */
   async fetch(request, env) {
     const response = await env.ASSETS.fetch(request);
-    if (response.status === 404) return response;
-
     const url = new URL(request.url);
     const headers = new Headers(response.headers);
     const contentType = response.headers.get("content-type") ?? "";
 
-    if (isFingerprintedAsset(url.pathname)) {
+    if (contentType.includes("text/html") || isHtmlDocument(url.pathname, contentType)) {
+      headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+      headers.set("CDN-Cache-Control", "no-store");
+      headers.set("Pragma", "no-cache");
+      headers.set("Expires", "0");
+    } else if (isFingerprintedAsset(url.pathname)) {
       headers.set("Cache-Control", "public, max-age=31536000, immutable");
       headers.set("CDN-Cache-Control", "public, max-age=31536000, immutable");
     } else if (isCssAsset(url.pathname)) {
       headers.set("Cache-Control", "public, max-age=0, must-revalidate");
       headers.set("CDN-Cache-Control", "no-cache");
-    } else if (isHtmlDocument(url.pathname, contentType)) {
-      headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
-      headers.set("CDN-Cache-Control", "no-store");
-      headers.set("Pragma", "no-cache");
-      headers.set("Expires", "0");
     } else {
       headers.set("Cache-Control", "public, max-age=0, must-revalidate");
       headers.set("CDN-Cache-Control", "no-cache");
