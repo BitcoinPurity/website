@@ -1,6 +1,11 @@
 /** @typedef {{ ASSETS: { fetch: typeof fetch } }} Env */
 
 /** @param {string} pathname */
+function isCssAsset(pathname) {
+  return pathname === "/css/site.css" || pathname.startsWith("/css/site.");
+}
+
+/** @param {string} pathname */
 function isFingerprintedAsset(pathname) {
   return pathname.startsWith("/_next/static/");
 }
@@ -30,6 +35,9 @@ export default {
     if (isFingerprintedAsset(url.pathname)) {
       headers.set("Cache-Control", "public, max-age=31536000, immutable");
       headers.set("CDN-Cache-Control", "public, max-age=31536000, immutable");
+    } else if (isCssAsset(url.pathname)) {
+      headers.set("Cache-Control", "public, max-age=0, must-revalidate");
+      headers.set("CDN-Cache-Control", "no-cache");
     } else if (isHtmlDocument(url.pathname, contentType)) {
       headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
       headers.set("CDN-Cache-Control", "no-store");

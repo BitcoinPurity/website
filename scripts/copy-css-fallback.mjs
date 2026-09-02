@@ -22,8 +22,8 @@ if (cssFiles.length === 0) {
 const cssDir = join(outDir, "css");
 mkdirSync(cssDir, { recursive: true });
 
-const cssFileName = `site.${buildIdShort}.css`;
-const cssPath = `/css/${cssFileName}`;
+const cssFileName = "site.css";
+const cssPath = `/css/${cssFileName}?v=${buildIdShort}`;
 writeFileSync(
   join(cssDir, cssFileName),
   cssFiles.map((name) => readFileSync(join(chunksDir, name), "utf8")).join("\n"),
@@ -48,7 +48,7 @@ function inject(dir) {
       "",
     );
     html = html.replace(
-      /<link rel="stylesheet" href="\/css\/site[^"]*\.css"[^>]*>/g,
+      /<link rel="stylesheet" href="\/css\/site(?:\.[^"?]+)?\.css[^"]*"[^>]*>/g,
       "",
     );
     if (!html.includes(cssPath)) {
