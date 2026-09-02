@@ -31,7 +31,9 @@ Workers Builds settings:
 | Deploy command | `npx wrangler deploy` |
 | Root directory | `/` |
 
-`wrangler.jsonc` uses Worker name `bitcoinpurity`. The GitHub repo name (`website`) does not need to match.
+`wrangler.jsonc` uses Worker name `bitcoinpurity`. A small Worker (`worker/index.js`) runs on every request and sets cache headers: HTML is never cached (`no-store`), fingerprinted `/_next/static/*` assets are immutable, and other files (including hashed `/css/site.*.css`) revalidate on each deploy.
+
+The GitHub repo name (`website`) does not need to match.
 
 Local deploy:
 

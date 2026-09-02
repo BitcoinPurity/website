@@ -18,8 +18,16 @@ export function DevelopmentStatus({ className = "" }: { className?: string }) {
         Mainnet launched at {mainnetLaunchedAt}. Official release{" "}
         <ExternalLink href={binaryReleaseUrl} className="font-mono text-gold">
           {protocol.launch.releaseTag}
-        </ExternalLink>{" "}
+        </ExternalLink>
+        {protocol.version.isReleaseCandidate ? " (release candidate)" : ""}{" "}
         includes binaries; you can also clone that tag and build it yourself.
+        Versioning follows the independent{" "}
+        <span className="font-mono text-ink">MAJOR.MINOR.PATCH</span> convention
+        described in{" "}
+        <ExternalLink href={protocol.docs.versioning} className="text-gold">
+          doc/VERSION.md
+        </ExternalLink>
+        .
       </p>
     </aside>
   );

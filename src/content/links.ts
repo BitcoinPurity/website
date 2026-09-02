@@ -22,6 +22,7 @@ export const repoFile = (path: string) => `${GITHUB}/blob/master/${path}`;
 
 export const DOCS = {
   readme: repoFile("README.md"),
+  versioning: repoFile("doc/VERSION.md"),
   vision: repoFile("doc/purity-vision.md"),
   consensus: repoFile("doc/purity-consensus.md"),
   roadmap: repoFile("doc/roadmap.md"),

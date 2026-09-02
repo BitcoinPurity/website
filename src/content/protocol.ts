@@ -3,7 +3,14 @@ import { DOCS, GITHUB } from "./links";
 /** Source of truth: saltduck/bitcoinpurity docs. Do not invent values here. */
 export const protocol = {
   name: "Bitcoin Purity",
-  knotsBase: "v29.4.knots20260508",
+  knotsBase: "29.4.0",
+  coreConsensusBaseline: "29.4",
+  version: {
+    release: "1.0.0rc1",
+    isReleaseCandidate: true,
+    legacyReleaseTag: "v29.4.purity20260830rc2",
+    p2pUserAgent: "/Satoshi:29.4/Purity:1.0.0rc1/",
+  },
   license: "MIT",
   binaries: ["bitcoind", "bitcoin-qt", "bitcoin-cli"] as const,
   dataDirectory: "~/.bitcoin",
@@ -34,7 +41,7 @@ export const protocol = {
       startdiff: "500K",
       maxdiff: "1100K",
     },
-    releaseTag: "v29.4.purity20260824",
+    releaseTag: "v1.0.0rc1",
   },
   rdts: {
     maxOutputScriptSize: 34,

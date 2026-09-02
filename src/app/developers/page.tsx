@@ -12,6 +12,7 @@ export const metadata = pageMeta(
 
 const links = [
   { href: protocol.github, label: "Repository" },
+  { href: protocol.docs.versioning, label: "Versioning" },
   { href: protocol.docs.vision, label: "Vision" },
   { href: protocol.docs.consensus, label: "Consensus changes" },
   { href: protocol.docs.roadmap, label: "Roadmap" },
@@ -33,10 +34,52 @@ export default function DevelopersPage() {
           <ExternalLink href={protocol.docs.consensus} className="text-gold">
             doc/purity-consensus.md
           </ExternalLink>
-          . This node is a fork of Bitcoin Knots {protocol.knotsBase}. The
-          official source release for mainnet is{" "}
-          <span className="font-mono text-ink">{protocol.launch.releaseTag}</span>.
+          . This node is a fork of Bitcoin Knots {protocol.knotsBase} (Bitcoin
+          Core consensus baseline {protocol.coreConsensusBaseline}). The official
+          source release for mainnet is{" "}
+          <span className="font-mono text-ink">{protocol.launch.releaseTag}</span>
+          {protocol.version.isReleaseCandidate ? " (release candidate)" : ""}.
+          Versioning is defined in{" "}
+          <ExternalLink href={protocol.docs.versioning} className="text-gold">
+            doc/VERSION.md
+          </ExternalLink>
+          .
         </aside>
+
+        <section>
+          <h2 className="text-3xl text-ink">Versioning</h2>
+          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
+            Bitcoin Purity maintains an independent{" "}
+            <span className="font-mono text-ink">MAJOR.MINOR.PATCH</span> release
+            series. Git tags use a leading{" "}
+            <span className="font-mono text-ink">v</span> (for example{" "}
+            <span className="font-mono text-ink">{protocol.launch.releaseTag}</span>
+            ). Release candidates append{" "}
+            <span className="font-mono text-ink">rcN</span> before the final
+            release.
+          </p>
+          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">
+            The upstream Bitcoin Knots version (
+            <span className="font-mono text-ink">{protocol.knotsBase}</span>) and
+            Bitcoin Core consensus baseline (
+            <span className="font-mono text-ink">
+              {protocol.coreConsensusBaseline}
+            </span>
+            ) are recorded separately and do not determine the Bitcoin Purity
+            release number. On the P2P network, nodes identify as{" "}
+            <span className="font-mono text-ink">{protocol.version.p2pUserAgent}</span>
+            .
+          </p>
+          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">
+            Older date-based tags such as{" "}
+            <span className="font-mono text-ink">
+              {protocol.version.legacyReleaseTag}
+            </span>{" "}
+            are legacy identifiers.{" "}
+            <span className="font-mono text-ink">{protocol.launch.releaseTag}</span>{" "}
+            supersedes them under the new convention.
+          </p>
+        </section>
 
         <section>
           <h2 className="text-3xl text-ink">Documents</h2>

@@ -1,0 +1,51 @@
+/** @typedef {{ ASSETS: { fetch: typeof fetch } }} Env */
+
+/** @param {string} pathname */
+function isFingerprintedAsset(pathname) {
+  return pathname.startsWith("/_next/static/");
+}
+
+/**
+ * @param {string} pathname
+ * @param {string} contentType
+ */
+function isHtmlDocument(pathname, contentType) {
+  if (contentType.includes("text/html")) return true;
+  if (pathname.endsWith(".html")) return true;
+  if (pathname === "/") return true;
+  const last = pathname.split("/").pop() ?? "";
+  return last !== "" && !last.includes(".");
+}
+
+export default {
+  /** @param {Request} request @param {Env} env */
+  async fetch(request, env) {
+    const response = await env.ASSETS.fetch(request);
+    if (response.status === 404) return response;
+
+    const url = new URL(request.url);
+    const headers = new Headers(response.headers);
+    const contentType = response.headers.get("content-type") ?? "";
+
+    if (isFingerprintedAsset(url.pathname)) {
+      headers.set("Cache-Control", "public, max-age=31536000, immutable");
+      headers.set("CDN-Cache-Control", "public, max-age=31536000, immutable");
+    } else if (isHtmlDocument(url.pathname, contentType)) {
+      headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+      headers.set("CDN-Cache-Control", "no-store");
+      headers.set("Pragma", "no-cache");
+      headers.set("Expires", "0");
+    } else {
+      headers.set("Cache-Control", "public, max-age=0, must-revalidate");
+      headers.set("CDN-Cache-Control", "no-cache");
+    }
+
+    headers.set("X-Content-Type-Options", "nosniff");
+
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+  },
+};

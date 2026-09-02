@@ -36,6 +36,7 @@ export default function RunPage() {
             <span className="font-mono text-ink">
               {protocol.launch.releaseTag}
             </span>
+            {protocol.version.isReleaseCandidate ? " (release candidate)" : ""}
             . Prefer verifying checksums from the release page before you run
             anything.
           </p>

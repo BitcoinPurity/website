@@ -8,7 +8,7 @@ import {
 } from "@/content/protocol";
 
 export function LaunchPanel({ className = "" }: { className?: string }) {
-  const { launch } = protocol;
+  const { launch, version } = protocol;
 
   return (
     <aside
@@ -33,11 +33,32 @@ export function LaunchPanel({ className = "" }: { className?: string }) {
               <p className="font-sans text-2xl font-bold leading-none tracking-tight text-ink sm:text-3xl">
                 {launch.releaseTag}
               </p>
+              {version.isReleaseCandidate ? (
+                <span className="rounded border border-gold px-2 py-0.5 font-mono text-[10px] tracking-[0.12em] text-gold uppercase">
+                  Release candidate
+                </span>
+              ) : null}
               <CopyableMono value={launch.releaseTag}>
                 <span className="sr-only">{launch.releaseTag}</span>
               </CopyableMono>
             </div>
           </dd>
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            Bitcoin Purity now uses its own{" "}
+            <span className="font-mono text-ink">MAJOR.MINOR.PATCH</span>{" "}
+            version series (for example{" "}
+            <span className="font-mono text-ink">v1.0.0</span>,{" "}
+            <span className="font-mono text-ink">v1.0.0rc1</span>). This is
+            independent of the upstream Bitcoin Knots version. Current build:{" "}
+            <span className="font-mono text-ink">{version.release}</span>, based
+            on Bitcoin Knots{" "}
+            <span className="font-mono text-ink">{protocol.knotsBase}</span>{" "}
+            (Bitcoin Core consensus baseline{" "}
+            <span className="font-mono text-ink">
+              {protocol.coreConsensusBaseline}
+            </span>
+            ).
+          </p>
           <p className="mt-3 text-sm leading-relaxed text-muted">
             Official release for mainnet. Download binaries from{" "}
             <ExternalLink href={binaryReleaseUrl} className="font-mono text-gold">
@@ -47,7 +68,11 @@ export function LaunchPanel({ className = "" }: { className?: string }) {
             <ExternalLink href={releaseTagUrl} className="font-mono text-gold">
               {launch.releaseTag}
             </ExternalLink>{" "}
-            and build it yourself.
+            and build it yourself. See{" "}
+            <ExternalLink href={protocol.docs.versioning} className="text-gold">
+              doc/VERSION.md
+            </ExternalLink>{" "}
+            for the full versioning convention.
           </p>
         </div>
         <div className="border-b border-line-gold px-5 py-5 sm:px-6">
