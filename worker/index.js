@@ -22,10 +22,39 @@ function isHtmlDocument(pathname, contentType) {
   return last !== "" && !last.includes(".");
 }
 
+/**
+ * Always fetch the exported directory index for site pages. Cloudflare can keep
+ * serving legacy flat `route.html` blobs for extensionless paths.
+ *
+ * @param {Request} request
+ */
+function resolveAssetRequest(request) {
+  const url = new URL(request.url);
+  const { pathname } = url;
+
+  if (
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/css/") ||
+    pathname.includes(".")
+  ) {
+    return request;
+  }
+
+  const assetPath =
+    pathname === "/" || pathname === ""
+      ? "/index.html"
+      : `${pathname.replace(/\/$/, "")}/index.html`;
+
+  const assetUrl = new URL(request.url);
+  assetUrl.pathname = assetPath;
+  return new Request(assetUrl.toString(), request);
+}
+
 export default {
   /** @param {Request} request @param {Env} env */
   async fetch(request, env) {
-    const response = await env.ASSETS.fetch(request);
+    const assetRequest = resolveAssetRequest(request);
+    const response = await env.ASSETS.fetch(assetRequest);
     const url = new URL(request.url);
     const headers = new Headers(response.headers);
     const contentType = response.headers.get("content-type") ?? "";

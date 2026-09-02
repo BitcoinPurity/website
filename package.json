@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build && node scripts/copy-css-fallback.mjs",
+    "build": "rm -rf out .next && next build && node scripts/copy-css-fallback.mjs",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
