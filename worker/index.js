@@ -43,7 +43,7 @@ function resolveAssetRequest(request) {
   const assetPath =
     pathname === "/" || pathname === ""
       ? "/index.html"
-      : `/pages${pathname.replace(/\/$/, "")}.html`;
+      : `/site-html${pathname.replace(/\/$/, "")}.html`;
 
   const assetUrl = new URL(request.url);
   assetUrl.pathname = assetPath;

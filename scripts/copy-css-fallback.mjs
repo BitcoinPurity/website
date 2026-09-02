@@ -71,13 +71,14 @@ function inject(dir) {
 
 inject(outDir);
 
-const pagesDir = join(outDir, "pages");
+const pagesDir = join(outDir, "site-html");
 mkdirSync(pagesDir, { recursive: true });
 const skipPageDirs = new Set([
   "_next",
   "css",
   "brand",
   "pages",
+  "site-html",
   "404",
   "_not-found",
 ]);
