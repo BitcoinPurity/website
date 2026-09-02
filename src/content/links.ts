@@ -15,6 +15,7 @@ export const SERVICES = {
     port: 50002,
     ssl: true,
     url: "ssl://electrum.bitcoinpurity.org:50002",
+    bluewalletServer: "electrum.bitcoinpurity.org:50002:s",
   },
 } as const;
 

@@ -31,9 +31,10 @@ export default function UsersPage() {
           <h2 className="text-3xl text-ink">Connect your wallet to Purity</h2>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
             Bitcoin Purity uses the same addresses and transactions as Bitcoin.
-            You do not need a separate Purity wallet — use Electrum, Sparrow, or
+            You do not need a separate Purity wallet — use BlueWallet, Sparrow, or
             any wallet that lets you point at a custom Electrum server. Your
-            existing seed or keys work on Purity mainnet.
+            existing seed or keys work on Purity mainnet. Electrum desktop
+            validates Bitcoin mainnet and cannot connect to Purity.
           </p>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">
             A public Electrum server is available. Enter the settings below in
@@ -62,9 +63,17 @@ export default function UsersPage() {
               </dt>
               <dd className="mt-2 text-ink">Yes</dd>
             </div>
+            <div className="border-b border-line px-5 py-4 sm:px-6">
+              <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">
+                Server string (BlueWallet)
+              </dt>
+              <dd className="mt-2">
+                <CopyableMono value={electrum.bluewalletServer} />
+              </dd>
+            </div>
             <div className="px-5 py-4 sm:px-6">
               <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">
-                Full URL (Sparrow and similar)
+                Full URL (Sparrow)
               </dt>
               <dd className="mt-2">
                 <CopyableMono value={electrum.url} />
@@ -74,18 +83,15 @@ export default function UsersPage() {
           <div className="mt-10 grid gap-10 md:grid-cols-2">
             <div>
               <h3 className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
-                Electrum
+                BlueWallet
               </h3>
               <ol className="mt-4 list-decimal space-y-2 pl-5 text-muted">
-                <li>Open your wallet and go to Wallet → Network.</li>
-                <li>Uncheck &ldquo;Select server automatically.&rdquo;</li>
+                <li>Open Settings → Network → Electrum Server.</li>
                 <li>
-                  Enter <span className="font-mono text-ink">{electrum.host}</span>{" "}
-                  as the server, port{" "}
-                  <span className="font-mono text-ink">{electrum.port}</span>, with
-                  SSL enabled.
+                  Paste the server string above, or enter the host and SSL port
+                  manually with SSL enabled.
                 </li>
-                <li>Close the dialog and let the wallet sync.</li>
+                <li>Save and let the wallet sync.</li>
               </ol>
             </div>
             <div>

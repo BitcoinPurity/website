@@ -140,7 +140,7 @@ export function HomePage() {
               </h3>
               <p className="mt-3 text-2xl text-ink">Wallet connection</p>
               <p className="mt-4 text-[1.02rem] leading-relaxed text-muted">
-                Connect Electrum, Sparrow, or any wallet that supports custom
+                Connect BlueWallet, Sparrow, or any wallet that supports custom
                 Electrum servers to view balances and send on Purity mainnet.
               </p>
               <Link
