@@ -1,4 +1,5 @@
 import {
+  existsSync,
   mkdirSync,
   readdirSync,
   readFileSync,
@@ -69,6 +70,29 @@ function inject(dir) {
 }
 
 inject(outDir);
+
+const pagesDir = join(outDir, "pages");
+mkdirSync(pagesDir, { recursive: true });
+const skipPageDirs = new Set([
+  "_next",
+  "css",
+  "brand",
+  "pages",
+  "404",
+  "_not-found",
+]);
+
+for (const entry of readdirSync(outDir, { withFileTypes: true })) {
+  if (!entry.isDirectory() || skipPageDirs.has(entry.name)) continue;
+
+  const indexPath = join(outDir, entry.name, "index.html");
+  if (!existsSync(indexPath)) continue;
+
+  writeFileSync(
+    join(pagesDir, `${entry.name}.html`),
+    readFileSync(indexPath, "utf8"),
+  );
+}
 
 writeFileSync(
   join(outDir, ".assetsignore"),

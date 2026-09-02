@@ -12,6 +12,12 @@
   Pragma: no-cache
   Expires: 0
 
+/pages/*
+  Cache-Control: no-cache, no-store, must-revalidate
+  CDN-Cache-Control: no-store
+  Pragma: no-cache
+  Expires: 0
+
 /developers
   Cache-Control: no-cache, no-store, must-revalidate
   CDN-Cache-Control: no-store
