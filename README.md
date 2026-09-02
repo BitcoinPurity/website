@@ -28,7 +28,7 @@ Workers Builds settings:
 | Setting | Value |
 |---|---|
 | Build command | `npm run build` |
-| Deploy command | `npx wrangler deploy` |
+| Deploy command | `npm run deploy` |
 | Root directory | `/` |
 
 `wrangler.jsonc` uses Worker name `bitcoinpurity`. A small Worker (`worker/index.js`) runs on every request and sets cache headers: HTML is never cached (`no-store`), fingerprinted `/_next/static/*` assets are immutable, and `/css/site.css` revalidates on each deploy (with a `?v=` query param in HTML for cache busting).

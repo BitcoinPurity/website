@@ -92,6 +92,18 @@ for (const entry of readdirSync(outDir, { withFileTypes: true })) {
   );
 }
 
+const requiredPages = [
+  "run-page.html",
+  "developers-page.html",
+  "faq-page.html",
+];
+
+for (const page of requiredPages) {
+  if (!existsSync(join(outDir, page))) {
+    throw new Error(`Missing published HTML asset: ${page}`);
+  }
+}
+
 writeFileSync(
   join(outDir, ".assetsignore"),
   ["_headers", "_redirects", ".assetsignore", "build-id.txt"].join("\n") + "\n",
