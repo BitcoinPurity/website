@@ -71,12 +71,20 @@ export default function UsersPage() {
                 <CopyableMono value={electrum.bluewalletServer} />
               </dd>
             </div>
-            <div className="px-5 py-4 sm:px-6">
+            <div className="border-b border-line px-5 py-4 sm:px-6">
               <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">
                 Full URL (Sparrow)
               </dt>
               <dd className="mt-2">
                 <CopyableMono value={electrum.url} />
+              </dd>
+            </div>
+            <div className="px-5 py-4 sm:px-6">
+              <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">
+                Block explorer
+              </dt>
+              <dd className="mt-2">
+                <CopyableMono value={SERVICES.mempoolExplorer} />
               </dd>
             </div>
           </dl>
@@ -90,6 +98,13 @@ export default function UsersPage() {
                 <li>
                   Paste the server string above, or enter the host and SSL port
                   manually with SSL enabled.
+                </li>
+                <li>
+                  Set Block Explorer to{" "}
+                  <span className="font-mono text-ink">
+                    {SERVICES.mempoolExplorer}
+                  </span>
+                  .
                 </li>
                 <li>Save and let the wallet sync.</li>
               </ol>
@@ -106,6 +121,14 @@ export default function UsersPage() {
                   <span className="font-mono text-ink">{electrum.url}</span> as
                   the URL.
                 </li>
+                <li>
+                  Set Block Explorer to{" "}
+                  <span className="font-mono text-ink">
+                    {SERVICES.mempoolExplorer}
+                  </span>
+                  .
+                </li>
+                <li>Set Fee Rate Source to Server.</li>
                 <li>Apply and let the wallet sync.</li>
               </ol>
             </div>
