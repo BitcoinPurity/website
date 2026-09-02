@@ -71,13 +71,10 @@ function inject(dir) {
 
 inject(outDir);
 
-const pagesDir = join(outDir, "site-html");
-mkdirSync(pagesDir, { recursive: true });
 const skipPageDirs = new Set([
   "_next",
   "css",
   "brand",
-  "pages",
   "site-html",
   "404",
   "_not-found",
@@ -90,7 +87,7 @@ for (const entry of readdirSync(outDir, { withFileTypes: true })) {
   if (!existsSync(indexPath)) continue;
 
   writeFileSync(
-    join(pagesDir, `${entry.name}.html`),
+    join(outDir, `${entry.name}-page.html`),
     readFileSync(indexPath, "utf8"),
   );
 }

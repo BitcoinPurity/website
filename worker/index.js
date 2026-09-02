@@ -23,9 +23,6 @@ function isHtmlDocument(pathname, contentType) {
 }
 
 /**
- * Always fetch the exported directory index for site pages. Cloudflare can keep
- * serving legacy flat `route.html` blobs for extensionless paths.
- *
  * @param {Request} request
  */
 function resolveAssetRequest(request) {
@@ -43,7 +40,7 @@ function resolveAssetRequest(request) {
   const assetPath =
     pathname === "/" || pathname === ""
       ? "/index.html"
-      : `/site-html${pathname.replace(/\/$/, "")}.html`;
+      : `${pathname.replace(/\/$/, "")}-page.html`;
 
   const assetUrl = new URL(request.url);
   assetUrl.pathname = assetPath;
