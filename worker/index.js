@@ -17,7 +17,7 @@ function isFingerprintedAsset(pathname) {
 function isHtmlDocument(pathname, contentType) {
   if (contentType.includes("text/html")) return true;
   if (pathname.endsWith(".html")) return true;
-  if (pathname === "/") return true;
+  if (pathname === "/" || pathname.endsWith("/")) return true;
   const last = pathname.split("/").pop() ?? "";
   return last !== "" && !last.includes(".");
 }

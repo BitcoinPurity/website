@@ -70,19 +70,6 @@ function inject(dir) {
 
 inject(outDir);
 
-const skipMirror = new Set(["index.html", "404.html", "_not-found.html"]);
-for (const entry of readdirSync(outDir)) {
-  if (!entry.endsWith(".html") || skipMirror.has(entry)) continue;
-
-  const route = entry.slice(0, -".html".length);
-  const routeDir = join(outDir, route);
-  mkdirSync(routeDir, { recursive: true });
-  writeFileSync(
-    join(routeDir, "index.html"),
-    readFileSync(join(outDir, entry), "utf8"),
-  );
-}
-
 writeFileSync(
   join(outDir, ".assetsignore"),
   ["_headers", "_redirects", ".assetsignore", "build-id.txt"].join("\n") + "\n",
