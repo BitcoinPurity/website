@@ -5,7 +5,7 @@ export const faqItems = [
     id: "versioning",
     question: "How are Bitcoin Purity versions numbered?",
     answer:
-      `Bitcoin Purity now uses its own independent MAJOR.MINOR.PATCH release series. The current mainnet release is ${protocol.launch.releaseTag}${protocol.version.isReleaseCandidate ? " (release candidate)" : ""}. Git tags use a leading v (for example v1.0.0, v1.0.0rc1). This is separate from the upstream Bitcoin Knots version (${protocol.knotsBase}) and the Bitcoin Core consensus baseline (${protocol.coreConsensusBaseline}). On the P2P network, nodes identify as ${protocol.version.p2pUserAgent}. Older date-based tags such as ${protocol.version.legacyReleaseTag} are legacy identifiers. See doc/VERSION.md in the repository for the full convention.`,
+      `Bitcoin Purity now uses its own independent MAJOR.MINOR.PATCH release series. The current mainnet release is ${protocol.launch.releaseTag}${protocol.version.isReleaseCandidate ? " (release candidate)" : ""}. Git tags use a leading v (for example v1.0.0, v1.0.0rc2). This is separate from the upstream Bitcoin Knots version (${protocol.knotsBase}) and the Bitcoin Core consensus baseline (${protocol.coreConsensusBaseline}). On the P2P network, nodes identify as ${protocol.version.p2pUserAgent}. Older date-based tags such as ${protocol.version.legacyReleaseTag} are legacy identifiers. See doc/VERSION.md in the repository for the full convention.`,
   },
   {
     id: "mainnet",

@@ -48,7 +48,7 @@ export function LaunchPanel({ className = "" }: { className?: string }) {
             <span className="font-mono text-ink">MAJOR.MINOR.PATCH</span>{" "}
             version series (for example{" "}
             <span className="font-mono text-ink">v1.0.0</span>,{" "}
-            <span className="font-mono text-ink">v1.0.0rc1</span>). This is
+            <span className="font-mono text-ink">v1.0.0rc2</span>). This is
             independent of the upstream Bitcoin Knots version. Current build:{" "}
             <span className="font-mono text-ink">{version.release}</span>, based
             on Bitcoin Knots{" "}
