@@ -55,10 +55,10 @@ export function HomePage() {
           <p className="font-mono text-[12px] tracking-[0.28em] text-gold uppercase">
             Bitcoin Purity
           </p>
-          <h1 className="mt-5 max-w-3xl text-[2.7rem] leading-[0.98] text-ink sm:text-6xl md:text-7xl">
-            Bitcoin is money.
+          <h1 className="mt-5 max-w-3xl text-[2.7rem] leading-[0.98] font-bold tracking-tight text-ink uppercase sm:text-6xl md:text-7xl">
+            Whitepaper
             <br />
-            Keep it that way.
+            is on its way
           </h1>
           <LaunchPanel className="mt-8 max-w-2xl" />
           <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted">
