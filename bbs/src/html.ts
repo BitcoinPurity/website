@@ -106,6 +106,126 @@ const STYLES = `
     white-space: pre-wrap;
     word-wrap: break-word;
   }
+  /* Facebook-style nested thread */
+  .fb-thread {
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 14px 16px 10px;
+    margin-bottom: 12px;
+  }
+  .fb-op {
+    display: flex;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e4e6eb;
+    margin-bottom: 12px;
+  }
+  .fb-op .fb-body {
+    font-size: 13px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin-top: 6px;
+  }
+  .fb-comments { margin-top: 4px; }
+  .fb-comment {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    align-items: flex-start;
+  }
+  .fb-avatar {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #6b8cae;
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 36px;
+    text-align: center;
+    text-decoration: none;
+  }
+  .fb-avatar.sm {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+    line-height: 28px;
+  }
+  a.fb-avatar:hover { text-decoration: none; opacity: 0.9; }
+  .fb-main { flex: 1; min-width: 0; }
+  .fb-bubble {
+    background: #f0f2f5;
+    border-radius: 18px;
+    padding: 8px 12px;
+    display: inline-block;
+    max-width: 100%;
+  }
+  .fb-op-card {
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    display: block;
+  }
+  .fb-author-line { font-size: 12px; line-height: 1.35; }
+  .fb-author-line .name {
+    font-weight: bold;
+    color: #003366;
+  }
+  .fb-author-line .level {
+    color: #65676b;
+    font-weight: normal;
+    margin-left: 6px;
+    font-size: 11px;
+  }
+  .fb-text {
+    margin-top: 2px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 12px;
+  }
+  .fb-actions {
+    margin: 4px 0 0 12px;
+    font-size: 11px;
+    color: #65676b;
+  }
+  .fb-actions a {
+    color: #65676b;
+    font-weight: bold;
+  }
+  .fb-actions a:hover { text-decoration: underline; }
+  .fb-actions .sep { margin: 0 5px; color: #bcc0c4; }
+  .fb-children {
+    margin: 8px 0 0 12px;
+    padding-left: 12px;
+    border-left: 2px solid #e4e6eb;
+  }
+  .fb-comment.depth-0 > .fb-main > .fb-children { margin-left: 0; }
+  .fb-inline-reply {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    margin: 8px 0 10px;
+    width: 100%;
+  }
+  .fb-inline-reply textarea {
+    width: 100%;
+    min-height: 56px;
+    border: 1px solid #ccd0d5;
+    border-radius: 18px;
+    padding: 8px 12px;
+    font-family: Verdana, Arial, sans-serif;
+    font-size: 12px;
+    resize: vertical;
+    background: #f0f2f5;
+  }
+  .fb-inline-reply .btn { margin-top: 6px; border-radius: 16px; }
+  .fb-replying-to {
+    margin: 0 0 6px;
+    color: #555;
+    font-size: 11px;
+  }
+  .fb-badges { margin-top: 4px; }
   .formbox {
     background: #fff;
     border: 1px solid #ccc;
@@ -190,29 +310,6 @@ const STYLES = `
   .badge-item strong { display: block; color: #1a3a5c; margin-bottom: 4px; }
   .badge-item span { color: #666; font-size: 11px; }
 `;
-
-function renderAuthorSidebar(author: string, profile: AuthorDisplay | undefined): string {
-  if (!profile) {
-    return `<div class="author">
-          <div class="name">${escapeHtml(author)}</div>
-        </div>`;
-  }
-
-  const badges = profile.badges
-    .map((b) => `<span class="badge-pill" title="${escapeHtml(b.description)}">${escapeHtml(b.name)}</span>`)
-    .join("");
-
-  return `<div class="author">
-          <div class="name"><a href="/user/${escapeHtml(profile.username)}">${escapeHtml(profile.username)}</a></div>
-          <div class="author-level">${escapeHtml(profile.level)}</div>
-          <div class="author-meta">
-            Activity: ${profile.points}<br>
-            Posts: ${profile.post_count}<br>
-            Topics: ${profile.thread_count}
-          </div>
-          ${badges ? `<div style="margin-top:8px">${badges}</div>` : ""}
-        </div>`;
-}
 
 function navBar(user: SessionUser | null): string {
   const authLinks = user
@@ -443,10 +540,143 @@ export function threadListPage(
 
 export type PostRow = {
   id: number;
+  parent_id: number | null;
   author: string;
   body: string;
   created_at: number;
 };
+
+type PostNode = PostRow & { children: PostNode[] };
+
+function avatarLetter(name: string): string {
+  const ch = name.trim().charAt(0);
+  return escapeHtml(ch ? ch.toUpperCase() : "?");
+}
+
+function buildPostTree(posts: PostRow[]): PostNode[] {
+  const nodes = new Map<number, PostNode>();
+  for (const post of posts) {
+    nodes.set(post.id, { ...post, children: [] });
+  }
+
+  const roots: PostNode[] = [];
+  for (const post of posts) {
+    const node = nodes.get(post.id)!;
+    if (post.parent_id != null && nodes.has(post.parent_id)) {
+      nodes.get(post.parent_id)!.children.push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+  return roots;
+}
+
+function renderCommentNode(
+  node: PostNode,
+  threadId: number,
+  user: SessionUser | null,
+  authorProfiles: Map<string, AuthorDisplay>,
+  depth: number,
+  isOp: boolean,
+  replyToId: number | null,
+): string {
+  const profile = authorProfiles.get(node.author.toLowerCase());
+  const profileHref = profile
+    ? `/user/${escapeHtml(profile.username)}`
+    : null;
+  const nameHtml = profileHref
+    ? `<a class="name" href="${profileHref}">${escapeHtml(node.author)}</a>`
+    : `<span class="name">${escapeHtml(node.author)}</span>`;
+  const levelHtml = profile
+    ? `<span class="level">${escapeHtml(profile.level)}</span>`
+    : "";
+  const badges =
+    profile && profile.badges.length > 0
+      ? `<div class="fb-badges">${profile.badges
+          .map(
+            (b) =>
+              `<span class="badge-pill" title="${escapeHtml(b.description)}">${escapeHtml(b.name)}</span>`,
+          )
+          .join("")}</div>`
+      : "";
+
+  const avatarClass = isOp ? "fb-avatar" : "fb-avatar sm";
+  const avatar = profileHref
+    ? `<a class="${avatarClass}" href="${profileHref}">${avatarLetter(node.author)}</a>`
+    : `<div class="${avatarClass}">${avatarLetter(node.author)}</div>`;
+
+  const isReplyingHere = replyToId === node.id;
+  const replyAction = user
+    ? isReplyingHere
+      ? `<a href="/thread/${threadId}#post-${node.id}">Cancel</a>`
+      : `<a href="/thread/${threadId}?reply_to=${node.id}#reply-${node.id}">Reply</a>`
+    : `<a href="/login">Reply</a>`;
+
+  const replyComposer =
+    user && isReplyingHere
+      ? `<div class="fb-inline-reply" id="reply-${node.id}">
+          <div class="fb-avatar sm">${avatarLetter(user.username)}</div>
+          <form method="post" action="/thread/${threadId}/reply" style="flex:1">
+            <input type="hidden" name="parent_id" value="${node.id}">
+            <p class="fb-replying-to">Replying to <strong>${escapeHtml(node.author)}</strong></p>
+            <textarea name="body" required maxlength="10000" placeholder="Write a reply…" autofocus></textarea>
+            <div><button type="submit" class="btn">Reply</button></div>
+          </form>
+        </div>`
+      : "";
+
+  const childrenHtml =
+    node.children.length > 0
+      ? `<div class="fb-children">${node.children
+          .map((child) =>
+            renderCommentNode(
+              child,
+              threadId,
+              user,
+              authorProfiles,
+              depth + 1,
+              false,
+              replyToId,
+            ),
+          )
+          .join("")}</div>`
+      : "";
+
+  if (isOp) {
+    return `<div class="fb-op" id="post-${node.id}">
+      ${avatar}
+      <div class="fb-main">
+        <div class="fb-author-line">${nameHtml}${levelHtml}</div>
+        ${badges}
+        <div class="fb-body">${escapeHtml(node.body)}</div>
+        <div class="fb-actions">
+          <span>${formatDate(node.created_at)}</span>
+          <span class="sep">·</span>
+          ${replyAction}
+        </div>
+        ${replyComposer}
+        ${childrenHtml}
+      </div>
+    </div>`;
+  }
+
+  return `<div class="fb-comment depth-${Math.min(depth, 5)}" id="post-${node.id}">
+    ${avatar}
+    <div class="fb-main">
+      <div class="fb-bubble">
+        <div class="fb-author-line">${nameHtml}${levelHtml}</div>
+        <div class="fb-text">${escapeHtml(node.body)}</div>
+      </div>
+      <div class="fb-actions">
+        <span>${formatDate(node.created_at)}</span>
+        <span class="sep">·</span>
+        ${replyAction}
+      </div>
+      ${replyComposer}
+      ${childrenHtml}
+    </div>
+  </div>`;
+}
 
 export function threadPage(
   board: { id: number; name: string; parent_id: number; parent_name: string | null },
@@ -455,31 +685,28 @@ export function threadPage(
   user: SessionUser | null,
   authorProfiles: Map<string, AuthorDisplay>,
   error?: string,
+  replyToId: number | null = null,
 ): string {
-  const postHtml = posts
-    .map(
-      (p) => `<div class="postbox">
-      <div class="header">${formatDate(p.created_at)}</div>
-      <div class="body">
-        ${renderAuthorSidebar(p.author, authorProfiles.get(p.author.toLowerCase()))}
-        <div class="content">${escapeHtml(p.body)}</div>
-      </div>
-    </div>`,
+  const tree = buildPostTree(posts);
+  const op = tree[0] ?? null;
+  const nested =
+    op != null
+      ? renderCommentNode(op, thread.id, user, authorProfiles, 0, true, replyToId)
+      : `<p style="color:#888">No posts yet.</p>`;
+
+  // Orphan roots (should be rare) render as top-level comments under the thread.
+  const orphans = tree
+    .slice(1)
+    .map((node) =>
+      renderCommentNode(node, thread.id, user, authorProfiles, 1, false, replyToId),
     )
     .join("");
 
   const errorHtml = error ? `<div class="error">${escapeHtml(error)}</div>` : "";
 
-  const replyForm = user
-    ? `<div class="formbox">
-      <form method="post" action="/thread/${thread.id}/reply">
-        <p style="margin:0 0 10px;color:#555">Posting as <strong>${escapeHtml(user.username)}</strong></p>
-        <label>Message</label>
-        <textarea name="body" required maxlength="10000"></textarea>
-        <button type="submit" class="btn">Post reply</button>
-      </form>
-    </div>`
-    : `<div class="notice"><a href="/login">Login</a> or <a href="/register">register</a> to reply.</div>`;
+  const loginHint = user
+    ? ""
+    : `<div class="notice" style="margin-top:12px"><a href="/login">Login</a> or <a href="/register">register</a> to reply.</div>`;
 
   return layout(
     thread.title,
@@ -493,9 +720,12 @@ export function threadPage(
       { label: thread.title },
     ])}
     <h2 class="page-title">${escapeHtml(thread.title)}</h2>
-    ${postHtml}
-    ${errorHtml}
-    ${replyForm}
+    <div class="fb-thread">
+      ${nested}
+      ${orphans ? `<div class="fb-comments">${orphans}</div>` : ""}
+      ${errorHtml}
+      ${loginHint}
+    </div>
   `,
     user,
   );

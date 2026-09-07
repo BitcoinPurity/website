@@ -28,6 +28,8 @@ import {
   getBoardIndex,
   getCategory,
   getPasswordReset,
+  getPostDepth,
+  getPostInThread,
   getPosts,
   getThread,
   getThreads,
@@ -35,6 +37,7 @@ import {
   getUserByUsername,
   getUserProfile,
   isLeafBoard,
+  MAX_REPLY_DEPTH,
   seedBoardsIfEmpty,
   updateUserPassword,
   type Env,
@@ -425,7 +428,16 @@ app.get("/thread/:id", async (c) => {
 
   const posts = await getPosts(c.env.DB, threadId);
   const authorProfiles = await authorProfilesForPosts(c.env.DB, posts);
-  return c.html(threadPage(board, thread, posts, user, authorProfiles));
+  const replyToRaw = Number(c.req.query("reply_to"));
+  const replyToId =
+    Number.isInteger(replyToRaw) &&
+    replyToRaw > 0 &&
+    posts.some((p) => p.id === replyToRaw)
+      ? replyToRaw
+      : null;
+  return c.html(
+    threadPage(board, thread, posts, user, authorProfiles, undefined, replyToId),
+  );
 });
 
 app.post("/thread/:id/reply", async (c) => {
@@ -448,29 +460,79 @@ app.post("/thread/:id/reply", async (c) => {
 
   const form = await c.req.parseBody();
   const body = String(form.body ?? "");
+  const parentIdRaw = Number(form.parent_id);
 
-  if (!body.trim()) {
+  const renderThreadError = async (
+    message: string,
+    status: 400 | 429,
+    replyToId: number | null,
+  ) => {
     const posts = await getPosts(c.env.DB, threadId);
     const authorProfiles = await authorProfilesForPosts(c.env.DB, posts);
     return c.html(
-      threadPage(board, thread, posts, user, authorProfiles, "Message cannot be empty."),
-      400,
+      threadPage(
+        board,
+        thread,
+        posts,
+        user,
+        authorProfiles,
+        message,
+        replyToId,
+      ),
+      status,
     );
+  };
+
+  if (!body.trim()) {
+    return renderThreadError(
+      "Message cannot be empty.",
+      400,
+      Number.isInteger(parentIdRaw) && parentIdRaw > 0 ? parentIdRaw : null,
+    );
+  }
+
+  if (!Number.isInteger(parentIdRaw) || parentIdRaw < 1) {
+    return renderThreadError("Invalid reply target.", 400, null);
+  }
+
+  let parentId = parentIdRaw;
+  const parent = await getPostInThread(c.env.DB, threadId, parentId);
+  if (!parent) {
+    return renderThreadError(
+      "Reply target not found in this thread.",
+      400,
+      parentIdRaw,
+    );
+  }
+
+  // Cap nesting: deeper replies become siblings under the deepest allowed parent.
+  let depth = await getPostDepth(c.env.DB, threadId, parentId);
+  while (depth >= MAX_REPLY_DEPTH && parentId != null) {
+    const current = await getPostInThread(c.env.DB, threadId, parentId);
+    if (!current?.parent_id) break;
+    parentId = current.parent_id;
+    depth = await getPostDepth(c.env.DB, threadId, parentId);
   }
 
   const ip = c.req.header("CF-Connecting-IP") ?? "unknown";
   const allowed = await checkRateLimit(c.env.DB, ip, "post");
   if (!allowed) {
-    const posts = await getPosts(c.env.DB, threadId);
-    const authorProfiles = await authorProfilesForPosts(c.env.DB, posts);
-    return c.html(
-      threadPage(board, thread, posts, user, authorProfiles, "Rate limit exceeded. Please wait a minute."),
+    return renderThreadError(
+      "Rate limit exceeded. Please wait a minute.",
       429,
+      parentIdRaw,
     );
   }
 
-  await createReply(c.env.DB, threadId, user.id, user.username, body);
-  return c.redirect(`/thread/${threadId}`, 303);
+  const newPostId = await createReply(
+    c.env.DB,
+    threadId,
+    user.id,
+    user.username,
+    body,
+    parentId,
+  );
+  return c.redirect(`/thread/${threadId}#post-${newPostId}`, 303);
 });
 
 export default app;

@@ -75,6 +75,7 @@ export async function ensureSchema(db: D1Database): Promise<void> {
     db.prepare(`CREATE TABLE IF NOT EXISTS posts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       thread_id INTEGER NOT NULL REFERENCES threads(id),
+      parent_id INTEGER REFERENCES posts(id),
       user_id INTEGER REFERENCES users(id),
       author TEXT NOT NULL,
       body TEXT NOT NULL,
@@ -116,6 +117,7 @@ export async function ensureSchema(db: D1Database): Promise<void> {
   await migrateLegacyUsers(db);
   await migrateBoardHierarchy(db);
   await migrateReputationColumns(db);
+  await migratePostParentId(db);
   await seedBadgesIfEmpty(db);
   await backfillReputationIfNeeded(db);
 
@@ -126,6 +128,11 @@ export async function ensureSchema(db: D1Database): Promise<void> {
     .run();
   await db
     .prepare(`CREATE INDEX IF NOT EXISTS idx_posts_user ON posts(user_id)`)
+    .run();
+  await db
+    .prepare(
+      `CREATE INDEX IF NOT EXISTS idx_posts_parent ON posts(parent_id, created_at)`,
+    )
     .run();
 }
 
@@ -407,6 +414,35 @@ async function migrateReputationColumns(db: D1Database): Promise<void> {
          SELECT u.id FROM users u WHERE u.username = posts.author COLLATE NOCASE LIMIT 1
        )
        WHERE user_id IS NULL`,
+    )
+    .run();
+}
+
+async function migratePostParentId(db: D1Database): Promise<void> {
+  const postCols = await db.prepare("PRAGMA table_info(posts)").all<{ name: string }>();
+  if (!(postCols.results ?? []).some((c) => c.name === "parent_id")) {
+    await db
+      .prepare("ALTER TABLE posts ADD COLUMN parent_id INTEGER REFERENCES posts(id)")
+      .run();
+  }
+
+  // Existing flat replies become top-level comments under the opening post.
+  await db
+    .prepare(
+      `UPDATE posts
+       SET parent_id = (
+         SELECT p0.id FROM posts p0
+         WHERE p0.thread_id = posts.thread_id
+         ORDER BY p0.created_at ASC, p0.id ASC
+         LIMIT 1
+       )
+       WHERE parent_id IS NULL
+         AND id != (
+           SELECT p0.id FROM posts p0
+           WHERE p0.thread_id = posts.thread_id
+           ORDER BY p0.created_at ASC, p0.id ASC
+           LIMIT 1
+         )`,
     )
     .run();
 }
@@ -917,12 +953,54 @@ export async function getPosts(
 ): Promise<PostRow[]> {
   const { results } = await db
     .prepare(
-      "SELECT id, author, body, created_at FROM posts WHERE thread_id = ? ORDER BY created_at ASC",
+      "SELECT id, parent_id, author, body, created_at FROM posts WHERE thread_id = ? ORDER BY created_at ASC, id ASC",
     )
     .bind(threadId)
     .all<PostRow>();
   return results ?? [];
 }
+
+export async function getPostInThread(
+  db: D1Database,
+  threadId: number,
+  postId: number,
+): Promise<{ id: number; parent_id: number | null } | null> {
+  return db
+    .prepare(
+      "SELECT id, parent_id FROM posts WHERE id = ? AND thread_id = ?",
+    )
+    .bind(postId, threadId)
+    .first<{ id: number; parent_id: number | null }>();
+}
+
+/** Depth of a post in the reply tree (opening post = 0). */
+export async function getPostDepth(
+  db: D1Database,
+  threadId: number,
+  postId: number,
+): Promise<number> {
+  let depth = 0;
+  let currentId: number | null = postId;
+  const seen = new Set<number>();
+
+  while (currentId != null && depth < 32) {
+    if (seen.has(currentId)) break;
+    seen.add(currentId);
+
+    const row: { parent_id: number | null } | null = await db
+      .prepare("SELECT parent_id FROM posts WHERE id = ? AND thread_id = ?")
+      .bind(currentId, threadId)
+      .first<{ parent_id: number | null }>();
+
+    if (!row || row.parent_id == null) break;
+    depth += 1;
+    currentId = row.parent_id;
+  }
+
+  return depth;
+}
+
+export const MAX_REPLY_DEPTH = 5;
 
 export async function checkRateLimit(
   db: D1Database,
@@ -983,7 +1061,7 @@ export async function createThread(
 
   await db
     .prepare(
-      "INSERT INTO posts (thread_id, user_id, author, body, created_at) VALUES (?, ?, ?, ?, ?)",
+      "INSERT INTO posts (thread_id, parent_id, user_id, author, body, created_at) VALUES (?, NULL, ?, ?, ?, ?)",
     )
     .bind(thread.id, userId, author, cleanBody, now)
     .run();
@@ -999,22 +1077,27 @@ export async function createReply(
   userId: number,
   author: string,
   body: string,
-): Promise<void> {
+  parentId: number,
+): Promise<number> {
   const now = Math.floor(Date.now() / 1000);
   const cleanBody = body.trim().slice(0, 10000);
 
-  await db.batch([
-    db
-      .prepare(
-        "INSERT INTO posts (thread_id, user_id, author, body, created_at) VALUES (?, ?, ?, ?, ?)",
-      )
-      .bind(threadId, userId, author, cleanBody, now),
-    db
-      .prepare(
-        "UPDATE threads SET last_post_at = ?, reply_count = reply_count + 1 WHERE id = ?",
-      )
-      .bind(now, threadId),
-  ]);
+  const inserted = await db
+    .prepare(
+      "INSERT INTO posts (thread_id, parent_id, user_id, author, body, created_at) VALUES (?, ?, ?, ?, ?, ?) RETURNING id",
+    )
+    .bind(threadId, parentId, userId, author, cleanBody, now)
+    .first<{ id: number }>();
+
+  if (!inserted) throw new Error("Failed to create reply");
+
+  await db
+    .prepare(
+      "UPDATE threads SET last_post_at = ?, reply_count = reply_count + 1 WHERE id = ?",
+    )
+    .bind(now, threadId)
+    .run();
 
   await awardActivity(db, userId, "reply");
+  return inserted.id;
 }

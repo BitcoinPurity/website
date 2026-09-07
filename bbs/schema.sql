@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS threads (
 CREATE TABLE IF NOT EXISTS posts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   thread_id INTEGER NOT NULL REFERENCES threads(id),
+  parent_id INTEGER REFERENCES posts(id),
   user_id INTEGER REFERENCES users(id),
   author TEXT NOT NULL,
   body TEXT NOT NULL,
@@ -72,4 +73,5 @@ CREATE INDEX IF NOT EXISTS idx_reset_tokens_user ON password_reset_tokens(user_i
 CREATE INDEX IF NOT EXISTS idx_boards_parent ON boards(parent_id, sort_order);
 CREATE INDEX IF NOT EXISTS idx_threads_board ON threads(board_id, last_post_at DESC);
 CREATE INDEX IF NOT EXISTS idx_posts_thread ON posts(thread_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_posts_parent ON posts(parent_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_posts_user ON posts(user_id);
