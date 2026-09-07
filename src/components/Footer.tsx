@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Logo } from "./Logo";
 import { ExternalLink } from "./ExternalLink";
 import { HashLink } from "./HashLink";
-import { CONTACT, DOCS } from "@/content/links";
+import { CONTACT, DOCS, SERVICES } from "@/content/links";
 import { protocol } from "@/content/protocol";
 
 const footerLinks = [
@@ -68,6 +68,12 @@ export function Footer() {
               </Link>
             ),
           )}
+          <ExternalLink
+            href={SERVICES.bbs}
+            className="text-muted hover:text-ink"
+          >
+            BBS
+          </ExternalLink>
           <ExternalLink
             href={protocol.github}
             className="text-muted hover:text-ink"

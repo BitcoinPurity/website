@@ -71,6 +71,9 @@ export function HomePage() {
               Run Bitcoin Purity
             </CtaLink>
             <CtaLink href="/miners#trial-solo-pool">For Miners</CtaLink>
+            <CtaLink href={SERVICES.bbs} external>
+              BBS
+            </CtaLink>
             <CtaLink href="/why-purity">Read the Vision</CtaLink>
           </div>
           <p className="mt-5">

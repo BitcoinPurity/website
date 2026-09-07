@@ -7,6 +7,7 @@ import { Logo } from "./Logo";
 import { ExternalLink } from "./ExternalLink";
 import { HashLink } from "./HashLink";
 import { primaryNav } from "@/content/nav";
+import { SERVICES } from "@/content/links";
 import { protocol } from "@/content/protocol";
 
 function GitHubIcon() {
@@ -112,6 +113,12 @@ export function Header() {
             Safety
           </Link>
           <ExternalLink
+            href={SERVICES.bbs}
+            className="text-[13px] text-muted hover:text-ink"
+          >
+            BBS
+          </ExternalLink>
+          <ExternalLink
             href={protocol.github}
             className="hidden text-muted hover:text-ink sm:inline-flex"
           >
@@ -159,6 +166,12 @@ export function Header() {
                 onNavigate={() => setOpen(false)}
               />
             ))}
+            <ExternalLink
+              href={SERVICES.bbs}
+              className="min-h-11 border-b border-line py-3 text-ink"
+            >
+              BBS
+            </ExternalLink>
             <ExternalLink
               href={protocol.github}
               className="min-h-11 py-3 text-muted"
