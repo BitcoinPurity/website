@@ -1,5 +1,5 @@
 {
-  "name": "bitcoinpurity-bbs",
+  "name": "bbs",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-19",
   "d1_databases": [
