@@ -1,0 +1,22 @@
+{
+  "name": "bitcoinpurity-bbs",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 execute bitcoinpurity-bbs --local --file=./schema.sql",
+    "db:seed": "wrangler d1 execute bitcoinpurity-bbs --local --file=./seed.sql",
+    "db:migrate:remote": "wrangler d1 execute bitcoinpurity-bbs --remote --file=./schema.sql",
+    "db:seed:remote": "wrangler d1 execute bitcoinpurity-bbs --remote --file=./seed.sql",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.9.6"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260826.1",
+    "typescript": "^5",
+    "wrangler": "^4"
+  }
+}

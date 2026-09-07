@@ -10,6 +10,7 @@ export const CONTACT = {
 export const SERVICES = {
   poolMonitor: "https://pool.bitcoinpurity.org",
   mempoolExplorer: "https://mempool.bitcoinpurity.org",
+  bbs: "https://bbs.bitcoinpurity.org",
   electrum: {
     host: "electrum.bitcoinpurity.org",
     port: 50002,
