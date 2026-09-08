@@ -22,4 +22,5 @@ export const routes = [
   "/developers",
   "/roadmap",
   "/faq",
+  "/whitepaper",
 ] as const;

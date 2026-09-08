@@ -20,6 +20,9 @@ export const SERVICES = {
   },
 } as const;
 
+export const WHITEPAPER_PDF =
+  "https://downloads.bitcoinpurity.org/whitepaper.pdf" as const;
+
 export const repoFile = (path: string) => `${GITHUB}/blob/master/${path}`;
 
 export const DOCS = {
