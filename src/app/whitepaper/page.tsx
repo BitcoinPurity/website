@@ -11,8 +11,6 @@ export const metadata = pageMeta(
   "Read and download the Bitcoin Purity whitepaper.",
 );
 
-const viewerSrc = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(WHITEPAPER_PDF)}`;
-
 export default function WhitepaperPage() {
   return (
     <>
@@ -39,7 +37,7 @@ export default function WhitepaperPage() {
         <div className="mt-8 overflow-hidden border border-line bg-surface">
           <iframe
             title="Bitcoin Purity whitepaper"
-            src={viewerSrc}
+            src={`${WHITEPAPER_PDF}#view=FitH`}
             className="block h-[min(80vh,56rem)] w-full bg-bg"
           />
         </div>
