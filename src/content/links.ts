@@ -5,6 +5,10 @@ export const CONTACT = {
   emailHref: "mailto:contact@bitcoinpurity.org",
   x: "@Bitcoin_Purity",
   xHref: "https://x.com/Bitcoin_Purity",
+  telegram: "@bitcoinpurity",
+  telegramHref: "https://t.me/bitcoinpurity",
+  bbs: "bbs.bitcoinpurity.org",
+  bbsHref: "https://bbs.bitcoinpurity.org",
 } as const;
 
 export const SERVICES = {

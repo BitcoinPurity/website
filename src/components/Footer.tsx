@@ -46,6 +46,24 @@ export function Footer() {
                 {CONTACT.x}
               </ExternalLink>
             </p>
+            <p>
+              <span className="text-muted">Telegram · </span>
+              <ExternalLink
+                href={CONTACT.telegramHref}
+                className="text-ink hover:text-gold"
+              >
+                {CONTACT.telegram}
+              </ExternalLink>
+            </p>
+            <p>
+              <span className="text-muted">BBS · </span>
+              <ExternalLink
+                href={CONTACT.bbsHref}
+                className="text-ink hover:text-gold"
+              >
+                {CONTACT.bbs}
+              </ExternalLink>
+            </p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">

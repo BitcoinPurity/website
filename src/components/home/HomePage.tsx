@@ -578,6 +578,32 @@ export function HomePage() {
                 </ExternalLink>
               </dd>
             </div>
+            <div>
+              <dt className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
+                Telegram
+              </dt>
+              <dd className="mt-3">
+                <ExternalLink
+                  href={CONTACT.telegramHref}
+                  className="text-lg text-ink hover:text-gold"
+                >
+                  {CONTACT.telegram}
+                </ExternalLink>
+              </dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
+                BBS
+              </dt>
+              <dd className="mt-3">
+                <ExternalLink
+                  href={CONTACT.bbsHref}
+                  className="text-lg text-ink hover:text-gold"
+                >
+                  {CONTACT.bbs}
+                </ExternalLink>
+              </dd>
+            </div>
           </dl>
         </Container>
       </section>
