@@ -24,6 +24,23 @@ export const SERVICES = {
   },
 } as const;
 
+/** Third-party solo pools listed on the For Miners page. */
+export const PARTNER_POOLS = [
+  {
+    name: "Competitiously solo pool",
+    website: "https://competitiously.com",
+    stratum: ["stratum+tcp://stratum.competitiously.com:4444"] as const,
+  },
+  {
+    name: "Mole solo pool",
+    website: "https://btc1.molepool.com/",
+    stratum: [
+      "stratum+tcp://ru.molepool.com:5021",
+      "stratum+tcp://eu.molepool.com:5021",
+    ] as const,
+  },
+] as const;
+
 export const WHITEPAPER_PDF =
   "https://downloads.bitcoinpurity.org/whitepaper.pdf" as const;
 
