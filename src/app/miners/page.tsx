@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { Container } from "@/components/Container";
+import { CopyableMono } from "@/components/CopyableMono";
 import { ExternalLink } from "@/components/ExternalLink";
 import { LaunchPanel } from "@/components/LaunchPanel";
 import { PageHeader } from "@/components/PageHeader";
 import { ScrollToId } from "@/components/ScrollToId";
 import { StatusBadge } from "@/components/StatusBadge";
+import { PARTNER_POOLS } from "@/content/links";
 import { protocol } from "@/content/protocol";
 import { pageMeta } from "@/lib/meta";
 
@@ -110,6 +112,47 @@ export default function MinersPage() {
             </dd>
           </div>
         </dl>
+        <section id="partner-pools" className="scroll-mt-24">
+          <h2 className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
+            Partner pools
+          </h2>
+          <p className="mt-3 max-w-2xl text-lg leading-relaxed text-muted">
+            Independent solo pools that operators may point SHA256d hardware at.
+            These are third-party services — verify each endpoint independently
+            before committing hash rate.
+          </p>
+          <div className="mt-8 grid gap-10 sm:grid-cols-2">
+            {PARTNER_POOLS.map((pool) => (
+              <div key={pool.name} className="space-y-4 font-mono text-sm">
+                <h3 className="font-sans text-xl text-ink">{pool.name}</h3>
+                <dl className="space-y-4">
+                  <div>
+                    <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">
+                      Website
+                    </dt>
+                    <dd className="mt-2">
+                      <ExternalLink href={pool.website} className="text-gold">
+                        {pool.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                      </ExternalLink>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">
+                      Stratum
+                    </dt>
+                    <dd className="mt-2 space-y-2 text-ink">
+                      {pool.stratum.map((url) => (
+                        <div key={url}>
+                          <CopyableMono value={url} />
+                        </div>
+                      ))}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            ))}
+          </div>
+        </section>
         <div className="flex flex-wrap gap-4">
           <ExternalLink href={protocol.docs.consensus} className="text-gold">
             Read the Consensus Specification
