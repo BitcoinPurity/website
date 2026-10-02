@@ -73,7 +73,7 @@ export default function UsersPage() {
             </div>
             <div className="border-b border-line px-5 py-4 sm:px-6">
               <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">
-                Full URL (Sparrow)
+                Full URL (Sparrow Wallet 2.5.3 or earlier)
               </dt>
               <dd className="mt-2">
                 <CopyableMono value={electrum.url} />
@@ -111,7 +111,7 @@ export default function UsersPage() {
             </div>
             <div>
               <h3 className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
-                Sparrow
+                Sparrow Wallet 2.5.3 or earlier
               </h3>
               <ol className="mt-4 list-decimal space-y-2 pl-5 text-muted">
                 <li>Open Settings → Server.</li>
