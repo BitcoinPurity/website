@@ -1,4 +1,5 @@
 export const GITHUB = "https://github.com/saltduck/bitcoinpurity" as const;
+export const PURITY_WALLET = "https://github.com/BitcoinPurity/PurityWallet" as const;
 
 export const CONTACT = {
   email: "contact@bitcoinpurity.org",

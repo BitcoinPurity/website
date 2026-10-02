@@ -1,11 +1,13 @@
 import Link from "next/link";
+import { CodeBlock } from "@/components/CodeBlock";
 import { Container } from "@/components/Container";
 import { CopyableMono } from "@/components/CopyableMono";
+import { ExternalLink } from "@/components/ExternalLink";
 import { PageHeader } from "@/components/PageHeader";
 import { SafetyCallout } from "@/components/SafetyCallout";
 import { ScrollToId } from "@/components/ScrollToId";
 import { ChainSplitDiagram } from "@/components/diagrams/ChainSplitDiagram";
-import { SERVICES } from "@/content/links";
+import { PURITY_WALLET, SERVICES } from "@/content/links";
 import { protocol } from "@/content/protocol";
 import { pageMeta } from "@/lib/meta";
 
@@ -141,6 +143,67 @@ export default function UsersPage() {
             </Link>{" "}
             — especially about replay and confirmation depth.
           </p>
+        </section>
+        <section>
+          <h2 className="text-3xl text-ink">PurityWallet</h2>
+          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
+            PurityWallet is the official Android wallet published by Bitcoin
+            Purity. The current release is 1.0.0. Download the APK and its
+            SHA256SUMS file from the official release page, then verify the APK
+            checksum before installing.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3">
+            <ExternalLink
+              href={`${PURITY_WALLET}/releases/tag/1.0.0`}
+              className="text-gold"
+            >
+              Download PurityWallet 1.0.0 →
+            </ExternalLink>
+            <ExternalLink
+              href={`${PURITY_WALLET}/tree/1.0.0`}
+              className="text-gold"
+            >
+              View source at tag 1.0.0 →
+            </ExternalLink>
+          </div>
+          <div className="mt-10 grid gap-10 md:grid-cols-2">
+            <div>
+              <h3 className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
+                Build from source · Android
+              </h3>
+              <p className="mt-4 leading-relaxed text-muted">
+                Install Node.js 24, JDK 17, and Android SDK Platform 36 with
+                Build Tools 36.0.0 and NDK 28.2.13676358. Then clone the
+                published source tag and build a local debug APK:
+              </p>
+              <div className="mt-5">
+                <CodeBlock
+                  label="Clone and build"
+                  code={`git clone --depth 1 --branch 1.0.0 ${PURITY_WALLET}.git\ncd PurityWallet\nnpm ci\ncd android\n./gradlew assembleDebug`}
+                />
+              </div>
+              <p className="mt-4 text-sm leading-relaxed text-muted">
+                The APK is written to{" "}
+                <code className="font-mono text-ink">
+                  android/app/build/outputs/apk/debug/app-debug.apk
+                </code>
+                . This locally built debug APK is for testing and is separate
+                from the official release APK.
+              </p>
+            </div>
+            <div className="border-l-2 border-gold bg-surface px-5 py-5 sm:px-6">
+              <h3 className="text-xl font-bold text-ink">
+                Use the official release
+              </h3>
+              <p className="mt-3 leading-relaxed text-muted">
+                For normal installation, use the APK attached to the official
+                release. Compare its SHA-256 value with the matching entry in
+                the release&apos;s <code className="font-mono text-ink">SHA256SUMS</code> file.
+                A locally built debug APK uses a different signing key and
+                cannot update the official installation.
+              </p>
+            </div>
+          </div>
         </section>
         <section>
           <h2 className="text-3xl text-ink">Continuity</h2>
