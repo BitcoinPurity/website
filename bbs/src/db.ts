@@ -116,6 +116,7 @@ export async function ensureSchema(db: D1Database): Promise<void> {
 
   await migrateLegacyUsers(db);
   await migrateBoardHierarchy(db);
+  await seedAnnouncementBoard(db);
   await migrateReputationColumns(db);
   await migratePostParentId(db);
   await seedBadgesIfEmpty(db);
@@ -257,6 +258,22 @@ export async function seedBoardsIfEmpty(db: D1Database): Promise<void> {
     insert(41, "Forum Feedback", "Suggestions and issues about this BBS.", 1, 4),
     insert(42, "Off-topic", "Non-Purity conversation.", 2, 4),
   ]);
+
+  await seedAnnouncementBoard(db);
+}
+
+async function seedAnnouncementBoard(db: D1Database): Promise<void> {
+  await db.prepare(`
+    INSERT INTO boards (parent_id, name, description, sort_order)
+    SELECT category.id, 'Announcement',
+           'Official announcements, releases, and project updates.', 0
+    FROM boards AS category
+    WHERE category.parent_id IS NULL AND category.name = 'Bitcoin Purity'
+      AND NOT EXISTS (
+        SELECT 1 FROM boards
+        WHERE parent_id = category.id AND name = 'Announcement'
+      )
+  `).run();
 }
 
 async function migrateBoardHierarchy(db: D1Database): Promise<void> {

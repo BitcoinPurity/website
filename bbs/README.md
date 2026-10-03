@@ -23,6 +23,13 @@ npm run dev
 
 Open http://localhost:8787. Local D1 is created automatically; boards are seeded on first request.
 
+Run board initialization and migration tests with Node.js 24:
+
+```bash
+npm test
+npm run typecheck
+```
+
 ## Deploy
 
 1. Create the D1 database (once):
@@ -56,6 +63,7 @@ npm run deploy
 
 ## Boards
 
+- Announcement — official announcements, releases, and project updates; listed first under Bitcoin Purity. Added automatically to existing databases on the first request after deployment.
 - Bitcoin Purity Discussion
 - Mining
 - Development

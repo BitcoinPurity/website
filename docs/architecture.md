@@ -6,3 +6,7 @@
 - 服务地址、版本、命令与协议参数仍来自现有内容模块。语言仅影响文案和站内路径。
 - 当前 Bitcoin Purity 版本由 `src/content/protocol.ts` 统一维护：`release: 1.0.0`、`releaseTag: v1.0.0`、`isReleaseCandidate: false`。版本状态由公共组件和页面通过翻译词典显示。
 - 多语言元数据与 sitemap 共用路径规则。构建后的 CSS/复制脚本处理为所有语言生成 Worker 使用的平铺 HTML 别名。
+
+## BBS
+
+BBS 位于 `bbs/`，采用 Hono、Cloudflare Worker 和 D1。版块以 `boards.parent_id` 区分分类与可发帖子版块。`Announcement` 属于 Bitcoin Purity 分类，`sort_order` 为 0；SQL 种子与运行时初始化按分类名称查找父级，幂等添加该版块，支持已迁移的分类 ID。
