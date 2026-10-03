@@ -1,3 +1,4 @@
+import { translator, type Locale } from "@/lib/i18n";
 import { statusLabel, type StatusKind } from "@/content/status";
 
 const mark: Record<StatusKind, string> = {
@@ -11,13 +12,21 @@ const mark: Record<StatusKind, string> = {
   safety: "▲",
 };
 
-export function StatusBadge({ kind }: { kind: StatusKind }) {
+export function StatusBadge({
+  locale = "en",
+  kind,
+}: {
+  locale?: Locale;
+  kind: StatusKind;
+}) {
+  const t = translator(locale);
+
   return (
     <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-medium tracking-[0.08em] text-ink uppercase">
       <span aria-hidden="true" className="text-gold">
         {mark[kind]}
       </span>
-      {statusLabel[kind]}
+      {t(statusLabel[kind])}
     </span>
   );
 }

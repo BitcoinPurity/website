@@ -1,13 +1,16 @@
+import { type Locale } from "@/lib/i18n";
 import type { ReactNode } from "react";
 import { StatusBadge } from "./StatusBadge";
 import type { StatusKind } from "@/content/status";
 
 export function SpecificationRow({
+  locale = "en",
   index,
   title,
   status,
   children,
 }: {
+  locale?: Locale;
   index: string;
   title: string;
   status: StatusKind;
@@ -23,7 +26,7 @@ export function SpecificationRow({
         </div>
       </div>
       <div className="md:pt-1">
-        <StatusBadge kind={status} />
+        <StatusBadge locale={locale} kind={status} />
       </div>
     </article>
   );

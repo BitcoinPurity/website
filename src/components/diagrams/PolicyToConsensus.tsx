@@ -1,17 +1,24 @@
-export function PolicyToConsensus() {
+import { translator, type LocalizedProps } from "@/lib/i18n";
+export function PolicyToConsensus({ locale = "en" }: LocalizedProps = {}) {
+  const t = translator(locale);
+
   const steps = [
-    "NODE POLICY",
-    "TEMPORARY REDUCED-DATA RULES",
-    "BITCOIN PURITY CONSENSUS\nPERMANENT REDUCED-DATA RULES",
+    t("NODE POLICY"),
+    t("TEMPORARY REDUCED-DATA RULES"),
+    t("BITCOIN PURITY CONSENSUS\nPERMANENT REDUCED-DATA RULES"),
   ];
 
   return (
     <figure className="border border-line bg-surface px-5 py-6 sm:px-8">
       <figcaption className="sr-only">
-        Policy can change. Temporary Reduced Data rules become Bitcoin Purity
-        consensus as permanent Reduced Data rules.
+        {t(
+          "Policy can change. Temporary Reduced Data rules become Bitcoin Purity consensus as permanent Reduced Data rules.",
+        )}
       </figcaption>
-      <ol className="space-y-0 font-mono text-xs tracking-[0.12em] text-ink uppercase sm:text-sm" aria-hidden="true">
+      <ol
+        className="space-y-0 font-mono text-xs tracking-[0.12em] text-ink uppercase sm:text-sm"
+        aria-hidden="true"
+      >
         {steps.map((step, index) => (
           <li key={step} className="whitespace-pre-line">
             {step}

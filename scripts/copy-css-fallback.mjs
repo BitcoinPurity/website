@@ -27,7 +27,9 @@ const cssFileName = "site.css";
 const cssPath = `/css/${cssFileName}?v=${buildIdShort}`;
 writeFileSync(
   join(cssDir, cssFileName),
-  cssFiles.map((name) => readFileSync(join(chunksDir, name), "utf8")).join("\n"),
+  cssFiles
+    .map((name) => readFileSync(join(chunksDir, name), "utf8"))
+    .join("\n"),
 );
 
 const stylesheet = `<link rel="stylesheet" href="${cssPath}" data-precedence="site"/>`;
@@ -80,23 +82,24 @@ const skipPageDirs = new Set([
   "_not-found",
 ]);
 
-for (const entry of readdirSync(outDir, { withFileTypes: true })) {
-  if (!entry.isDirectory() || skipPageDirs.has(entry.name)) continue;
-
-  const indexPath = join(outDir, entry.name, "index.html");
-  if (!existsSync(indexPath)) continue;
-
-  const html = readFileSync(indexPath, "utf8");
-  // Overwrite legacy flat *.html assets (e.g. run.html). Cloudflare incremental
-  // deploy updates existing files but may not upload newly introduced paths.
-  writeFileSync(join(outDir, `${entry.name}.html`), html);
+function publishHtmlAliases(dir) {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isDirectory() || skipPageDirs.has(entry.name)) continue;
+    const pageDir = join(dir, entry.name);
+    const indexPath = join(pageDir, "index.html");
+    if (existsSync(indexPath)) {
+      writeFileSync(
+        join(dir, `${entry.name}.html`),
+        readFileSync(indexPath, "utf8"),
+      );
+    }
+    publishHtmlAliases(pageDir);
+  }
 }
 
-const requiredPages = [
-  "run.html",
-  "developers.html",
-  "faq.html",
-];
+publishHtmlAliases(outDir);
+
+const requiredPages = ["run.html", "developers.html", "faq.html"];
 
 for (const page of requiredPages) {
   if (!existsSync(join(outDir, page))) {

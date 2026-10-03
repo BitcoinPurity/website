@@ -33,8 +33,12 @@
     button.dataset.copyBusy = "1";
     var original = button.textContent;
     var label = button.getAttribute("aria-label") || "";
-    button.textContent = "Copied";
-    if (label.indexOf("Copy ") === 0) {
+    var lang = document.documentElement.lang;
+    button.textContent =
+      lang === "zh-CN" ? "已复制" : lang === "zh-TW" ? "已複製" : "Copied";
+    if (lang === "zh-CN" || lang === "zh-TW") {
+      button.setAttribute("aria-label", button.textContent);
+    } else if (label.indexOf("Copy ") === 0) {
       button.setAttribute("aria-label", label.slice(5) + " copied");
     }
     window.setTimeout(function () {

@@ -1,41 +1,52 @@
 "use client";
 
+import { translator, type LocalizedProps } from "@/lib/i18n";
+
 import { useState } from "react";
 import { CodeBlock } from "./CodeBlock";
 import { ExternalLink } from "./ExternalLink";
 import { DOCS } from "@/content/links";
 
-const tabs = [
-  {
-    id: "unix",
-    label: "Unix",
-    href: DOCS.buildUnix,
-    note: "Full notes: doc/build-unix.md. Debian/Ubuntu and Fedora dependency lists live in that file.",
-  },
-  {
-    id: "macos",
-    label: "macOS",
-    href: DOCS.buildMac,
-    note: "Full notes: doc/build-osx.md.",
-  },
-  {
-    id: "windows",
-    label: "Windows",
-    href: DOCS.buildWindowsMsvc,
-    note: "MSVC notes: doc/build-windows-msvc.md. Additional Windows notes: doc/build-windows.md.",
-  },
-] as const;
-
 const cmake = `cmake -B build
 cmake --build build`;
 
-export function OsBuildTabs() {
+export function OsBuildTabs({ locale = "en" }: LocalizedProps = {}) {
+  const t = translator(locale);
+  const tabs = [
+    {
+      id: "unix",
+      label: "Unix",
+      href: DOCS.buildUnix,
+      note: t(
+        "Full notes: doc/build-unix.md. Debian/Ubuntu and Fedora dependency lists live in that file.",
+      ),
+    },
+    {
+      id: "macos",
+      label: "macOS",
+      href: DOCS.buildMac,
+      note: t("Full notes: doc/build-osx.md."),
+    },
+    {
+      id: "windows",
+      label: "Windows",
+      href: DOCS.buildWindowsMsvc,
+      note: t(
+        "MSVC notes: doc/build-windows-msvc.md. Additional Windows notes: doc/build-windows.md.",
+      ),
+    },
+  ] as const;
+
   const [active, setActive] = useState<(typeof tabs)[number]["id"]>("unix");
   const tab = tabs.find((item) => item.id === active) ?? tabs[0];
 
   return (
     <div>
-      <div role="tablist" aria-label="Build notes by platform" className="flex flex-wrap gap-2">
+      <div
+        role="tablist"
+        aria-label={t("Build notes by platform")}
+        className="flex flex-wrap gap-2"
+      >
         {tabs.map((item) => {
           const selected = item.id === active;
           return (
@@ -47,11 +58,13 @@ export function OsBuildTabs() {
               id={`tab-${item.id}`}
               aria-controls={`panel-${item.id}`}
               className={`min-h-10 px-4 font-mono text-[12px] tracking-[0.12em] uppercase ${
-                selected ? "border border-gold text-gold" : "border border-line text-muted"
+                selected
+                  ? "border border-gold text-gold"
+                  : "border border-line text-muted"
               }`}
               onClick={() => setActive(item.id)}
             >
-              {item.label}
+              {t(item.label)}
             </button>
           );
         })}
@@ -62,17 +75,25 @@ export function OsBuildTabs() {
         aria-labelledby={`tab-${tab.id}`}
         className="mt-5 space-y-4"
       >
-        <CodeBlock code={cmake} label={`${tab.label} CMake`} />
+        <CodeBlock
+          locale={locale}
+          code={cmake}
+          label={t("{0} CMake", tab.label)}
+        />
         <p className="text-sm leading-relaxed text-muted">
-          {tab.note}{" "}
-          <ExternalLink href={tab.href} className="text-gold">
-            Open in the repository
+          {t(tab.note)}{" "}
+          <ExternalLink locale={locale} href={tab.href} className="text-gold">
+            {t("Open in the repository")}
           </ExternalLink>
           {tab.id === "windows" ? (
             <>
               {" "}
               ·{" "}
-              <ExternalLink href={DOCS.buildWindows} className="text-gold">
+              <ExternalLink
+                locale={locale}
+                href={DOCS.buildWindows}
+                className="text-gold"
+              >
                 build-windows.md
               </ExternalLink>
             </>

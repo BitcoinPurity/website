@@ -1,13 +1,21 @@
 import type { MetadataRoute } from "next";
+import { locales, localePath } from "@/lib/i18n";
 import { routes } from "@/content/nav";
-import { SITE_URL } from "@/lib/site";
+import { absoluteUrl } from "@/lib/site";
 
 export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return routes.map((path) => ({
-    url: path === "/" ? SITE_URL : `${SITE_URL}${path}`,
-    changeFrequency: path === "/" ? "weekly" : "monthly",
-    priority: path === "/" ? 1 : path === "/safety" ? 0.9 : 0.7,
-  }));
+  return locales.flatMap((locale) =>
+    routes.map((path) => ({
+      url: absoluteUrl(localePath(path, locale)),
+      alternates: {
+        languages: Object.fromEntries(
+          locales.map((value) => [value, absoluteUrl(localePath(path, value))]),
+        ),
+      },
+      changeFrequency: path === "/" ? "weekly" : "monthly",
+      priority: path === "/" ? 1 : path === "/safety" ? 0.9 : 0.7,
+    })),
+  );
 }

@@ -1,12 +1,19 @@
+import { translator, type Locale } from "@/lib/i18n";
 import type { ReactNode } from "react";
 
 type Props = {
+  locale?: Locale;
   href: string;
   children: ReactNode;
   className?: string;
 };
 
-export function ExternalLink({ href, children, className = "" }: Props) {
+export function ExternalLink({
+  locale = "en",
+  href,
+  children,
+  className = "",
+}: Props) {
   return (
     <a
       href={href}
@@ -15,7 +22,9 @@ export function ExternalLink({ href, children, className = "" }: Props) {
       rel="noopener noreferrer"
     >
       {children}
-      <span className="sr-only"> (opens in a new tab)</span>
+      <span className="sr-only">
+        {translator(locale)(" (opens in a new tab)")}
+      </span>
     </a>
   );
 }

@@ -1,6 +1,11 @@
-import { faqItems } from "@/content/faq";
+import { type Locale } from "@/lib/i18n";
+import { getFaqItems } from "@/content/faq";
 
-export function FAQAccordion({ ids }: { ids?: readonly string[] }) {
+export function FAQAccordion({
+  locale = "en",
+  ids,
+}: { locale?: Locale; ids?: readonly string[] } = {}) {
+  const faqItems = getFaqItems(locale);
   const items = ids
     ? faqItems.filter((item) => ids.includes(item.id))
     : [...faqItems];
@@ -12,10 +17,16 @@ export function FAQAccordion({ ids }: { ids?: readonly string[] }) {
           <summary className="cursor-pointer list-none py-5 text-lg text-ink marker:content-none [&::-webkit-details-marker]:hidden">
             <span className="flex items-start justify-between gap-6">
               <span>{item.question}</span>
-              <span aria-hidden="true" className="font-mono text-gold group-open:hidden">
+              <span
+                aria-hidden="true"
+                className="font-mono text-gold group-open:hidden"
+              >
                 +
               </span>
-              <span aria-hidden="true" className="hidden font-mono text-gold group-open:inline">
+              <span
+                aria-hidden="true"
+                className="hidden font-mono text-gold group-open:inline"
+              >
                 −
               </span>
             </span>

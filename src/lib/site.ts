@@ -5,8 +5,8 @@ export const SITE_DESCRIPTION =
   "Bitcoin Purity is a Bitcoin full node focused on preserving Bitcoin as peer-to-peer electronic cash through permanent Reduced Data consensus rules while retaining SHA256d and Bitcoin transaction compatibility.";
 
 export function absoluteUrl(path = "/") {
-  if (path === "/") return SITE_URL;
-  return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  const pathname = path.startsWith("/") ? path : `/${path}`;
+  return `${SITE_URL}${pathname.endsWith("/") ? pathname : `${pathname}/`}`;
 }
 
 export function pageTitle(title: string) {

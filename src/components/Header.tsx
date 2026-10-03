@@ -1,8 +1,11 @@
 "use client";
 
+import { translator, localePath, type LocalizedProps } from "@/lib/i18n";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Logo } from "./Logo";
 import { ExternalLink } from "./ExternalLink";
 import { HashLink } from "./HashLink";
@@ -12,7 +15,11 @@ import { protocol } from "@/content/protocol";
 
 function GitHubIcon() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current">
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className="h-4 w-4 fill-current"
+    >
       <path d="M12 2C6.48 2 2 6.58 2 12.26c0 4.52 2.87 8.35 6.84 9.71.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.36 1.12 2.94.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.73 0 0 .84-.27 2.75 1.05A9.3 9.3 0 0 1 12 6.84c.85 0 1.71.12 2.51.35 1.9-1.32 2.74-1.05 2.74-1.05.55 1.42.2 2.47.1 2.73.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.8-4.58 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.26C22 6.58 17.52 2 12 2Z" />
     </svg>
   );
@@ -59,7 +66,9 @@ function NavItem({
   );
 }
 
-export function Header() {
+export function Header({ locale = "en" }: LocalizedProps = {}) {
+  const t = translator(locale);
+
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const menuId = useId();
@@ -75,8 +84,11 @@ export function Header() {
 
   return (
     <header className="border-b border-line bg-bg">
-      <div className="mx-auto flex max-w-[1180px] items-center gap-4 px-5 py-3 sm:px-8">
-        <Link href="/" className="flex min-w-0 items-center gap-2.5">
+      <div className="mx-auto flex max-w-[1180px] flex-wrap items-center gap-2 px-3 py-3 sm:gap-4 sm:px-8">
+        <Link
+          href={localePath("/", locale)}
+          className="flex min-w-0 items-center gap-2.5"
+        >
           <Logo size={36} />
           <span className="truncate text-sm font-medium tracking-wide text-ink">
             Bitcoin Purity
@@ -85,19 +97,22 @@ export function Header() {
 
         <nav
           className="hidden flex-1 items-center justify-center gap-x-5 text-[13px] text-muted xl:flex"
-          aria-label="Primary"
+          aria-label={t("Primary")}
         >
           {primaryNav.map((item) => {
             const [pathPart, hash] = item.href.split("#");
             const path = pathPart || "/";
             // Hash links on `/` should not steal the "current" state from the homepage.
-            const current = pathname === path && !(path === "/" && hash);
+            const current =
+              pathname.replace(/\/$/, "") ===
+                localePath(path, locale).replace(/\/$/, "") &&
+              !(path === "/" && hash);
             return (
               <NavItem
                 key={item.href}
-                href={item.href}
-                label={item.label}
-                title={item.full}
+                href={localePath(item.href, locale)}
+                label={t(item.label)}
+                title={t(item.full)}
                 current={current}
                 className={`whitespace-nowrap transition-colors hover:text-ink ${current ? "text-ink" : ""}`}
               />
@@ -105,20 +120,23 @@ export function Header() {
           })}
         </nav>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
+          <LanguageSwitcher locale={locale} />
           <Link
-            href="/safety"
-            className="text-[13px] text-muted hover:text-ink xl:hidden"
+            href={localePath("/safety", locale)}
+            className="hidden text-[13px] text-muted hover:text-ink sm:inline xl:hidden"
           >
-            Safety
+            {t("Safety")}
           </Link>
           <ExternalLink
+            locale={locale}
             href={SERVICES.bbs}
-            className="text-[13px] text-muted hover:text-ink"
+            className="hidden text-[13px] text-muted hover:text-ink sm:inline"
           >
-            BBS
+            {t("BBS")}
           </ExternalLink>
           <ExternalLink
+            locale={locale}
             href={protocol.github}
             className="hidden text-muted hover:text-ink sm:inline-flex"
           >
@@ -128,10 +146,10 @@ export function Header() {
             </span>
           </ExternalLink>
           <Link
-            href="/run"
+            href={localePath("/run", locale)}
             className="inline-flex min-h-11 items-center border border-gold px-3 text-[13px] font-medium text-gold hover:bg-gold hover:text-bg"
           >
-            Run a Node
+            {t("Run a Node")}
           </Link>
           <button
             type="button"
@@ -140,7 +158,9 @@ export function Header() {
             aria-controls={menuId}
             onClick={() => setOpen((value) => !value)}
           >
-            <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
+            <span className="sr-only">
+              {open ? t("Close menu") : t("Open menu")}
+            </span>
             <span aria-hidden="true" className="font-mono text-sm">
               {open ? "×" : "☰"}
             </span>
@@ -148,39 +168,40 @@ export function Header() {
         </div>
       </div>
 
-      {open ? (
-        <div
-          id={menuId}
-          className="border-t border-line bg-bg xl:hidden"
+      <div
+        id={menuId}
+        hidden={!open}
+        className="border-t border-line bg-bg xl:hidden"
+      >
+        <nav
+          className="mx-auto flex max-w-[1180px] flex-col px-5 py-3 sm:px-8"
+          aria-label={t("Mobile")}
         >
-          <nav
-            className="mx-auto flex max-w-[1180px] flex-col px-5 py-3 sm:px-8"
-            aria-label="Mobile"
+          {primaryNav.map((item) => (
+            <NavItem
+              key={item.href}
+              href={localePath(item.href, locale)}
+              label={t(item.full)}
+              className="min-h-11 border-b border-line py-3 text-ink last:border-b-0"
+              onNavigate={() => setOpen(false)}
+            />
+          ))}
+          <ExternalLink
+            locale={locale}
+            href={SERVICES.bbs}
+            className="min-h-11 border-b border-line py-3 text-ink"
           >
-            {primaryNav.map((item) => (
-              <NavItem
-                key={item.href}
-                href={item.href}
-                label={item.full}
-                className="min-h-11 border-b border-line py-3 text-ink last:border-b-0"
-                onNavigate={() => setOpen(false)}
-              />
-            ))}
-            <ExternalLink
-              href={SERVICES.bbs}
-              className="min-h-11 border-b border-line py-3 text-ink"
-            >
-              BBS
-            </ExternalLink>
-            <ExternalLink
-              href={protocol.github}
-              className="min-h-11 py-3 text-muted"
-            >
-              GitHub
-            </ExternalLink>
-          </nav>
-        </div>
-      ) : null}
+            {t("BBS")}
+          </ExternalLink>
+          <ExternalLink
+            locale={locale}
+            href={protocol.github}
+            className="min-h-11 py-3 text-muted"
+          >
+            GitHub
+          </ExternalLink>
+        </nav>
+      </div>
     </header>
   );
 }

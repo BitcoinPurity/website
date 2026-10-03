@@ -1,8 +1,11 @@
 "use client";
 
+import { translator, type Locale } from "@/lib/i18n";
+
 import { useState } from "react";
 
 type Props = {
+  locale?: Locale;
   href: string;
   filename?: string;
   className?: string;
@@ -10,11 +13,14 @@ type Props = {
 };
 
 export function DownloadPdfButton({
+  locale = "en",
   href,
   filename = "bitcoin-purity-whitepaper.pdf",
   className = "",
   children,
 }: Props) {
+  const t = translator(locale);
+
   const [busy, setBusy] = useState(false);
 
   async function onClick() {
@@ -48,7 +54,7 @@ export function DownloadPdfButton({
       disabled={busy}
       aria-busy={busy}
     >
-      {busy ? "Downloading…" : children}
+      {busy ? t("Downloading…") : children}
     </button>
   );
 }
