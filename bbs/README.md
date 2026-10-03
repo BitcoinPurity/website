@@ -13,6 +13,12 @@ Built as a Cloudflare Worker with D1 (SQLite). **Username + password registratio
 
 Levels and badges are display-only; they do not change posting permissions.
 
+## New topic counts
+
+Signed-in users see each board's new topic count on the board index, category pages, and board pages. Each unread topic counts once, including previously read topics with new replies. Topics without a reading record count as unread; listing a board does not mark its topics read.
+
+Opening a topic records the posts displayed in that response. New replies make it unread again. Reading progress is stored per account and shared across devices; guests are prompted to log in. Counts include the whole board, beyond the 100 topics shown in the list. Existing databases gain the reading-record table automatically after deployment.
+
 ## Develop
 
 ```bash

@@ -81,6 +81,12 @@ export async function ensureSchema(db: D1Database): Promise<void> {
       body TEXT NOT NULL,
       created_at INTEGER NOT NULL
     )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS thread_reads (
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      thread_id INTEGER NOT NULL REFERENCES threads(id),
+      last_read_post_id INTEGER NOT NULL,
+      PRIMARY KEY (user_id, thread_id)
+    )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS badges (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -819,6 +825,7 @@ export type BoardStats = {
   description: string;
   thread_count: number;
   post_count: number;
+  new_topic_count: number;
   last_post_at: number | null;
   last_thread_id: number | null;
   last_thread_title: string | null;
@@ -831,11 +838,22 @@ export type CategorySection = {
   boards: BoardStats[];
 };
 
+const newTopicCountQuery = `
+  (SELECT COUNT(*) FROM threads t_new
+   LEFT JOIN thread_reads r ON r.thread_id = t_new.id AND r.user_id = ?
+   WHERE t_new.board_id = b.id AND ? IS NOT NULL
+     AND EXISTS (
+       SELECT 1 FROM posts p_new
+       WHERE p_new.thread_id = t_new.id
+         AND p_new.id > COALESCE(r.last_read_post_id, 0)
+     ))`;
+
 const boardStatsQuery = `
   SELECT
     b.id, b.name, b.description,
     COUNT(DISTINCT t.id) AS thread_count,
     COUNT(p.id) AS post_count,
+    ${newTopicCountQuery} AS new_topic_count,
     MAX(t.last_post_at) AS last_post_at,
     (SELECT t2.id FROM threads t2 WHERE t2.board_id = b.id ORDER BY t2.last_post_at DESC LIMIT 1) AS last_thread_id,
     (SELECT t2.title FROM threads t2 WHERE t2.board_id = b.id ORDER BY t2.last_post_at DESC LIMIT 1) AS last_thread_title
@@ -845,7 +863,10 @@ const boardStatsQuery = `
   WHERE b.id = ?
   GROUP BY b.id`;
 
-export async function getBoardIndex(db: D1Database): Promise<CategorySection[]> {
+export async function getBoardIndex(
+  db: D1Database,
+  userId: number | null = null,
+): Promise<CategorySection[]> {
   const { results: categories } = await db
     .prepare(
       "SELECT id, name, description FROM boards WHERE parent_id IS NULL ORDER BY sort_order, id",
@@ -865,7 +886,7 @@ export async function getBoardIndex(db: D1Database): Promise<CategorySection[]> 
     for (const child of children ?? []) {
       const stats = await db
         .prepare(boardStatsQuery)
-        .bind(child.id)
+        .bind(userId, userId, child.id)
         .first<BoardStats>();
       if (stats) boards.push(stats);
     }
@@ -878,6 +899,7 @@ export async function getBoardIndex(db: D1Database): Promise<CategorySection[]> 
 export async function getCategory(
   db: D1Database,
   id: number,
+  userId: number | null = null,
 ): Promise<CategorySection | null> {
   const category = await db
     .prepare(
@@ -896,7 +918,7 @@ export async function getCategory(
   for (const child of children ?? []) {
     const stats = await db
       .prepare(boardStatsQuery)
-      .bind(child.id)
+      .bind(userId, userId, child.id)
       .first<BoardStats>();
     if (stats) boards.push(stats);
   }
@@ -907,25 +929,29 @@ export async function getCategory(
 export async function getBoard(
   db: D1Database,
   id: number,
+  userId: number | null = null,
 ): Promise<{
   id: number;
   name: string;
   parent_id: number | null;
   parent_name: string | null;
+  new_topic_count: number;
 } | null> {
   return db
     .prepare(
-      `SELECT b.id, b.name, b.parent_id, p.name AS parent_name
+      `SELECT b.id, b.name, b.parent_id, p.name AS parent_name,
+              ${newTopicCountQuery} AS new_topic_count
        FROM boards b
        LEFT JOIN boards p ON p.id = b.parent_id
        WHERE b.id = ?`,
     )
-    .bind(id)
+    .bind(userId, userId, id)
     .first<{
       id: number;
       name: string;
       parent_id: number | null;
       parent_name: string | null;
+      new_topic_count: number;
     }>();
 }
 
@@ -975,6 +1001,20 @@ export async function getPosts(
     .bind(threadId)
     .all<PostRow>();
   return results ?? [];
+}
+
+export async function markThreadRead(
+  db: D1Database,
+  userId: number,
+  threadId: number,
+  lastReadPostId: number,
+): Promise<void> {
+  await db.prepare(`
+    INSERT INTO thread_reads (user_id, thread_id, last_read_post_id)
+    VALUES (?, ?, ?)
+    ON CONFLICT (user_id, thread_id) DO UPDATE SET
+      last_read_post_id = MAX(thread_reads.last_read_post_id, excluded.last_read_post_id)
+  `).bind(userId, threadId, lastReadPostId).run();
 }
 
 export async function getPostInThread(

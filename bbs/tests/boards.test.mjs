@@ -13,8 +13,9 @@ registerHooks({
   },
 });
 
-const { ensureSchema, seedBoardsIfEmpty, getBoardIndex, getBoard } =
+const { ensureSchema, seedBoardsIfEmpty, getBoardIndex, getBoard, getCategory, markThreadRead } =
   await import("../src/db.ts");
+const { default: app } = await import("../src/index.ts");
 const { boardIndexPage, threadListPage } = await import("../src/html.ts");
 const schema = readFileSync(new URL("../schema.sql", import.meta.url), "utf8");
 const seed = readFileSync(new URL("../seed.sql", import.meta.url), "utf8");
@@ -137,5 +138,152 @@ test("legacy flat boards gain Announcement under the migrated Bitcoin Purity cat
     assert.equal(sqlite.prepare("SELECT board_id FROM threads WHERE id = 1").get().board_id, 1);
   } finally {
     sqlite.close();
+  }
+});
+
+async function readingFixture(t) {
+  const sqlite = new DatabaseSync(":memory:");
+  t.after(() => sqlite.close());
+  sqlite.exec(schema);
+  sqlite.exec(seed);
+  sqlite.exec(`
+    INSERT INTO users (id, username, password_hash, points, created_at) VALUES
+      (1, 'reader', 'unused', 10, 1),
+      (2, 'other', 'unused', 10, 1),
+      (3, 'writer', 'unused', 10, 1);
+    INSERT INTO threads (id, board_id, title, created_at, last_post_at, reply_count) VALUES
+      (1, 11, 'First topic', 100, 100, 0),
+      (2, 11, 'Second topic', 100, 100, 1),
+      (3, 21, 'Mining topic', 100, 100, 0);
+    INSERT INTO posts (id, thread_id, parent_id, user_id, author, body, created_at) VALUES
+      (10, 1, NULL, 3, 'writer', 'Opening post', 100),
+      (20, 2, NULL, 3, 'writer', 'Opening post', 100),
+      (21, 2, 20, 3, 'writer', 'Reply', 100),
+      (30, 3, NULL, 3, 'writer', 'Mining post', 100);
+  `);
+  const expiry = Math.floor(Date.now() / 1000) + 3600;
+  sqlite.prepare("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)").run("test-reader", 1, expiry);
+  sqlite.prepare("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)").run("test-other", 2, expiry);
+  const db = d1(sqlite);
+  await ensureSchema(db);
+  return {
+    sqlite,
+    db,
+    async request(path, username = "reader") {
+      const headers = username ? { cookie: `bbs_session=test-${username}` } : {};
+      const response = await app.request(`https://bbs.example${path}`, { headers }, { DB: db });
+      assert.equal(response.status, 200, path);
+      assert.equal(response.headers.get("Cache-Control"), "private, no-store", path);
+      return response.text();
+    },
+  };
+}
+
+test("new topics are counted once per unread thread across home, category and board pages", async (t) => {
+  const { sqlite, db, request } = await readingFixture(t);
+  assert.equal((await getBoard(db, 11, 1)).new_topic_count, 2);
+  assert.equal((await getCategory(db, 1, 1)).boards.find((b) => b.id === 11).new_topic_count, 2);
+  assert.equal((await getBoardIndex(db, 1))[0].boards.find((b) => b.id === 11).new_topic_count, 2);
+  assert.match(await request("/"), /General Discussion<\/a>[^]*?2 new topics/);
+  assert.match(await request("/category/1"), /General Discussion<\/a>[^]*?2 new topics/);
+  assert.match(await request("/board/11"), /General Discussion[^]*?2 new topics/);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM thread_reads").get().n, 0);
+
+  await request("/thread/1");
+  assert.equal((await getBoard(db, 11, 1)).new_topic_count, 1);
+  assert.equal((await getBoard(db, 21, 1)).new_topic_count, 1);
+  assert.equal((await getBoard(db, 11, 2)).new_topic_count, 2);
+  await request("/thread/2");
+  assert.match(await request("/board/11"), /0 new topics/);
+
+  sqlite.exec(`INSERT INTO posts (id, thread_id, parent_id, user_id, author, body, created_at) VALUES
+    (40, 1, 10, 3, 'writer', 'Same-second reply', 100),
+    (41, 1, 10, 3, 'writer', 'Another reply', 100)`);
+  assert.equal((await getBoard(db, 11, 1)).new_topic_count, 1);
+  assert.match(await request("/"), /General Discussion<\/a>[^]*?1 new topic<\/span>/);
+  await request("/thread/1");
+  assert.equal((await getBoard(db, 11, 1)).new_topic_count, 0);
+  assert.equal(sqlite.prepare("SELECT last_read_post_id FROM thread_reads WHERE user_id = 1 AND thread_id = 1").get().last_read_post_id, 41);
+});
+
+test("a reply arriving after posts are fetched stays unread and older reads cannot move progress back", async (t) => {
+  const { sqlite, db, request } = await readingFixture(t);
+  await request("/thread/1");
+  await request("/thread/2");
+  const prepare = db.prepare;
+  let injected = false;
+  db.prepare = (sql) => {
+    const statement = prepare(sql);
+    if (sql.startsWith("SELECT id, parent_id, author, body, created_at FROM posts WHERE thread_id")) {
+      const all = statement.all;
+      statement.all = async () => {
+        const result = await all();
+        if (!injected) {
+          sqlite.exec("INSERT INTO posts (id, thread_id, parent_id, user_id, author, body, created_at) VALUES (40, 1, 10, 3, 'writer', 'Arrived during reading', 100)");
+          injected = true;
+        }
+        return result;
+      };
+    }
+    return statement;
+  };
+  const html = await request("/thread/1");
+  assert.ok(!html.includes("Arrived during reading"));
+  assert.equal((await getBoard(db, 11, 1)).new_topic_count, 1);
+  await request("/thread/1");
+  await markThreadRead(db, 1, 1, 10);
+  assert.equal((await getBoard(db, 11, 1)).new_topic_count, 0);
+  assert.equal(sqlite.prepare("SELECT last_read_post_id FROM thread_reads WHERE user_id = 1 AND thread_id = 1").get().last_read_post_id, 40);
+});
+
+test("board counts include unread topics beyond the first 100 displayed threads", async (t) => {
+  const { sqlite, db, request } = await readingFixture(t);
+  for (let i = 0; i < 120; i++) {
+    sqlite.prepare("INSERT INTO threads (id, board_id, title, created_at, last_post_at) VALUES (?, 11, 'Extra topic', 200, 200)").run(100 + i);
+    sqlite.prepare("INSERT INTO posts (thread_id, user_id, author, body, created_at) VALUES (?, 3, 'writer', 'Extra post', 200)").run(100 + i);
+  }
+  assert.equal((await getBoard(db, 11, 1)).new_topic_count, 122);
+  assert.match(await request("/board/11"), /122 new topics/);
+});
+
+test("guests get a login hint and never change another account's reading progress", async (t) => {
+  const { sqlite, request } = await readingFixture(t);
+  for (const path of ["/", "/category/1", "/board/11"]) {
+    const html = await request(path, null);
+    assert.ok(html.includes("Login"));
+    assert.ok(html.includes("track new topics"));
+    assert.doesNotMatch(html, /\d+ new topics?<\/span>/);
+  }
+  await request("/thread/1", null);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM thread_reads").get().n, 0);
+});
+
+test("runtime migration adds reading records to an existing database without changing content", async (t) => {
+  const { sqlite, db } = await readingFixture(t);
+  const topics = sqlite.prepare("SELECT * FROM threads ORDER BY id").all();
+  const posts = sqlite.prepare("SELECT * FROM posts ORDER BY id").all();
+  sqlite.exec("DROP TABLE IF EXISTS thread_reads");
+  await ensureSchema(db);
+  await ensureSchema(db);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM thread_reads").get().n, 0);
+  assert.deepEqual(sqlite.prepare("SELECT * FROM threads ORDER BY id").all(), topics);
+  assert.deepEqual(sqlite.prepare("SELECT * FROM posts ORDER BY id").all(), posts);
+});
+
+test("BBS page heads link the official site's tab icons", async (t) => {
+  const { request } = await readingFixture(t);
+  for (const path of ["/", "/category/1", "/board/11", "/thread/1"]) {
+    const html = await request(path, null);
+    const head = html.slice(0, html.indexOf("</head>"));
+    for (const [file, type, sizes] of [
+      ["favicon.ico", "image/x-icon", "16x16 32x32"],
+      ["favicon-32.png", "image/png", "32x32"],
+      ["favicon-16.png", "image/png", "16x16"],
+    ]) {
+      assert.ok(
+        head.includes(`<link rel="icon" href="https://bitcoinpurity.org/${file}" type="${type}" sizes="${sizes}">`),
+        `${path}: ${file}`,
+      );
+    }
   }
 });

@@ -38,6 +38,7 @@ import {
   getUserProfile,
   isLeafBoard,
   MAX_REPLY_DEPTH,
+  markThreadRead,
   seedBoardsIfEmpty,
   updateUserPassword,
   type Env,
@@ -117,19 +118,21 @@ app.get("/user/:username", async (c) => {
 });
 
 app.get("/", async (c) => {
+  c.header("Cache-Control", "private, no-store");
   const user = await readSessionUser(c);
-  const sections = await getBoardIndex(c.env.DB);
+  const sections = await getBoardIndex(c.env.DB, user?.id ?? null);
   return c.html(boardIndexPage(sections, user));
 });
 
 app.get("/category/:id", async (c) => {
+  c.header("Cache-Control", "private, no-store");
   const user = await readSessionUser(c);
   const categoryId = Number(c.req.param("id"));
   if (!Number.isInteger(categoryId) || categoryId < 1) {
     return c.html(errorPage("Invalid category.", user), 400);
   }
 
-  const section = await getCategory(c.env.DB, categoryId);
+  const section = await getCategory(c.env.DB, categoryId, user?.id ?? null);
   if (!section) return c.html(errorPage("Category not found.", user), 404);
 
   return c.html(categoryPage(section, user));
@@ -330,13 +333,14 @@ app.post("/logout", async (c) => {
 });
 
 app.get("/board/:id", async (c) => {
+  c.header("Cache-Control", "private, no-store");
   const user = await readSessionUser(c);
   const boardId = Number(c.req.param("id"));
   if (!Number.isInteger(boardId) || boardId < 1) {
     return c.html(errorPage("Invalid board.", user), 400);
   }
 
-  const board = await getBoard(c.env.DB, boardId);
+  const board = await getBoard(c.env.DB, boardId, user?.id ?? null);
   if (!board) return c.html(errorPage("Board not found.", user), 404);
   if (!isLeafBoard(board)) {
     return c.redirect(`/category/${board.id}`, 303);
@@ -411,6 +415,7 @@ app.post("/board/:id/new", async (c) => {
 });
 
 app.get("/thread/:id", async (c) => {
+  c.header("Cache-Control", "private, no-store");
   const user = await readSessionUser(c);
   const threadId = Number(c.req.param("id"));
   if (!Number.isInteger(threadId) || threadId < 1) {
@@ -435,9 +440,13 @@ app.get("/thread/:id", async (c) => {
     posts.some((p) => p.id === replyToRaw)
       ? replyToRaw
       : null;
-  return c.html(
-    threadPage(board, thread, posts, user, authorProfiles, undefined, replyToId),
-  );
+  const html = threadPage(board, thread, posts, user, authorProfiles, undefined, replyToId);
+  if (user && posts.length > 0) {
+    // Mark only the displayed snapshot so replies arriving during this request stay unread.
+    const lastReadPostId = posts.reduce((latest, post) => Math.max(latest, post.id), 0);
+    await markThreadRead(c.env.DB, user.id, threadId, lastReadPostId);
+  }
+  return c.html(html);
 });
 
 app.post("/thread/:id/reply", async (c) => {

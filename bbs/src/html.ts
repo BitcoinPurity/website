@@ -77,6 +77,7 @@ const STYLES = `
   .category-desc { font-weight: normal; font-size: 11px; color: #555; margin-top: 2px; }
   .board-name { font-size: 13px; font-weight: bold; }
   .board-desc { color: #555; font-size: 11px; margin-top: 2px; }
+  .new-topics { display: inline-block; margin-left: 6px; padding: 1px 5px; background: #edf4fa; color: #003366; font-size: 11px; font-weight: normal; border: 1px solid #b8cbdc; }
   .stats { text-align: center; white-space: nowrap; font-size: 11px; }
   .lastpost { font-size: 11px; }
   .thread-title { font-size: 13px; }
@@ -335,6 +336,9 @@ export function layout(
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(title)} — Bitcoin Purity BBS</title>
+  <link rel="icon" href="https://bitcoinpurity.org/favicon.ico" type="image/x-icon" sizes="16x16 32x32">
+  <link rel="icon" href="https://bitcoinpurity.org/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://bitcoinpurity.org/favicon-16.png" type="image/png" sizes="16x16">
   <style>${STYLES}</style>
 </head>
 <body>
@@ -371,6 +375,7 @@ export type BoardStats = {
   description: string;
   thread_count: number;
   post_count: number;
+  new_topic_count: number;
   last_post_at: number | null;
   last_thread_id: number | null;
   last_thread_title: string | null;
@@ -383,12 +388,16 @@ export type CategorySection = {
   boards: BoardStats[];
 };
 
-function boardStatsCells(b: BoardStats): string {
+function newTopicsBadge(count: number): string {
+  return `<span class="new-topics" title="Unread topics, including new replies. Open a topic to mark it read.">${count} new topic${count === 1 ? "" : "s"}</span>`;
+}
+
+function boardStatsCells(b: BoardStats, showNewTopics: boolean): string {
   const lastPost = b.last_post_at
     ? `<div class="lastpost"><a href="/thread/${b.last_thread_id}">${escapeHtml(b.last_thread_title ?? "")}</a><br>${formatDate(b.last_post_at)}</div>`
     : `<span style="color:#999">No posts yet</span>`;
   return `<td>
-      <div class="board-name"><a href="/board/${b.id}">${escapeHtml(b.name)}</a></div>
+      <div class="board-name"><a href="/board/${b.id}">${escapeHtml(b.name)}</a>${showNewTopics ? newTopicsBadge(b.new_topic_count) : ""}</div>
       <div class="board-desc">${escapeHtml(b.description)}</div>
     </td>
     <td class="stats">${b.thread_count}<br><span style="color:#888">${b.post_count} posts</span></td>
@@ -407,7 +416,7 @@ export function boardIndexPage(
           : section.boards
               .map(
                 (b, i) =>
-                  `<tr class="${i % 2 ? "alt" : ""}">${boardStatsCells(b)}</tr>`,
+                  `<tr class="${i % 2 ? "alt" : ""}">${boardStatsCells(b, user != null)}</tr>`,
               )
               .join("");
 
@@ -430,7 +439,7 @@ export function boardIndexPage(
 
   const loginHint = user
     ? ""
-    : `<div class="notice"><a href="/register">Register</a> with a username to start posting. Email is optional — add one to enable password reset.</div>`;
+    : `<div class="notice"><a href="/register">Register</a> with a username to start posting. Email is optional — add one to enable password reset. <a href="/login">Login</a> to track new topics and replies.</div>`;
 
   return layout(
     "Board index",
@@ -453,7 +462,7 @@ export function categoryPage(
       : section.boards
           .map(
             (b, i) =>
-              `<tr class="${i % 2 ? "alt" : ""}">${boardStatsCells(b)}</tr>`,
+              `<tr class="${i % 2 ? "alt" : ""}">${boardStatsCells(b, user != null)}</tr>`,
           )
           .join("");
 
@@ -466,6 +475,7 @@ export function categoryPage(
     ])}
     <h2 class="page-title">${escapeHtml(section.name)}</h2>
     <p style="margin:0 0 12px;color:#555">${escapeHtml(section.description)}</p>
+    ${user ? "" : '<p><a href="/login">Login</a> to track new topics and replies.</p>'}
     <table class="forum">
       <tr>
         <th style="width:55%">Board</th>
@@ -489,13 +499,13 @@ export type ThreadRow = {
 };
 
 export function threadListPage(
-  board: { id: number; name: string; parent_id: number; parent_name: string | null },
+  board: { id: number; name: string; parent_id: number; parent_name: string | null; new_topic_count: number },
   threads: ThreadRow[],
   user: SessionUser | null,
 ): string {
   const newTopicLink = user
     ? `<p style="margin-bottom:10px"><a href="/board/${board.id}/new" class="btn" style="display:inline-block;text-decoration:none">+ New topic</a></p>`
-    : `<p style="margin-bottom:10px"><a href="/login">Login</a> to start a new topic.</p>`;
+    : `<p style="margin-bottom:10px"><a href="/login">Login</a> to start a new topic and track new topics and replies.</p>`;
 
   const rows =
     threads.length === 0
@@ -522,7 +532,7 @@ export function threadListPage(
         : []),
       { label: board.name },
     ])}
-    <h2 class="page-title">${escapeHtml(board.name)}</h2>
+    <h2 class="page-title">${escapeHtml(board.name)}${user ? newTopicsBadge(board.new_topic_count) : ""}</h2>
     ${newTopicLink}
     <table class="forum">
       <tr>

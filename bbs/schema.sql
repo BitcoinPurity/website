@@ -46,6 +46,13 @@ CREATE TABLE IF NOT EXISTS posts (
   created_at INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS thread_reads (
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  thread_id INTEGER NOT NULL REFERENCES threads(id),
+  last_read_post_id INTEGER NOT NULL,
+  PRIMARY KEY (user_id, thread_id)
+);
+
 CREATE TABLE IF NOT EXISTS badges (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
