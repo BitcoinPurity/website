@@ -12,6 +12,49 @@ const sitemap = readFileSync(
   "utf8",
 );
 
+test("all languages show v1.0.0 as the latest stable release and use its download and source tag", () => {
+  for (const [locale, stable, latest] of [
+    ["en", "stable release", "Latest release"],
+    ["zh-CN", "正式版", "最新版本"],
+    ["zh-TW", "正式版", "最新版本"],
+  ]) {
+    for (const route of routes) {
+      const path = localePath(route, locale).replace(/\/$/, "");
+      const html = readFileSync(
+        new URL(`../out${path}/index.html`, import.meta.url),
+        "utf8",
+      );
+      const text = html.replace(/<script[\s\S]*?<\/script>/g, "");
+      assert.ok(
+        !/v?1\.0\.0rc\d+/.test(html),
+        `${path}: obsolete release candidate`,
+      );
+      if (["/", "/run", "/miners", "/developers", "/faq"].includes(route)) {
+        assert.ok(text.includes("v1.0.0"), path);
+        assert.ok(text.toLowerCase().includes(stable), path);
+        assert.ok(
+          !/\(release candidate\)|（候选发布版）|（候選發布版）/.test(text),
+          `${path}: release candidate label`,
+        );
+      }
+      if (["/", "/run", "/miners"].includes(route)) {
+        assert.ok(text.includes(latest), path);
+        assert.ok(
+          text.includes('href="https://github.com/saltduck/bitcoinpurity/releases/tag/v1.0.0"'),
+          path,
+        );
+        assert.ok(
+          text.includes('href="https://github.com/saltduck/bitcoinpurity/tree/v1.0.0"'),
+          path,
+        );
+      }
+      if (route === "/run") {
+        assert.ok(text.includes("git checkout v1.0.0"), path);
+      }
+    }
+  }
+});
+
 test("all 33 static pages have localized content, metadata and working Worker asset aliases", async () => {
   for (const locale of locales) {
     for (const route of routes) {

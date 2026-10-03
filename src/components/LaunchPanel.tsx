@@ -34,18 +34,18 @@ export function LaunchPanel({
       <dl>
         <div className="border-b border-line-gold px-5 py-5 sm:px-6">
           <dt className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
-            {t("Release")}
+            {t("Latest release")}
           </dt>
           <dd className="mt-3">
             <div className="flex flex-wrap items-end gap-3">
               <p className="font-sans text-2xl font-bold leading-none tracking-tight text-ink sm:text-3xl">
                 {launch.releaseTag}
               </p>
-              {version.isReleaseCandidate ? (
-                <span className="rounded border border-gold px-2 py-0.5 font-mono text-[10px] tracking-[0.12em] text-gold uppercase">
-                  {t("Release candidate")}
-                </span>
-              ) : null}
+              <span className="rounded border border-gold px-2 py-0.5 font-mono text-[10px] tracking-[0.12em] text-gold uppercase">
+                {version.isReleaseCandidate
+                  ? t("Release candidate")
+                  : t("Stable release")}
+              </span>
               <CopyableMono locale={locale} value={launch.releaseTag}>
                 <span className="sr-only">{launch.releaseTag}</span>
               </CopyableMono>
@@ -56,7 +56,6 @@ export function LaunchPanel({
             <span className="font-mono text-ink">MAJOR.MINOR.PATCH</span>{" "}
             {t("version series (for example")}{" "}
             <span className="font-mono text-ink">{"v1.0.0"}</span>
-            {t(",")} <span className="font-mono text-ink">{"v1.0.0rc3"}</span>
             {t(
               "). This is independent of the upstream Bitcoin Knots version. Current build:",
             )}{" "}

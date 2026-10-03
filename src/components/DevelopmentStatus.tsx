@@ -30,7 +30,9 @@ export function DevelopmentStatus({
         >
           {protocol.launch.releaseTag}
         </ExternalLink>
-        {protocol.version.isReleaseCandidate ? t(" (release candidate)") : ""}{" "}
+        {protocol.version.isReleaseCandidate
+          ? t(" (release candidate)")
+          : t(" (stable release)")}{" "}
         {t(
           "includes binaries; you can also clone that tag and build it yourself. Versioning follows the independent",
         )}{" "}

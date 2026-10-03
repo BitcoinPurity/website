@@ -39,7 +39,7 @@ export default function RunPage({ locale = "en" }: LocalizedProps = {}) {
             </span>
             {protocol.version.isReleaseCandidate
               ? t(" (release candidate)")
-              : ""}
+              : t(" (stable release)")}
             {t(
               ". Prefer verifying checksums from the release page before you run anything.",
             )}

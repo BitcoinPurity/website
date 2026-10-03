@@ -44,7 +44,9 @@ export default function DevelopersPage({ locale = "en" }: LocalizedProps = {}) {
           <span className="font-mono text-ink">
             {protocol.launch.releaseTag}
           </span>
-          {protocol.version.isReleaseCandidate ? t(" (release candidate)") : ""}
+          {protocol.version.isReleaseCandidate
+            ? t(" (release candidate)")
+            : t(" (stable release)")}
           {t(". Versioning is defined in")}{" "}
           <ExternalLink
             locale={locale}

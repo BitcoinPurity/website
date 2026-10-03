@@ -312,7 +312,6 @@
   "convention described in": "規則，詳見",
   "Settlement safety during the transition": "過渡期的結算安全",
   "Bitcoin Purity mainnet launched at": "Bitcoin Purity 主網啟動於",
-  "Release": "發布版本",
   "Release candidate": "候選發布版",
   "Bitcoin Purity now uses its own": "Bitcoin Purity 現使用獨立的",
   "version series (for example": "版本系列（例如",
@@ -461,9 +460,9 @@
   "If connecting a block would rewind the active chain by more than six blocks, the node parks that block for operator review instead of automatically reorganizing. This is local policy, not a consensus rule.": "如果連線某個區塊會讓活躍鏈回退超過六個區塊，節點會暫存該區塊，交由運營者審查，而非自動重組。這是本地策略，不是共識規則。",
   "ACTIVE CHAIN\nA → B → C → D → E → F → G\n\nCOMPETING CHAIN\nA → B → C → X → Y → Z → ...\n\nREORG DEPTH > 6\n        ↓\n      PARK\n        ↓\nOPERATOR REVIEW": "活躍鏈\nA → B → C → D → E → F → G\n\n競爭鏈\nA → B → C → X → Y → Z → ...\n\n重組深度 > 6\n        ↓\n      暫存\n        ↓\n運營者審查",
   "How are Bitcoin Purity versions numbered?": "Bitcoin Purity 如何編號版本？",
-  "Bitcoin Purity now uses its own independent MAJOR.MINOR.PATCH release series. The current mainnet release is {0}{1}. Git tags use a leading v (for example v1.0.0, v1.0.0rc3). This is separate from the upstream Bitcoin Knots version ({2}) and the Bitcoin Core consensus baseline ({3}). On the P2P network, nodes identify as {4}. Older date-based tags such as {5} are legacy identifiers. See doc/VERSION.md in the repository for the full convention.": "Bitcoin Purity 現採用獨立的 MAJOR.MINOR.PATCH 版本系列。目前主網版本為 {0}{1}。Git 標籤以 v 開頭（例如 v1.0.0、v1.0.0rc3），獨立於上游 Bitcoin Knots 版本（{2}）和 Bitcoin Core 共識基線（{3}）。在 P2P 網路中，節點標識為 {4}。過去基於日期的標籤（例如 {5}）屬於舊版標識。完整規則見程式碼儲存庫的 doc/VERSION.md。",
+  "Bitcoin Purity now uses its own independent MAJOR.MINOR.PATCH release series. The latest mainnet release is {0}{1}. Git tags use a leading v (for example v1.0.0). This is separate from the upstream Bitcoin Knots version ({2}) and the Bitcoin Core consensus baseline ({3}). On the P2P network, nodes identify as {4}. Older date-based tags such as {5} are legacy identifiers. See doc/VERSION.md in the repository for the full convention.": "Bitcoin Purity 現採用獨立的 MAJOR.MINOR.PATCH 版本系列。最新主網版本為 {0}{1}。Git 標籤以 v 開頭（例如 v1.0.0），獨立於上游 Bitcoin Knots 版本（{2}）和 Bitcoin Core 共識基線（{3}）。在 P2P 網路中，節點標識為 {4}。過去基於日期的標籤（例如 {5}）屬於舊版標識。完整規則見程式碼儲存庫的 doc/VERSION.md。",
   "Is Bitcoin Purity live on mainnet?": "Bitcoin Purity 主網已上線嗎？",
-  "Yes. Mainnet launched at {0}, at block height {1}. Mainnet activation is hardcoded, and the activation block is consensus-pinned to {2}. The official release is {3} (source and binaries). If an existing block index contains a conflicting block at the activation height after upgrading, rebuild it with -reindex. Trial solo pool endpoints are {4} and {5} (port 4444 for low-hash-rate miners).": "是。主網於 {0} 啟動，區塊高度為 {1}。主網啟用規則已硬編碼，啟用區塊由共識固定為 {2}。官方發布版為 {3}，包含原始碼和二進位程式。如果升級後現有區塊索引在啟用高度包含衝突區塊，請使用 -reindex 重建。試驗單挖礦池端點為 {4} 和 {5}，其中連接埠 4444 面向低算力礦工。",
+  "Yes. Mainnet launched at {0}, at block height {1}. Mainnet activation is hardcoded, and the activation block is consensus-pinned to {2}. The latest official stable release is {3} (source and binaries). If an existing block index contains a conflicting block at the activation height after upgrading, rebuild it with -reindex. Trial solo pool endpoints are {4} and {5} (port 4444 for low-hash-rate miners).": "是。主網於 {0} 啟動，區塊高度為 {1}。主網啟用規則已硬編碼，啟用區塊由共識固定為 {2}。最新官方正式版為 {3}，包含原始碼和二進位程式。如果升級後現有區塊索引在啟用高度包含衝突區塊，請使用 -reindex 重建。試驗單挖礦池端點為 {4} 和 {5}，其中連接埠 4444 面向低算力礦工。",
   "Is Bitcoin Purity a new cryptocurrency?": "Bitcoin Purity 是新的加密貨幣嗎？",
   "No. Bitcoin Purity does not position itself as a newly issued asset and does not introduce a ticker. It is a Bitcoin full node that claims continuity with Bitcoin: the same addresses, transaction serialization, sighash, P2P magic, default port, binary names, and default data directory. The project is a path for Bitcoin, not another coin.": "不是。Bitcoin Purity 不將自己定位為新發行的資產，也不引入新交易程式碼。它是主張延續比特幣的全節點：保留相同的地址、交易序列化、sighash、P2P 魔數、預設連接埠、二進位程式名稱和預設資料目錄。專案為比特幣提供一條路徑，而非另造一種幣。",
   "Why is a hard fork necessary?": "為什麼需要硬分叉？",
@@ -522,5 +521,8 @@
   "(": "（",
   ")": "）",
   ").": "）。",
-  "),": "），"
+  "),": "），",
+  "(stable release)": "（正式版）",
+  "Stable release": "正式版",
+  "Latest release": "最新版本"
 }

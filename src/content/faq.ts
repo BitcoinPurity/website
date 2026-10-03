@@ -8,9 +8,11 @@ export function getFaqItems(locale: Locale = "en") {
       id: "versioning",
       question: t("How are Bitcoin Purity versions numbered?"),
       answer: t(
-        "Bitcoin Purity now uses its own independent MAJOR.MINOR.PATCH release series. The current mainnet release is {0}{1}. Git tags use a leading v (for example v1.0.0, v1.0.0rc3). This is separate from the upstream Bitcoin Knots version ({2}) and the Bitcoin Core consensus baseline ({3}). On the P2P network, nodes identify as {4}. Older date-based tags such as {5} are legacy identifiers. See doc/VERSION.md in the repository for the full convention.",
+        "Bitcoin Purity now uses its own independent MAJOR.MINOR.PATCH release series. The latest mainnet release is {0}{1}. Git tags use a leading v (for example v1.0.0). This is separate from the upstream Bitcoin Knots version ({2}) and the Bitcoin Core consensus baseline ({3}). On the P2P network, nodes identify as {4}. Older date-based tags such as {5} are legacy identifiers. See doc/VERSION.md in the repository for the full convention.",
         protocol.launch.releaseTag,
-        protocol.version.isReleaseCandidate ? t(" (release candidate)") : "",
+        protocol.version.isReleaseCandidate
+          ? t(" (release candidate)")
+          : t(" (stable release)"),
         protocol.knotsBase,
         protocol.coreConsensusBaseline,
         protocol.version.p2pUserAgent,
@@ -21,7 +23,7 @@ export function getFaqItems(locale: Locale = "en") {
       id: "mainnet",
       question: t("Is Bitcoin Purity live on mainnet?"),
       answer: t(
-        "Yes. Mainnet launched at {0}, at block height {1}. Mainnet activation is hardcoded, and the activation block is consensus-pinned to {2}. The official release is {3} (source and binaries). If an existing block index contains a conflicting block at the activation height after upgrading, rebuild it with -reindex. Trial solo pool endpoints are {4} and {5} (port 4444 for low-hash-rate miners).",
+        "Yes. Mainnet launched at {0}, at block height {1}. Mainnet activation is hardcoded, and the activation block is consensus-pinned to {2}. The latest official stable release is {3} (source and binaries). If an existing block index contains a conflicting block at the activation height after upgrading, rebuild it with -reindex. Trial solo pool endpoints are {4} and {5} (port 4444 for low-hash-rate miners).",
         launchDate(locale, protocol.launch.isoUtc),
         protocol.launch.activationHeight,
         protocol.activationBlockHash,

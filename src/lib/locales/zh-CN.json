@@ -312,7 +312,6 @@
   "convention described in": "规则，详见",
   "Settlement safety during the transition": "过渡期的结算安全",
   "Bitcoin Purity mainnet launched at": "Bitcoin Purity 主网启动于",
-  "Release": "发布版本",
   "Release candidate": "候选发布版",
   "Bitcoin Purity now uses its own": "Bitcoin Purity 现使用独立的",
   "version series (for example": "版本系列（例如",
@@ -461,9 +460,9 @@
   "If connecting a block would rewind the active chain by more than six blocks, the node parks that block for operator review instead of automatically reorganizing. This is local policy, not a consensus rule.": "如果连接某个区块会让活跃链回退超过六个区块，节点会暂存该区块，交由运营者审查，而非自动重组。这是本地策略，不是共识规则。",
   "ACTIVE CHAIN\nA → B → C → D → E → F → G\n\nCOMPETING CHAIN\nA → B → C → X → Y → Z → ...\n\nREORG DEPTH > 6\n        ↓\n      PARK\n        ↓\nOPERATOR REVIEW": "活跃链\nA → B → C → D → E → F → G\n\n竞争链\nA → B → C → X → Y → Z → ...\n\n重组深度 > 6\n        ↓\n      暂存\n        ↓\n运营者审查",
   "How are Bitcoin Purity versions numbered?": "Bitcoin Purity 如何编号版本？",
-  "Bitcoin Purity now uses its own independent MAJOR.MINOR.PATCH release series. The current mainnet release is {0}{1}. Git tags use a leading v (for example v1.0.0, v1.0.0rc3). This is separate from the upstream Bitcoin Knots version ({2}) and the Bitcoin Core consensus baseline ({3}). On the P2P network, nodes identify as {4}. Older date-based tags such as {5} are legacy identifiers. See doc/VERSION.md in the repository for the full convention.": "Bitcoin Purity 现采用独立的 MAJOR.MINOR.PATCH 版本系列。当前主网版本为 {0}{1}。Git 标签以 v 开头（例如 v1.0.0、v1.0.0rc3），独立于上游 Bitcoin Knots 版本（{2}）和 Bitcoin Core 共识基线（{3}）。在 P2P 网络中，节点标识为 {4}。过去基于日期的标签（例如 {5}）属于旧版标识。完整规则见代码仓库的 doc/VERSION.md。",
+  "Bitcoin Purity now uses its own independent MAJOR.MINOR.PATCH release series. The latest mainnet release is {0}{1}. Git tags use a leading v (for example v1.0.0). This is separate from the upstream Bitcoin Knots version ({2}) and the Bitcoin Core consensus baseline ({3}). On the P2P network, nodes identify as {4}. Older date-based tags such as {5} are legacy identifiers. See doc/VERSION.md in the repository for the full convention.": "Bitcoin Purity 现采用独立的 MAJOR.MINOR.PATCH 版本系列。最新主网版本为 {0}{1}。Git 标签以 v 开头（例如 v1.0.0），独立于上游 Bitcoin Knots 版本（{2}）和 Bitcoin Core 共识基线（{3}）。在 P2P 网络中，节点标识为 {4}。过去基于日期的标签（例如 {5}）属于旧版标识。完整规则见代码仓库的 doc/VERSION.md。",
   "Is Bitcoin Purity live on mainnet?": "Bitcoin Purity 主网已上线吗？",
-  "Yes. Mainnet launched at {0}, at block height {1}. Mainnet activation is hardcoded, and the activation block is consensus-pinned to {2}. The official release is {3} (source and binaries). If an existing block index contains a conflicting block at the activation height after upgrading, rebuild it with -reindex. Trial solo pool endpoints are {4} and {5} (port 4444 for low-hash-rate miners).": "是。主网于 {0} 启动，区块高度为 {1}。主网激活规则已硬编码，激活区块由共识固定为 {2}。官方发布版为 {3}，包含源码和二进制程序。如果升级后现有区块索引在激活高度包含冲突区块，请使用 -reindex 重建。试验单挖矿池端点为 {4} 和 {5}，其中端口 4444 面向低算力矿工。",
+  "Yes. Mainnet launched at {0}, at block height {1}. Mainnet activation is hardcoded, and the activation block is consensus-pinned to {2}. The latest official stable release is {3} (source and binaries). If an existing block index contains a conflicting block at the activation height after upgrading, rebuild it with -reindex. Trial solo pool endpoints are {4} and {5} (port 4444 for low-hash-rate miners).": "是。主网于 {0} 启动，区块高度为 {1}。主网激活规则已硬编码，激活区块由共识固定为 {2}。最新官方正式版为 {3}，包含源码和二进制程序。如果升级后现有区块索引在激活高度包含冲突区块，请使用 -reindex 重建。试验单挖矿池端点为 {4} 和 {5}，其中端口 4444 面向低算力矿工。",
   "Is Bitcoin Purity a new cryptocurrency?": "Bitcoin Purity 是新的加密货币吗？",
   "No. Bitcoin Purity does not position itself as a newly issued asset and does not introduce a ticker. It is a Bitcoin full node that claims continuity with Bitcoin: the same addresses, transaction serialization, sighash, P2P magic, default port, binary names, and default data directory. The project is a path for Bitcoin, not another coin.": "不是。Bitcoin Purity 不将自己定位为新发行的资产，也不引入新交易代码。它是主张延续比特币的全节点：保留相同的地址、交易序列化、sighash、P2P 魔数、默认端口、二进制程序名称和默认数据目录。项目为比特币提供一条路径，而非另造一种币。",
   "Why is a hard fork necessary?": "为什么需要硬分叉？",
@@ -522,5 +521,8 @@
   "(": "（",
   ")": "）",
   ").": "）。",
-  "),": "），"
+  "),": "），",
+  "(stable release)": "（正式版）",
+  "Stable release": "正式版",
+  "Latest release": "最新版本"
 }
