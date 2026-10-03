@@ -14,3 +14,5 @@ BBS 公共 HTML 模板统一声明标签页图标，直接引用 `https://bitcoi
 BBS 位于 `bbs/`，采用 Hono、Cloudflare Worker 和 D1。版块以 `boards.parent_id` 区分分类与可发帖子版块。`Announcement` 属于 Bitcoin Purity 分类，`sort_order` 为 0；SQL 种子与运行时初始化按分类名称查找父级，幂等添加该版块，支持已迁移的分类 ID。
 
 `thread_reads` 以 `(user_id, thread_id)` 为主键保存 `last_read_post_id`。主题展示后仅记录本次响应中帖子 ID 的最大值，更新时取较大进度，避免同秒新回复漏计和并发旧响应覆盖新阅读进度。首页、分类页和版块页按当前账号统计存在更大帖子 ID 的主题数；统计与列表分页无关。SQL 建表和运行时初始化同步添加该表。
+
+公共计数徽标在数量为 0 时不输出 HTML，首页、分类页和版块页使用一致的隐藏规则。

@@ -11,3 +11,5 @@ Bitcoin Purity 最新正式版本下载地址为 `https://github.com/saltduck/bi
 BBS 的 Announcement 复用现有 `/board/:id`、`/board/:id/new` 与帖子回复路由；版块 ID 由数据库分配，入口从首页与 Bitcoin Purity 分类页生成。发帖仍遵循已有登录和限流规则，无新增 API。
 
 BBS 的 `GET /`、`GET /category/:id`、`GET /board/:id` 显示当前登录账号的各版未读主题数量，浏览列表不写入阅读记录。成功打开 `GET /thread/:id` 后，以本次展示过的帖子 ID 更新该账号的主题阅读进度；未登录请求不保存。上述页面使用 `Cache-Control: private, no-store`，防止缓存复用过期或其他账号的计数。无新增公开 API。
+
+数量为 0 时页面不显示未读徽标；数据库计数和路由行为不变。

@@ -389,6 +389,7 @@ export type CategorySection = {
 };
 
 function newTopicsBadge(count: number): string {
+  if (count === 0) return "";
   return `<span class="new-topics" title="Unread topics, including new replies. Open a topic to mark it read.">${count} new topic${count === 1 ? "" : "s"}</span>`;
 }
 

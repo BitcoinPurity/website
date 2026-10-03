@@ -194,7 +194,9 @@ test("new topics are counted once per unread thread across home, category and bo
   assert.equal((await getBoard(db, 21, 1)).new_topic_count, 1);
   assert.equal((await getBoard(db, 11, 2)).new_topic_count, 2);
   await request("/thread/2");
-  assert.match(await request("/board/11"), /0 new topics/);
+  for (const path of ["/", "/category/1", "/board/11"]) {
+    assert.ok(!(await request(path)).includes("0 new topics"), `${path}: zero unread count`);
+  }
 
   sqlite.exec(`INSERT INTO posts (id, thread_id, parent_id, user_id, author, body, created_at) VALUES
     (40, 1, 10, 3, 'writer', 'Same-second reply', 100),
