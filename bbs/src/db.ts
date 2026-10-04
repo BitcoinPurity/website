@@ -63,6 +63,7 @@ export async function ensureSchema(db: D1Database): Promise<void> {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       parent_id INTEGER REFERENCES boards(id),
       name TEXT NOT NULL,
+      slug TEXT,
       description TEXT NOT NULL,
       is_archived INTEGER NOT NULL DEFAULT 0,
       sort_order INTEGER NOT NULL DEFAULT 0
@@ -134,6 +135,12 @@ export async function ensureSchema(db: D1Database): Promise<void> {
   await migrateReputationColumns(db);
   await migratePostParentId(db);
   await migrateAdminColumns(db);
+  const boardColumns = await db.prepare("PRAGMA table_info(boards)").all<{ name: string }>();
+  if (!(boardColumns.results ?? []).some((column) => column.name === "slug")) {
+    await db.prepare("ALTER TABLE boards ADD COLUMN slug TEXT").run();
+  }
+  await db.prepare("CREATE UNIQUE INDEX IF NOT EXISTS idx_boards_slug ON boards(slug)").run();
+  await migrateBoardSlugs(db);
   await seedBadgesIfEmpty(db);
   await backfillReputationIfNeeded(db);
 
@@ -294,6 +301,25 @@ export async function seedBoardsIfEmpty(db: D1Database): Promise<void> {
 
   await db.prepare("INSERT OR IGNORE INTO bbs_migrations (name) VALUES ('board_hierarchy')").run();
   await seedAnnouncementBoard(db);
+  await migrateBoardSlugs(db);
+}
+
+export async function migrateBoardSlugs(db: D1Database): Promise<void> {
+  const { results } = await db.prepare("SELECT id,name,slug FROM boards ORDER BY id")
+    .all<{ id: number; name: string; slug: string | null }>();
+  const boards = results ?? [];
+  const used = new Set(boards.flatMap((board) => board.slug ? [board.slug] : []));
+  const updates: D1PreparedStatement[] = [];
+  for (const board of boards) {
+    if (board.slug) continue;
+    let base = board.name.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "") || "board";
+    if (/^\d+$/.test(base)) base = `board-${base}`;
+    let slug = base;
+    for (let suffix = 2; used.has(slug); suffix++) slug = `${base}-${suffix}`;
+    used.add(slug);
+    updates.push(db.prepare("UPDATE boards SET slug=? WHERE id=? AND slug IS NULL").bind(slug, board.id));
+  }
+  if (updates.length) await db.batch(updates);
 }
 
 async function seedAnnouncementBoard(db: D1Database): Promise<void> {
@@ -839,6 +865,7 @@ export async function deleteSession(
 
 export type BoardStats = {
   id: number;
+  slug: string;
   name: string;
   description: string;
   thread_count: number;
@@ -851,6 +878,7 @@ export type BoardStats = {
 
 export type CategorySection = {
   id: number;
+  slug: string;
   name: string;
   description: string;
   boards: BoardStats[];
@@ -868,7 +896,7 @@ const newTopicCountQuery = `
 
 const boardStatsQuery = `
   SELECT
-    b.id, b.name, b.description,
+    b.id, b.slug, b.name, b.description,
     COUNT(DISTINCT t.id) AS thread_count,
     COUNT(p.id) AS post_count,
     ${newTopicCountQuery} AS new_topic_count,
@@ -887,9 +915,9 @@ export async function getBoardIndex(
 ): Promise<CategorySection[]> {
   const { results: categories } = await db
     .prepare(
-      "SELECT id, name, description FROM boards WHERE parent_id IS NULL AND is_archived = 0 ORDER BY sort_order, id",
+      "SELECT id, slug, name, description FROM boards WHERE parent_id IS NULL AND is_archived = 0 ORDER BY sort_order, id",
     )
-    .all<{ id: number; name: string; description: string }>();
+    .all<{ id: number; slug: string; name: string; description: string }>();
 
   const sections: CategorySection[] = [];
   for (const category of categories ?? []) {
@@ -916,20 +944,20 @@ export async function getBoardIndex(
 
 export async function getCategory(
   db: D1Database,
-  id: number,
+  id: number | string,
   userId: number | null = null,
 ): Promise<CategorySection | null> {
   const category = await db
     .prepare(
-      "SELECT id, name, description FROM boards WHERE id = ? AND parent_id IS NULL AND is_archived = 0",
+      `SELECT id, slug, name, description FROM boards WHERE ${typeof id === "number" ? "id" : "slug"} = ? AND parent_id IS NULL AND is_archived = 0`,
     )
     .bind(id)
-    .first<{ id: number; name: string; description: string }>();
+    .first<{ id: number; slug: string; name: string; description: string }>();
   if (!category) return null;
 
   const { results: children } = await db
     .prepare("SELECT id FROM boards WHERE parent_id = ? AND is_archived = 0 ORDER BY sort_order, id")
-    .bind(id)
+    .bind(category.id)
     .all<{ id: number }>();
 
   const boards: BoardStats[] = [];
@@ -946,36 +974,40 @@ export async function getCategory(
 
 export async function getBoard(
   db: D1Database,
-  id: number,
+  id: number | string,
   userId: number | null = null,
 ): Promise<{
   id: number;
+  slug: string;
   name: string;
   parent_id: number | null;
   parent_name: string | null;
+  parent_slug: string | null;
   new_topic_count: number;
 } | null> {
   return db
     .prepare(
-      `SELECT b.id, b.name, b.parent_id, p.name AS parent_name,
+      `SELECT b.id, b.slug, b.name, b.parent_id, p.name AS parent_name, p.slug AS parent_slug,
               ${newTopicCountQuery} AS new_topic_count
        FROM boards b
        LEFT JOIN boards p ON p.id = b.parent_id
-       WHERE b.id = ? AND b.is_archived = 0 AND (b.parent_id IS NULL OR p.is_archived = 0)`,
+       WHERE b.${typeof id === "number" ? "id" : "slug"} = ? AND b.is_archived = 0 AND (b.parent_id IS NULL OR p.is_archived = 0)`,
     )
     .bind(userId, userId, id)
     .first<{
       id: number;
+      slug: string;
       name: string;
       parent_id: number | null;
       parent_name: string | null;
+      parent_slug: string | null;
       new_topic_count: number;
     }>();
 }
 
 export function isLeafBoard(
   board: { parent_id: number | null } | null,
-): board is { parent_id: number; name: string; id: number; parent_name: string | null } {
+): board is { parent_id: number; name: string; id: number; slug: string; parent_name: string | null; parent_slug: string } {
   return board != null && board.parent_id != null;
 }
 

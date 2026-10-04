@@ -125,16 +125,16 @@ app.get("/", async (c) => {
   return c.html(boardIndexPage(sections, user));
 });
 
-app.get("/category/:id", async (c) => {
+app.get("/category/:slug", async (c) => {
   c.header("Cache-Control", "private, no-store");
   const user = await readSessionUser(c);
-  const categoryId = Number(c.req.param("id"));
-  if (!Number.isInteger(categoryId) || categoryId < 1) {
-    return c.html(errorPage("Invalid category.", user), 400);
-  }
-
-  const section = await getCategory(c.env.DB, categoryId, user?.id ?? null);
+  const slug = c.req.param("slug");
+  const legacyId = /^\d+$/.test(slug) ? Number(slug) : null;
+  const section = await getCategory(c.env.DB, legacyId ?? slug, user?.id ?? null);
   if (!section) return c.html(errorPage("Category not found.", user), 404);
+  if (legacyId !== null) {
+    return c.redirect(`/category/${encodeURIComponent(section.slug)}${new URL(c.req.url).search}`, 301);
+  }
 
   return c.html(categoryPage(section, user));
 });
@@ -337,55 +337,47 @@ app.post("/logout", async (c) => {
   return c.redirect("/", 303);
 });
 
-app.get("/board/:id", async (c) => {
+app.get("/board/:slug", async (c) => {
   c.header("Cache-Control", "private, no-store");
   const user = await readSessionUser(c);
-  const boardId = Number(c.req.param("id"));
-  if (!Number.isInteger(boardId) || boardId < 1) {
-    return c.html(errorPage("Invalid board.", user), 400);
-  }
-
-  const board = await getBoard(c.env.DB, boardId, user?.id ?? null);
+  const slug = c.req.param("slug");
+  const legacyId = /^\d+$/.test(slug) ? Number(slug) : null;
+  const board = await getBoard(c.env.DB, legacyId ?? slug, user?.id ?? null);
   if (!board) return c.html(errorPage("Board not found.", user), 404);
   if (!isLeafBoard(board)) {
-    return c.redirect(`/category/${board.id}`, 303);
+    return c.redirect(`/category/${encodeURIComponent(board.slug)}${new URL(c.req.url).search}`, 303);
+  }
+  if (legacyId !== null) {
+    return c.redirect(`/board/${encodeURIComponent(board.slug)}${new URL(c.req.url).search}`, 301);
   }
 
-  const threads = await getThreads(c.env.DB, boardId);
+  const threads = await getThreads(c.env.DB, board.id);
   return c.html(threadListPage(board, threads, user));
 });
 
-app.get("/board/:id/new", async (c) => {
+app.get("/board/:slug/new", async (c) => {
+  c.header("Cache-Control", "private, no-store");
   const user = await readSessionUser(c);
-  if (!user) {
-    const boardId = c.req.param("id");
-    return c.redirect(`/login?next=${encodeURIComponent(`/board/${boardId}/new`)}`, 303);
-  }
-
-  const boardId = Number(c.req.param("id"));
-  if (!Number.isInteger(boardId) || boardId < 1) {
-    return c.html(errorPage("Invalid board.", user), 400);
-  }
-
-  const board = await getBoard(c.env.DB, boardId);
+  const slug = c.req.param("slug");
+  const legacyId = /^\d+$/.test(slug) ? Number(slug) : null;
+  const board = await getBoard(c.env.DB, legacyId ?? slug);
   if (!board) return c.html(errorPage("Board not found.", user), 404);
   if (!isLeafBoard(board)) {
     return c.html(errorPage("Choose a sub-board to post in.", user), 400);
   }
+  const path = `/board/${encodeURIComponent(board.slug)}/new${new URL(c.req.url).search}`;
+  if (legacyId !== null) return c.redirect(path, 301);
+  if (!user) return c.redirect(`/login?next=${encodeURIComponent(path)}`, 303);
 
   return c.html(newThreadPage(board, user));
 });
 
-app.post("/board/:id/new", async (c) => {
+app.post("/board/:slug/new", async (c) => {
   const user = await readSessionUser(c);
   if (!user) return c.redirect("/login", 303);
 
-  const boardId = Number(c.req.param("id"));
-  if (!Number.isInteger(boardId) || boardId < 1) {
-    return c.html(errorPage("Invalid board.", user), 400);
-  }
-
-  const board = await getBoard(c.env.DB, boardId);
+  const slug = c.req.param("slug");
+  const board = await getBoard(c.env.DB, /^\d+$/.test(slug) ? Number(slug) : slug);
   if (!board) return c.html(errorPage("Board not found.", user), 404);
   if (!isLeafBoard(board)) {
     return c.html(errorPage("Choose a sub-board to post in.", user), 400);
@@ -410,7 +402,7 @@ app.post("/board/:id/new", async (c) => {
 
   const threadId = await createThread(
     c.env.DB,
-    boardId,
+    board.id,
     user.id,
     user.username,
     body,

@@ -64,17 +64,142 @@ test("new BBS databases show Announcement first and expose its existing topic fl
     await seedBoardsIfEmpty(db);
     const sections = await getBoardIndex(db);
     const category = sections.find((section) => section.name === "Bitcoin Purity");
+    assert.equal(category.slug, "bitcoin-purity");
     assert.equal(category.boards[0].name, "Announcement");
     assert.equal(category.boards.filter((board) => board.name === "Announcement").length, 1);
     const board = category.boards[0];
     assert.match(board.description, /Official announcements/);
-    assert.ok(boardIndexPage(sections, null).includes(`href="/board/${board.id}">Announcement`));
+    assert.ok(boardIndexPage(sections, null).includes(`href="/board/${board.slug}">Announcement`));
     const detail = await getBoard(db, board.id);
     assert.equal(detail.parent_id, category.id);
     const user = { id: 1, email: null, username: "publisher", points: 0, level: "Newbie" };
-    assert.ok(threadListPage(detail, [], user).includes(`href="/board/${board.id}/new"`));
+    assert.ok(threadListPage(detail, [], user).includes(`href="/board/${board.slug}/new"`));
   } finally {
     sqlite.close();
+  }
+});
+
+test("category slug migration preserves existing board slugs, content and reading progress", async (t) => {
+  const { sqlite, db } = await readingFixture(t);
+  sqlite.exec("UPDATE boards SET slug=NULL WHERE parent_id IS NULL");
+  sqlite.exec(`INSERT INTO boards(id,parent_id,name,description,sort_order) VALUES
+    (60,NULL,'General Discussion','Duplicate',5), (61,NULL,'中文分类','Unicode',6)`);
+  const boards = sqlite.prepare("SELECT * FROM boards WHERE parent_id IS NOT NULL ORDER BY id").all();
+  const threads = sqlite.prepare("SELECT * FROM threads").all();
+  const posts = sqlite.prepare("SELECT * FROM posts").all();
+  await markThreadRead(db, 1, 1, 10);
+  await ensureSchema(db);
+  assert.equal((await getCategory(db, "bitcoin-purity")).id, 1);
+  assert.equal((await getCategory(db, "general-discussion-2")).id, 60);
+  assert.equal(await getCategory(db, "general-discussion"), null);
+  const slugs = sqlite.prepare("SELECT id,slug FROM boards ORDER BY id").all();
+  sqlite.exec("UPDATE boards SET name='Renamed category' WHERE id=1");
+  await ensureSchema(db);
+  assert.deepEqual(sqlite.prepare("SELECT id,slug FROM boards ORDER BY id").all(), slugs);
+  assert.deepEqual(sqlite.prepare("SELECT * FROM boards WHERE parent_id IS NOT NULL ORDER BY id").all(), boards);
+  assert.deepEqual(sqlite.prepare("SELECT * FROM threads").all(), threads);
+  assert.deepEqual(sqlite.prepare("SELECT * FROM posts").all(), posts);
+  assert.equal(sqlite.prepare("SELECT last_read_post_id FROM thread_reads WHERE user_id=1 AND thread_id=1").get().last_read_post_id, 10);
+  const encoded = encodeURIComponent("中文分类");
+  assert.equal((await app.request(`https://bbs.example/category/${encoded}`, {}, { DB: db })).status, 200);
+  const legacy = await app.request("https://bbs.example/category/61?q=1", {}, { DB: db });
+  assert.equal(legacy.status, 301);
+  assert.equal(legacy.headers.get("Location"), `/category/${encoded}?q=1`);
+});
+
+test("category links use slugs while thread links and replies retain IDs", async (t) => {
+  const { db, request } = await readingFixture(t);
+  for (const path of ["/", "/board/general-discussion", "/thread/1", "/thread/1?reply_to=10", "/board/general-discussion/new"]) {
+    const html = await request(path);
+    assert.match(html, /href="\/category\/bitcoin-purity"/);
+    assert.doesNotMatch(html, /href="\/category\/\d/);
+    if (path === "/" || path === "/board/general-discussion") assert.match(html, /href="\/thread\/1"/);
+    if (path === "/thread/1?reply_to=10") assert.match(html, /action="\/thread\/1\/reply"/);
+  }
+  const response = await app.request("https://bbs.example/category/1?page=2", {}, { DB: db });
+  assert.equal(response.status, 301);
+  assert.equal(response.headers.get("Location"), "/category/bitcoin-purity?page=2");
+  assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+  const alias = await app.request("https://bbs.example/board/1?page=2", {}, { DB: db });
+  assert.equal(alias.headers.get("Location"), "/category/bitcoin-purity?page=2");
+  for (const path of ["/category/missing", "/category/general-discussion"]) {
+    assert.equal((await app.request(`https://bbs.example${path}`, {}, { DB: db })).status, 404);
+  }
+});
+
+test("board slugs migrate existing content once and remain unique and stable", async (t) => {
+  const { sqlite, db } = await readingFixture(t);
+  sqlite.exec("DROP INDEX IF EXISTS idx_boards_slug; ALTER TABLE boards DROP COLUMN slug");
+  sqlite.exec(`INSERT INTO boards(id,parent_id,name,description,sort_order) VALUES
+    (49,4,'Memes','Images',3), (50,4,'Memes','More images',4),
+    (51,4,'Memes-2','Existing suffix',5), (52,4,'123','Numeric',6),
+    (53,4,'中文讨论','Unicode',7), (54,4,'!!!','Symbols',8)`);
+  const threads = sqlite.prepare("SELECT * FROM threads").all();
+  const posts = sqlite.prepare("SELECT * FROM posts").all();
+  await markThreadRead(db, 1, 1, 10);
+  await ensureSchema(db);
+  const slugs = sqlite.prepare("SELECT id,slug FROM boards WHERE parent_id IS NOT NULL ORDER BY id").all();
+  assert.equal(sqlite.prepare("SELECT slug FROM boards WHERE id=49").get().slug, "memes");
+  assert.equal(sqlite.prepare("SELECT slug FROM boards WHERE id=52").get().slug, "board-123");
+  assert.equal(sqlite.prepare("SELECT slug FROM boards WHERE id=53").get().slug, "中文讨论");
+  assert.ok(slugs.every((b) => b.slug));
+  assert.equal(new Set(slugs.map((b) => b.slug)).size, slugs.length);
+  sqlite.exec("UPDATE boards SET name='Funny pictures',parent_id=1 WHERE id=49");
+  await ensureSchema(db);
+  assert.deepEqual(sqlite.prepare("SELECT id,slug FROM boards WHERE parent_id IS NOT NULL ORDER BY id").all(), slugs);
+  assert.deepEqual(sqlite.prepare("SELECT * FROM threads").all(), threads);
+  assert.deepEqual(sqlite.prepare("SELECT * FROM posts").all(), posts);
+  assert.equal(sqlite.prepare("SELECT last_read_post_id FROM thread_reads WHERE user_id=1 AND thread_id=1").get().last_read_post_id, 10);
+  assert.throws(() => sqlite.exec("UPDATE boards SET slug='memes' WHERE id=50"), /UNIQUE/);
+  const encoded = encodeURIComponent("中文讨论");
+  const response = await app.request(`https://bbs.example/board/${encoded}`, {}, { DB: db });
+  assert.equal(response.status, 200);
+  assert.match(await response.text(), /中文讨论/);
+  const redirect = await app.request("https://bbs.example/board/53", {}, { DB: db });
+  assert.equal(redirect.status, 301);
+  assert.equal(redirect.headers.get("Location"), `/board/${encoded}`);
+});
+
+test("slug URLs render board links, posting forms and topic breadcrumbs", async (t) => {
+  const { db, request } = await readingFixture(t);
+  for (const path of ["/", "/category/bitcoin-purity", "/thread/1", "/board/general-discussion/new"]) {
+    const html = await request(path);
+    assert.match(html, /href="\/board\/general-discussion"/);
+    assert.doesNotMatch(html, /(?:href|action)="\/board\/\d/);
+    if (path.endsWith("/new")) assert.match(html, /action="\/board\/general-discussion\/new"/);
+  }
+  assert.match(await request("/board/general-discussion"), /href="\/board\/general-discussion\/new"/);
+  const guest = await app.request("https://bbs.example/board/general-discussion/new", {}, { DB: db });
+  assert.equal(guest.status, 303);
+  assert.equal(guest.headers.get("Location"), "/login?next=%2Fboard%2Fgeneral-discussion%2Fnew");
+  for (const suffix of ["", "/new"]) {
+    const missing = await app.request(`https://bbs.example/board/missing${suffix}`, {}, { DB: db });
+    assert.equal(missing.status, 404);
+  }
+});
+
+test("legacy GET URLs redirect with queries and legacy POST still creates a topic", async (t) => {
+  const { sqlite, db } = await readingFixture(t);
+  for (const suffix of ["", "/new"]) {
+    const response = await app.request(`https://bbs.example/board/11${suffix}?page=2`, {}, { DB: db });
+    assert.equal(response.status, 301);
+    assert.equal(response.headers.get("Location"), `/board/general-discussion${suffix}?page=2`);
+  }
+  for (const boardPath of ["general-discussion", "11"]) {
+    const response = await app.request(`https://bbs.example/board/${boardPath}/new`, {
+      method: "POST", headers: { cookie: "bbs_session=test-reader" },
+      body: new URLSearchParams({ title: `From ${boardPath}`, body: "New opening message" }),
+    }, { DB: db });
+    assert.equal(response.status, 303);
+    const thread = sqlite.prepare("SELECT id,board_id FROM threads WHERE title=?").get(`From ${boardPath}`);
+    assert.equal(thread.board_id, 11);
+    assert.equal(response.headers.get("Location"), `/thread/${thread.id}`);
+  }
+  sqlite.exec("UPDATE boards SET is_archived=1 WHERE id=11");
+  for (const boardPath of ["general-discussion", "11"]) {
+    for (const suffix of ["", "/new"]) {
+      assert.equal((await app.request(`https://bbs.example/board/${boardPath}${suffix}`, {}, { DB: db })).status, 404);
+    }
   }
 });
 
@@ -139,6 +264,7 @@ test("legacy flat boards gain Announcement under the migrated Bitcoin Purity cat
     await ensureSchema(db);
     const category = (await getBoardIndex(db)).find((section) => section.name === "Bitcoin Purity");
     assert.notEqual(category.id, 1);
+    assert.equal(category.slug, "bitcoin-purity");
     assert.equal(category.boards[0].name, "Announcement");
     assert.equal(category.boards.filter((board) => board.name === "Announcement").length, 1);
     assert.equal(sqlite.prepare("SELECT board_id FROM threads WHERE id = 1").get().board_id, 1);
@@ -191,8 +317,8 @@ test("new topics are counted once per unread thread across home, category and bo
   assert.equal((await getCategory(db, 1, 1)).boards.find((b) => b.id === 11).new_topic_count, 2);
   assert.equal((await getBoardIndex(db, 1))[0].boards.find((b) => b.id === 11).new_topic_count, 2);
   assert.match(await request("/"), /General Discussion<\/a>[^]*?2 new topics/);
-  assert.match(await request("/category/1"), /General Discussion<\/a>[^]*?2 new topics/);
-  assert.match(await request("/board/11"), /General Discussion[^]*?2 new topics/);
+  assert.match(await request("/category/bitcoin-purity"), /General Discussion<\/a>[^]*?2 new topics/);
+  assert.match(await request("/board/general-discussion"), /General Discussion[^]*?2 new topics/);
   assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM thread_reads").get().n, 0);
 
   await request("/thread/1");
@@ -200,7 +326,7 @@ test("new topics are counted once per unread thread across home, category and bo
   assert.equal((await getBoard(db, 21, 1)).new_topic_count, 1);
   assert.equal((await getBoard(db, 11, 2)).new_topic_count, 2);
   await request("/thread/2");
-  for (const path of ["/", "/category/1", "/board/11"]) {
+  for (const path of ["/", "/category/bitcoin-purity", "/board/general-discussion"]) {
     assert.ok(!(await request(path)).includes("0 new topics"), `${path}: zero unread count`);
   }
 
@@ -251,12 +377,12 @@ test("board counts include unread topics beyond the first 100 displayed threads"
     sqlite.prepare("INSERT INTO posts (thread_id, user_id, author, body, created_at) VALUES (?, 3, 'writer', 'Extra post', 200)").run(100 + i);
   }
   assert.equal((await getBoard(db, 11, 1)).new_topic_count, 122);
-  assert.match(await request("/board/11"), /122 new topics/);
+  assert.match(await request("/board/general-discussion"), /122 new topics/);
 });
 
 test("guests get a login hint and never change another account's reading progress", async (t) => {
   const { sqlite, request } = await readingFixture(t);
-  for (const path of ["/", "/category/1", "/board/11"]) {
+  for (const path of ["/", "/category/bitcoin-purity", "/board/general-discussion"]) {
     const html = await request(path, null);
     assert.ok(html.includes("Login"));
     assert.ok(html.includes("track new topics"));
@@ -280,7 +406,7 @@ test("runtime migration adds reading records to an existing database without cha
 
 test("BBS page heads link independent same-origin forum icons", async (t) => {
   const { db } = await readingFixture(t);
-  for (const path of ["/", "/category/1", "/board/11", "/thread/1", "/login", "/register", "/reset-password", "/user/reader", "/board/999999"]) {
+  for (const path of ["/", "/category/bitcoin-purity", "/board/general-discussion", "/thread/1", "/login", "/register", "/reset-password", "/user/reader", "/board/999999"]) {
     const response = await app.request(`https://bbs.example${path}`, {}, { DB: db });
     assert.equal(response.status, path === "/board/999999" ? 404 : 200, path);
     const html = await response.text();

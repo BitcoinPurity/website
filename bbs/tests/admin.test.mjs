@@ -131,7 +131,7 @@ test("topic moderation hides content, pins, locks, moves and restores without ne
   assert.equal((await post("/admin/threads/1/delete")).status, 303);
   assert.equal((await request("/thread/1")).status, 404);
   assert.equal((await request("/thread/1/reply", "member-session", { method: "POST" })).status, 404);
-  assert.doesNotMatch(await (await request("/board/21")).text(), /Original topic/);
+  assert.doesNotMatch(await (await request("/board/pool-solo-mining")).text(), /Original topic/);
   assert.match(await (await request("/admin/threads/1")).text(), /SECRET REMOVED BODY/);
   assert.equal((await post("/admin/threads/1/restore")).status, 303);
   assert.equal((await request("/thread/1")).status, 200);
@@ -168,7 +168,7 @@ test("bans invalidate existing sessions, prevent login and allow guest reading a
   sqlite.prepare("UPDATE users SET password_hash=? WHERE id=2").run(await hashPassword("test-password"));
   assert.equal((await post("/admin/users/2/ban")).status, 303);
   assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM sessions WHERE user_id=2").get().n, 0);
-  assert.equal((await request("/board/11/new", "member-session")).status, 303);
+  assert.equal((await request("/board/general-discussion/new", "member-session")).status, 303);
   assert.equal((await request("/thread/1", "member-session")).status, 200);
   const login = () => request("/login", null, { method: "POST", body: new URLSearchParams({ username: "member", password: "test-password" }) });
   assert.equal((await login()).status, 401);
@@ -218,15 +218,45 @@ test("board management preserves two levels and independent archive states", asy
   assert.equal((await post("/admin/boards/11/update", { name: "Moved board", description: "updated", sort_order: "9", parent_id: String(category) })).status, 303);
   assert.equal((await post("/admin/boards/11/update", { name: "Invalid category", description: "updated", sort_order: "1", parent_id: "" })).status, 400);
   assert.equal((await post(`/admin/boards/${category}/archive`)).status, 303);
-  for (const path of [`/category/${category}`, "/board/11", "/board/11/new", "/thread/1"]) assert.equal((await request(path)).status, 404, path);
-  assert.equal((await request("/board/11/new", "member-session", { method: "POST" })).status, 404);
+  for (const path of [`/category/${category}`, "/board/general-discussion", "/board/general-discussion/new", "/thread/1"]) assert.equal((await request(path)).status, 404, path);
+  assert.equal((await request("/board/general-discussion/new", "member-session", { method: "POST" })).status, 404);
   assert.equal((await post("/admin/threads/2/move", { board_id: "11" })).status, 400);
   assert.equal((await post("/admin/boards/11/archive")).status, 303);
   assert.equal((await post(`/admin/boards/${category}/restore`)).status, 303);
-  assert.equal((await request(`/category/${category}`)).status, 200);
-  assert.equal((await request("/board/11")).status, 404);
+  assert.equal((await request("/category/new-category")).status, 200);
+  assert.equal((await request("/board/general-discussion")).status, 404);
   assert.equal((await post("/admin/boards/11/restore")).status, 303);
   assert.equal((await request("/thread/1")).status, 200);
+});
+
+test("category creation, renaming and archives preserve stable slugs", async (t) => {
+  const { sqlite, request, post } = await fixture(t);
+  for (let i = 0; i < 2; i++) {
+    assert.equal((await post("/admin/boards", { name: "General Discussion", description: "Category", sort_order: "5", parent_id: "" })).status, 303);
+  }
+  const categories = sqlite.prepare("SELECT id,slug FROM boards WHERE name='General Discussion' AND parent_id IS NULL ORDER BY id").all();
+  assert.deepEqual(categories.map((b) => b.slug), ["general-discussion-2", "general-discussion-3"]);
+  assert.equal((await post(`/admin/boards/${categories[0].id}/update`, { name: "Renamed category", description: "Category", sort_order: "5", parent_id: "" })).status, 303);
+  assert.match(await (await request("/category/general-discussion-2")).text(), /Renamed category/);
+  assert.equal((await post("/admin/boards/1/archive")).status, 303);
+  for (const path of ["/category/1", "/category/bitcoin-purity", "/board/general-discussion", "/thread/1"]) {
+    assert.equal((await request(path)).status, 404, path);
+  }
+  assert.equal((await post("/admin/boards/1/restore")).status, 303);
+  assert.equal((await request("/category/bitcoin-purity")).status, 200);
+});
+
+test("administrators create unique board slugs and renaming preserves public links", async (t) => {
+  const { sqlite, request, post } = await fixture(t);
+  for (let i = 0; i < 2; i++) {
+    assert.equal((await post("/admin/boards", { name: "Memes", description: "Images", sort_order: "3", parent_id: "4" })).status, 303);
+  }
+  const boards = sqlite.prepare("SELECT id,slug FROM boards WHERE name='Memes' ORDER BY id").all();
+  assert.deepEqual(boards.map((b) => b.slug), ["memes", "memes-2"]);
+  assert.equal((await request("/board/memes")).status, 200);
+  assert.equal((await post(`/admin/boards/${boards[0].id}/update`, { name: "Funny pictures", description: "Images", sort_order: "3", parent_id: "1" })).status, 303);
+  assert.match(await (await request("/board/memes")).text(), /Funny pictures/);
+  assert.equal(sqlite.prepare("SELECT slug FROM boards WHERE id=?").get(boards[0].id).slug, "memes");
 });
 
 test("admin lists paginate and preserve title, board, deletion and username filters", async (t) => {
@@ -302,7 +332,7 @@ test("posting rechecks moderation at write time and does not leave content or re
   assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM posts WHERE body='Must not appear'").get().n, 0);
   assert.equal(sqlite.prepare("SELECT reply_count FROM threads WHERE id=1").get().reply_count, 2);
   mode = "archive";
-  response = await request("/board/11/new", "member-session", { method: "POST", body: new URLSearchParams({ title: "Must not appear", body: "Must not appear" }) });
+  response = await request("/board/general-discussion/new", "member-session", { method: "POST", body: new URLSearchParams({ title: "Must not appear", body: "Must not appear" }) });
   assert.equal(response.status, 409);
   assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM threads WHERE title='Must not appear'").get().n, 0);
   assert.equal(sqlite.prepare("SELECT points FROM users WHERE id=2").get().points, 10);

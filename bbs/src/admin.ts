@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
 import { createSessionToken, getSessionUser, SESSION_COOKIE, type SessionUser } from "./auth";
-import { getBoard, isLeafBoard, type Env } from "./db";
+import { getBoard, isLeafBoard, migrateBoardSlugs, type Env } from "./db";
 import { errorPage } from "./html";
 import { adminHomePage, adminThreadsPage, adminThreadPage, adminUsersPage, adminBoardsPage, type AdminBoard, type AdminThread, type AdminPost, type AdminUser } from "./admin-html";
 
@@ -186,6 +186,7 @@ admin.post("/boards", async (c) => {
   const form = await c.req.parseBody();
   const fields = await boardFields(c.env.DB, form);
   await c.env.DB.prepare("INSERT INTO boards(name,description,sort_order,parent_id) VALUES(?,?,?,?)").bind(...fields).run();
+  await migrateBoardSlugs(c.env.DB);
   return c.redirect("/admin/boards", 303);
 });
 

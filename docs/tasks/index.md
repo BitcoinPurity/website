@@ -6,3 +6,4 @@
 - [TASK-004：BBS 未读主题计数](TASK-004.md)
 - [TASK-005：BBS 独立标签页图标](TASK-005.md)
 - [TASK-006：BBS 后台管理](TASK-006.md)
+- [TASK-007：BBS 分类与版块 slug 地址](TASK-007.md)

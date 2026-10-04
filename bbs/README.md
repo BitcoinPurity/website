@@ -77,6 +77,10 @@ npm run deploy -- --name bbs
 
 ## Boards
 
+Public categories use `/category/:slug`, boards use `/board/:slug` and new topics use `/board/:slug/new`. Slugs are generated from board names and stored with a unique index; duplicate names receive a numeric suffix. Renaming a board or moving it to another category keeps its URL. Legacy numeric GET URLs redirect permanently with query parameters preserved; existing numeric POST forms still work. Topic URLs retain their IDs. Category links and breadcrumbs use stored slugs; renaming a category preserves its URL. Categories and boards share the unique slug index, and existing board slugs are preserved during category backfill.
+
+Existing databases gain and backfill the slug column automatically after deployment. Do not rerun schema or seed scripts to upgrade an existing installation.
+
 - Announcement — official announcements, releases, and project updates; listed first under Bitcoin Purity. Added automatically to existing databases on the first request after deployment.
 - Bitcoin Purity Discussion
 - Mining

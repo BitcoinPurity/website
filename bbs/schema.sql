@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS boards (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   parent_id INTEGER REFERENCES boards(id),
   name TEXT NOT NULL,
+  slug TEXT,
   description TEXT NOT NULL,
   is_archived INTEGER NOT NULL DEFAULT 0,
   sort_order INTEGER NOT NULL DEFAULT 0
@@ -86,6 +87,7 @@ CREATE TABLE IF NOT EXISTS rate_limits (
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_reset_tokens_user ON password_reset_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_boards_parent ON boards(parent_id, sort_order);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_boards_slug ON boards(slug);
 CREATE INDEX IF NOT EXISTS idx_threads_board ON threads(board_id, last_post_at DESC);
 CREATE INDEX IF NOT EXISTS idx_posts_thread ON posts(thread_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_posts_parent ON posts(parent_id, created_at);

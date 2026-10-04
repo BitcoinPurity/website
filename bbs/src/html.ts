@@ -372,6 +372,7 @@ export function breadcrumb(items: { label: string; href?: string }[]): string {
 
 export type BoardStats = {
   id: number;
+  slug: string;
   name: string;
   description: string;
   thread_count: number;
@@ -384,6 +385,7 @@ export type BoardStats = {
 
 export type CategorySection = {
   id: number;
+  slug: string;
   name: string;
   description: string;
   boards: BoardStats[];
@@ -399,7 +401,7 @@ function boardStatsCells(b: BoardStats, showNewTopics: boolean): string {
     ? `<div class="lastpost"><a href="/thread/${b.last_thread_id}">${escapeHtml(b.last_thread_title ?? "")}</a><br>${formatDate(b.last_post_at)}</div>`
     : `<span style="color:#999">No posts yet</span>`;
   return `<td>
-      <div class="board-name"><a href="/board/${b.id}">${escapeHtml(b.name)}</a>${showNewTopics ? newTopicsBadge(b.new_topic_count) : ""}</div>
+      <div class="board-name"><a href="/board/${encodeURIComponent(b.slug)}">${escapeHtml(b.name)}</a>${showNewTopics ? newTopicsBadge(b.new_topic_count) : ""}</div>
       <div class="board-desc">${escapeHtml(b.description)}</div>
     </td>
     <td class="stats">${b.thread_count}<br><span style="color:#888">${b.post_count} posts</span></td>
@@ -425,7 +427,7 @@ export function boardIndexPage(
       return `<table class="forum">
       <tr class="category-head">
         <td colspan="3">
-          <a href="/category/${section.id}">${escapeHtml(section.name)}</a>
+          <a href="/category/${encodeURIComponent(section.slug)}">${escapeHtml(section.name)}</a>
           <div class="category-desc">${escapeHtml(section.description)}</div>
         </td>
       </tr>
@@ -503,17 +505,17 @@ export type ThreadRow = {
 };
 
 export function threadListPage(
-  board: { id: number; name: string; parent_id: number; parent_name: string | null; new_topic_count: number },
+  board: { id: number; slug: string; name: string; parent_id: number; parent_name: string | null; parent_slug: string; new_topic_count: number },
   threads: ThreadRow[],
   user: SessionUser | null,
 ): string {
   const newTopicLink = user
-    ? `<p style="margin-bottom:10px"><a href="/board/${board.id}/new" class="btn" style="display:inline-block;text-decoration:none">+ New topic</a></p>`
+    ? `<p style="margin-bottom:10px"><a href="/board/${encodeURIComponent(board.slug)}/new" class="btn" style="display:inline-block;text-decoration:none">+ New topic</a></p>`
     : `<p style="margin-bottom:10px"><a href="/login">Login</a> to start a new topic and track new topics and replies.</p>`;
 
   const rows =
     threads.length === 0
-      ? `<tr><td colspan="4" style="text-align:center;color:#888;padding:20px">No topics yet.${user ? ` <a href="/board/${board.id}/new">Start one</a>.` : ""}</td></tr>`
+      ? `<tr><td colspan="4" style="text-align:center;color:#888;padding:20px">No topics yet.${user ? ` <a href="/board/${encodeURIComponent(board.slug)}/new">Start one</a>.` : ""}</td></tr>`
       : threads
           .map((t, i) => {
             const replies = t.reply_count > 0 ? t.reply_count : 0;
@@ -532,7 +534,7 @@ export function threadListPage(
     ${breadcrumb([
       { label: "Board index", href: "/" },
       ...(board.parent_name
-        ? [{ label: board.parent_name, href: `/category/${board.parent_id}` }]
+        ? [{ label: board.parent_name, href: `/category/${encodeURIComponent(board.parent_slug)}` }]
         : []),
       { label: board.name },
     ])}
@@ -696,7 +698,7 @@ function renderCommentNode(
 }
 
 export function threadPage(
-  board: { id: number; name: string; parent_id: number; parent_name: string | null },
+  board: { id: number; slug: string; name: string; parent_id: number; parent_name: string | null; parent_slug: string },
   thread: { id: number; title: string; is_locked?: number },
   posts: PostRow[],
   user: SessionUser | null,
@@ -733,9 +735,9 @@ export function threadPage(
     ${breadcrumb([
       { label: "Board index", href: "/" },
       ...(board.parent_name
-        ? [{ label: board.parent_name, href: `/category/${board.parent_id}` }]
+        ? [{ label: board.parent_name, href: `/category/${encodeURIComponent(board.parent_slug)}` }]
         : []),
-      { label: board.name, href: `/board/${board.id}` },
+      { label: board.name, href: `/board/${encodeURIComponent(board.slug)}` },
       { label: thread.title },
     ])}
     <h2 class="page-title">${escapeHtml(thread.title)}</h2>
@@ -751,7 +753,7 @@ export function threadPage(
 }
 
 export function newThreadPage(
-  board: { id: number; name: string; parent_id: number; parent_name: string | null },
+  board: { id: number; slug: string; name: string; parent_id: number; parent_name: string | null; parent_slug: string },
   user: SessionUser,
   error?: string,
 ): string {
@@ -763,15 +765,15 @@ export function newThreadPage(
     ${breadcrumb([
       { label: "Board index", href: "/" },
       ...(board.parent_name
-        ? [{ label: board.parent_name, href: `/category/${board.parent_id}` }]
+        ? [{ label: board.parent_name, href: `/category/${encodeURIComponent(board.parent_slug)}` }]
         : []),
-      { label: board.name, href: `/board/${board.id}` },
+      { label: board.name, href: `/board/${encodeURIComponent(board.slug)}` },
       { label: "New topic" },
     ])}
     <h2 class="page-title">New topic in ${escapeHtml(board.name)}</h2>
     ${errorHtml}
     <div class="formbox">
-      <form method="post" action="/board/${board.id}/new">
+      <form method="post" action="/board/${encodeURIComponent(board.slug)}/new">
         <p style="margin:0 0 10px;color:#555">Posting as <strong>${escapeHtml(user.username)}</strong></p>
         <label>Subject</label>
         <input type="text" name="title" required maxlength="120">

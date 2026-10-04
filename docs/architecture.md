@@ -9,6 +9,8 @@
 
 ## BBS
 
+`boards.slug` 保存分类与可发帖版块的公开地址标识，唯一索引防止重名。运行时幂等添加字段并为缺少 slug 的分类及版块按 ID 顺序回填，保留已有版块 slug；初始化和后台新增分类与版块调用同一逻辑。slug 由名称 Unicode 规范化、转小写并以连字符连接生成，重名追加数字后缀，纯数字名称加 `board-` 前缀。现有 slug 在改名及移动后保持稳定，Unicode 地址输出时编码。分类及版块公开路由按 slug 查找，旧数字 GET 地址 301 跳转；数字 POST 直接处理。主题地址、数据库关联和后台管理继续使用 ID。
+
 BBS 公共 HTML 模板统一声明独立标签页图标，引用同源 `/favicon.svg`、`/favicon.ico`、`/favicon-16.png` 和 `/favicon-32.png`。矢量源与兼容格式位于 `bbs/public/`，由 Wrangler 的 `assets.directory` 提供；命中图标的请求直接返回静态资产，不进入论坛数据库初始化。SVG 不依赖字体或外部资源，PNG 和 ICO 由同一矢量源生成。主站品牌资产保持原样。
 
 BBS 位于 `bbs/`，采用 Hono、Cloudflare Worker 和 D1。版块以 `boards.parent_id` 区分分类与可发帖子版块。`Announcement` 属于 Bitcoin Purity 分类，`sort_order` 为 0；SQL 种子与运行时初始化按分类名称查找父级，幂等添加该版块，支持已迁移的分类 ID。
