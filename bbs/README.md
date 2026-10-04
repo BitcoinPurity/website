@@ -21,6 +21,8 @@ Opening a topic records the posts displayed in that response. New replies make i
 
 ## Develop
 
+The BBS has its own navy speech-bubble Bitcoin favicon, separate from the main site's gold coin. `public/favicon.svg` is the vector source; the 16px/32px PNGs and two-size ICO are generated from it. Wrangler serves these same-origin assets directly, and the shared page template uses them across public and administration pages.
+
 ```bash
 cd bbs
 npm install

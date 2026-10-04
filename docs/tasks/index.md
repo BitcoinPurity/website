@@ -4,5 +4,5 @@
 - [TASK-002：v1.0.0 正式版同步](TASK-002.md)
 - [TASK-003：BBS Announcement 公告版](TASK-003.md)
 - [TASK-004：BBS 未读主题计数](TASK-004.md)
-- [TASK-005：BBS 标签页图标](TASK-005.md)
+- [TASK-005：BBS 独立标签页图标](TASK-005.md)
 - [TASK-006：BBS 后台管理](TASK-006.md)

@@ -97,6 +97,7 @@ test("admin pages enforce current roles, private caching and session-bound CSRF"
     const admin = await request(path);
     assert.equal(admin.status, 200);
     assert.equal(admin.headers.get("cache-control"), "private, no-store");
+    assert.match(await admin.text(), /<link rel="icon" href="\/favicon.svg" type="image\/svg\+xml" sizes="any">/);
   }
   assert.match(await (await request("/")).text(), /href="\/admin"/);
   assert.doesNotMatch(await (await request("/", "member-session")).text(), /href="\/admin"/);

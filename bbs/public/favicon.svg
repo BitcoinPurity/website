@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>Bitcoin Purity BBS</title>
+  <rect width="64" height="64" rx="14" fill="#1a3a5c"/>
+  <path d="M16 11h32a7 7 0 0 1 7 7v23a7 7 0 0 1-7 7H28L15 57V48a7 7 0 0 1-6-7V18a7 7 0 0 1 7-7Z" fill="#fff"/>
+  <path d="M24 20h12c10 0 10 11 3 12 9 1 8 12-3 12H24Zm6 5v5h6c4 0 4-5 0-5Zm0 10v4h6c5 0 5-4 0-4Z" fill="#c99828" fill-rule="evenodd"/>
+  <path d="M28 16v6m8-6v6m-8 20v5m8-5v5" stroke="#c99828" stroke-width="3"/>
+</svg>

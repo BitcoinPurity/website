@@ -9,7 +9,7 @@
 
 ## BBS
 
-BBS 公共 HTML 模板统一声明标签页图标，直接引用 `https://bitcoinpurity.org/favicon.ico`、`favicon-16.png` 和 `favicon-32.png`，复用官网品牌资产。
+BBS 公共 HTML 模板统一声明独立标签页图标，引用同源 `/favicon.svg`、`/favicon.ico`、`/favicon-16.png` 和 `/favicon-32.png`。矢量源与兼容格式位于 `bbs/public/`，由 Wrangler 的 `assets.directory` 提供；命中图标的请求直接返回静态资产，不进入论坛数据库初始化。SVG 不依赖字体或外部资源，PNG 和 ICO 由同一矢量源生成。主站品牌资产保持原样。
 
 BBS 位于 `bbs/`，采用 Hono、Cloudflare Worker 和 D1。版块以 `boards.parent_id` 区分分类与可发帖子版块。`Announcement` 属于 Bitcoin Purity 分类，`sort_order` 为 0；SQL 种子与运行时初始化按分类名称查找父级，幂等添加该版块，支持已迁移的分类 ID。
 

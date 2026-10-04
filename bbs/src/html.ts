@@ -336,9 +336,10 @@ export function layout(
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(title)} — Bitcoin Purity BBS</title>
-  <link rel="icon" href="https://bitcoinpurity.org/favicon.ico" type="image/x-icon" sizes="16x16 32x32">
-  <link rel="icon" href="https://bitcoinpurity.org/favicon-32.png" type="image/png" sizes="32x32">
-  <link rel="icon" href="https://bitcoinpurity.org/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="16x16 32x32">
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
   <style>${STYLES}</style>
 </head>
 <body>

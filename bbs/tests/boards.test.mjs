@@ -278,20 +278,24 @@ test("runtime migration adds reading records to an existing database without cha
   assert.deepEqual(sqlite.prepare("SELECT * FROM posts ORDER BY id").all(), posts);
 });
 
-test("BBS page heads link the official site's tab icons", async (t) => {
-  const { request } = await readingFixture(t);
-  for (const path of ["/", "/category/1", "/board/11", "/thread/1"]) {
-    const html = await request(path, null);
+test("BBS page heads link independent same-origin forum icons", async (t) => {
+  const { db } = await readingFixture(t);
+  for (const path of ["/", "/category/1", "/board/11", "/thread/1", "/login", "/register", "/reset-password", "/user/reader", "/board/999999"]) {
+    const response = await app.request(`https://bbs.example${path}`, {}, { DB: db });
+    assert.equal(response.status, path === "/board/999999" ? 404 : 200, path);
+    const html = await response.text();
     const head = html.slice(0, html.indexOf("</head>"));
     for (const [file, type, sizes] of [
       ["favicon.ico", "image/x-icon", "16x16 32x32"],
       ["favicon-32.png", "image/png", "32x32"],
       ["favicon-16.png", "image/png", "16x16"],
+      ["favicon.svg", "image/svg+xml", "any"],
     ]) {
       assert.ok(
-        head.includes(`<link rel="icon" href="https://bitcoinpurity.org/${file}" type="${type}" sizes="${sizes}">`),
+        head.includes(`<link rel="icon" href="/${file}" type="${type}" sizes="${sizes}">`),
         `${path}: ${file}`,
       );
     }
+    assert.doesNotMatch(head, /https:\/\/bitcoinpurity\.org\/favicon/);
   }
 });
