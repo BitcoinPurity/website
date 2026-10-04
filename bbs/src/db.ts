@@ -5,7 +5,6 @@ import {
   computePointsFromCounts,
   levelFromPoints,
   pointsForAction,
-  type ActivityAction,
 } from "./reputation";
 
 export type Env = {
@@ -45,11 +44,14 @@ export async function ensureSchema(db: D1Database): Promise<void> {
       username TEXT NOT NULL UNIQUE,
       password_hash TEXT NOT NULL,
       points INTEGER NOT NULL DEFAULT 0,
+      role TEXT NOT NULL DEFAULT 'user',
+      is_banned INTEGER NOT NULL DEFAULT 0,
       created_at INTEGER NOT NULL
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS sessions (
       token TEXT PRIMARY KEY,
       user_id INTEGER NOT NULL REFERENCES users(id),
+      csrf_token TEXT,
       expires_at INTEGER NOT NULL
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS password_reset_tokens (
@@ -62,6 +64,7 @@ export async function ensureSchema(db: D1Database): Promise<void> {
       parent_id INTEGER REFERENCES boards(id),
       name TEXT NOT NULL,
       description TEXT NOT NULL,
+      is_archived INTEGER NOT NULL DEFAULT 0,
       sort_order INTEGER NOT NULL DEFAULT 0
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS threads (
@@ -70,6 +73,9 @@ export async function ensureSchema(db: D1Database): Promise<void> {
       title TEXT NOT NULL,
       created_at INTEGER NOT NULL,
       last_post_at INTEGER NOT NULL,
+      is_deleted INTEGER NOT NULL DEFAULT 0,
+      is_locked INTEGER NOT NULL DEFAULT 0,
+      is_pinned INTEGER NOT NULL DEFAULT 0,
       reply_count INTEGER NOT NULL DEFAULT 0
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS posts (
@@ -79,6 +85,7 @@ export async function ensureSchema(db: D1Database): Promise<void> {
       user_id INTEGER REFERENCES users(id),
       author TEXT NOT NULL,
       body TEXT NOT NULL,
+      is_deleted INTEGER NOT NULL DEFAULT 0,
       created_at INTEGER NOT NULL
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS thread_reads (
@@ -120,11 +127,13 @@ export async function ensureSchema(db: D1Database): Promise<void> {
     ),
   ]);
 
+  await db.prepare("CREATE TABLE IF NOT EXISTS bbs_migrations (name TEXT PRIMARY KEY)").run();
   await migrateLegacyUsers(db);
   await migrateBoardHierarchy(db);
   await seedAnnouncementBoard(db);
   await migrateReputationColumns(db);
   await migratePostParentId(db);
+  await migrateAdminColumns(db);
   await seedBadgesIfEmpty(db);
   await backfillReputationIfNeeded(db);
 
@@ -141,6 +150,24 @@ export async function ensureSchema(db: D1Database): Promise<void> {
       `CREATE INDEX IF NOT EXISTS idx_posts_parent ON posts(parent_id, created_at)`,
     )
     .run();
+}
+
+async function migrateAdminColumns(db: D1Database): Promise<void> {
+  const additions: Record<string, Record<string, string>> = {
+    users: { role: "TEXT NOT NULL DEFAULT 'user'", is_banned: "INTEGER NOT NULL DEFAULT 0" },
+    sessions: { csrf_token: "TEXT" },
+    boards: { is_archived: "INTEGER NOT NULL DEFAULT 0" },
+    threads: { is_deleted: "INTEGER NOT NULL DEFAULT 0", is_locked: "INTEGER NOT NULL DEFAULT 0", is_pinned: "INTEGER NOT NULL DEFAULT 0" },
+    posts: { is_deleted: "INTEGER NOT NULL DEFAULT 0" },
+  };
+  for (const [table, columns] of Object.entries(additions)) {
+    const existing = await db.prepare(`PRAGMA table_info(${table})`).all<{ name: string }>();
+    for (const [name, definition] of Object.entries(columns)) {
+      if (!(existing.results ?? []).some((column) => column.name === name)) {
+        await db.prepare(`ALTER TABLE ${table} ADD COLUMN ${name} ${definition}`).run();
+      }
+    }
+  }
 }
 
 async function migrateLegacyUsers(db: D1Database): Promise<void> {
@@ -265,24 +292,28 @@ export async function seedBoardsIfEmpty(db: D1Database): Promise<void> {
     insert(42, "Off-topic", "Non-Purity conversation.", 2, 4),
   ]);
 
+  await db.prepare("INSERT OR IGNORE INTO bbs_migrations (name) VALUES ('board_hierarchy')").run();
   await seedAnnouncementBoard(db);
 }
 
 async function seedAnnouncementBoard(db: D1Database): Promise<void> {
-  await db.prepare(`
-    INSERT INTO boards (parent_id, name, description, sort_order)
-    SELECT category.id, 'Announcement',
-           'Official announcements, releases, and project updates.', 0
-    FROM boards AS category
-    WHERE category.parent_id IS NULL AND category.name = 'Bitcoin Purity'
-      AND NOT EXISTS (
-        SELECT 1 FROM boards
-        WHERE parent_id = category.id AND name = 'Announcement'
-      )
-  `).run();
+  await db.batch([
+    db.prepare(`
+      INSERT INTO boards (parent_id, name, description, sort_order)
+      SELECT category.id, 'Announcement',
+             'Official announcements, releases, and project updates.', 0
+      FROM boards AS category
+      WHERE category.parent_id IS NULL AND category.name = 'Bitcoin Purity'
+        AND NOT EXISTS (SELECT 1 FROM bbs_migrations WHERE name = 'announcement')
+        AND NOT EXISTS (SELECT 1 FROM boards WHERE parent_id = category.id AND name = 'Announcement')
+    `),
+    db.prepare(`INSERT OR IGNORE INTO bbs_migrations (name)
+      SELECT 'announcement' WHERE EXISTS (SELECT 1 FROM boards WHERE parent_id IS NOT NULL)`),
+  ]);
 }
 
 async function migrateBoardHierarchy(db: D1Database): Promise<void> {
+  if (await db.prepare("SELECT name FROM bbs_migrations WHERE name = 'board_hierarchy'").first()) return;
   const columns = await db.prepare("PRAGMA table_info(boards)").all<{
     name: string;
   }>();
@@ -294,7 +325,10 @@ async function migrateBoardHierarchy(db: D1Database): Promise<void> {
   const leafCount = await db
     .prepare("SELECT COUNT(*) AS n FROM boards WHERE parent_id IS NOT NULL")
     .first<{ n: number }>();
-  if (leafCount && leafCount.n > 0) return;
+  if (leafCount && leafCount.n > 0) {
+    await db.prepare("INSERT OR IGNORE INTO bbs_migrations (name) VALUES ('board_hierarchy')").run();
+    return;
+  }
 
   const flatCount = await db
     .prepare("SELECT COUNT(*) AS n FROM boards WHERE parent_id IS NULL")
@@ -417,6 +451,7 @@ async function migrateBoardHierarchy(db: D1Database): Promise<void> {
       .bind(category.id, leaf.name, leaf.description, leaf.sortOrder)
       .run();
   }
+  await db.prepare("INSERT OR IGNORE INTO bbs_migrations (name) VALUES ('board_hierarchy')").run();
 }
 
 async function migrateReputationColumns(db: D1Database): Promise<void> {
@@ -503,32 +538,24 @@ export async function seedBadgesIfEmpty(db: D1Database): Promise<void> {
 async function getUserActivityCounts(
   db: D1Database,
   userId: number,
+  visibleOnly = false,
 ): Promise<{ postCount: number; threadCount: number; replyCount: number }> {
-  const postCount = await db
-    .prepare("SELECT COUNT(*) AS n FROM posts WHERE user_id = ?")
-    .bind(userId)
-    .first<{ n: number }>();
-
-  const threadCount = await db
-    .prepare(
-      `SELECT COUNT(*) AS n FROM threads t
-       WHERE (
-         SELECT p.user_id FROM posts p
-         WHERE p.thread_id = t.id
-         ORDER BY p.created_at ASC
-         LIMIT 1
-       ) = ?`,
-    )
-    .bind(userId)
-    .first<{ n: number }>();
-
+  const postVisibility = visibleOnly ? `AND p.is_deleted=0 AND EXISTS (
+    SELECT 1 FROM threads t JOIN boards b ON b.id=t.board_id JOIN boards c ON c.id=b.parent_id
+    WHERE t.id=p.thread_id AND t.is_deleted=0 AND b.is_archived=0 AND c.is_archived=0
+  )` : "";
+  const threadVisibility = visibleOnly ? `AND t.is_deleted=0 AND EXISTS (
+    SELECT 1 FROM boards b JOIN boards c ON c.id=b.parent_id
+    WHERE b.id=t.board_id AND b.is_archived=0 AND c.is_archived=0
+  )` : "";
+  const postCount = await db.prepare(`SELECT COUNT(*) AS n FROM posts p WHERE p.user_id=? ${postVisibility}`)
+    .bind(userId).first<{ n: number }>();
+  const threadCount = await db.prepare(`SELECT COUNT(*) AS n FROM threads t WHERE (
+    SELECT p.user_id FROM posts p WHERE p.thread_id=t.id ORDER BY p.created_at,p.id LIMIT 1
+  )=? ${threadVisibility}`).bind(userId).first<{ n: number }>();
   const posts = postCount?.n ?? 0;
   const threads = threadCount?.n ?? 0;
-  return {
-    postCount: posts,
-    threadCount: threads,
-    replyCount: Math.max(0, posts - threads),
-  };
+  return { postCount: posts, threadCount: threads, replyCount: Math.max(0, posts - threads) };
 }
 
 async function getExistingBadgeIds(
@@ -584,22 +611,9 @@ export async function awardRegisteredBadge(db: D1Database, userId: number): Prom
     .run();
 }
 
-export async function awardActivity(
-  db: D1Database,
-  userId: number,
-  action: ActivityAction,
-): Promise<void> {
-  const delta = pointsForAction(action);
-  await db
-    .prepare("UPDATE users SET points = points + ? WHERE id = ?")
-    .bind(delta, userId)
-    .run();
-  await syncUserBadges(db, userId);
-}
-
 async function backfillReputation(db: D1Database): Promise<void> {
   const { results: users } = await db
-    .prepare("SELECT id FROM users")
+    .prepare("SELECT id FROM users WHERE points = 0")
     .all<{ id: number }>();
 
   for (const user of users ?? []) {
@@ -648,7 +662,7 @@ export async function getUserProfile(
     }>();
   if (!user) return null;
 
-  const counts = await getUserActivityCounts(db, user.id);
+  const counts = await getUserActivityCounts(db, user.id, true);
   const badges = await getUserBadges(db, user.id);
 
   return {
@@ -712,10 +726,11 @@ export async function getUserByUsername(
   email: string | null;
   username: string;
   password_hash: string;
+  is_banned: number;
 } | null> {
   return db
     .prepare(
-      "SELECT id, email, username, password_hash FROM users WHERE username = ? COLLATE NOCASE",
+      "SELECT id, email, username, password_hash, is_banned FROM users WHERE username = ? COLLATE NOCASE",
     )
     .bind(username)
     .first<{
@@ -723,6 +738,7 @@ export async function getUserByUsername(
       email: string | null;
       username: string;
       password_hash: string;
+      is_banned: number;
     }>();
 }
 
@@ -734,10 +750,11 @@ export async function getUserByEmail(
   email: string | null;
   username: string;
   password_hash: string;
+  is_banned: number;
 } | null> {
   return db
     .prepare(
-      "SELECT id, email, username, password_hash FROM users WHERE email = ?",
+      "SELECT id, email, username, password_hash, is_banned FROM users WHERE email = ?",
     )
     .bind(email.toLowerCase())
     .first<{
@@ -745,6 +762,7 @@ export async function getUserByEmail(
       email: string | null;
       username: string;
       password_hash: string;
+      is_banned: number;
     }>();
 }
 
@@ -805,11 +823,11 @@ export async function createSession(
   token: string,
   userId: number,
   expiresAt: number,
-): Promise<void> {
-  await db
-    .prepare("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)")
-    .bind(token, userId, expiresAt)
-    .run();
+): Promise<boolean> {
+  const result = await db.prepare(`INSERT INTO sessions (token, user_id, expires_at)
+    SELECT ?, ?, ? WHERE EXISTS (SELECT 1 FROM users WHERE id=? AND is_banned=0)`)
+    .bind(token, userId, expiresAt, userId).run();
+  return result.meta.changes > 0;
 }
 
 export async function deleteSession(
@@ -841,10 +859,10 @@ export type CategorySection = {
 const newTopicCountQuery = `
   (SELECT COUNT(*) FROM threads t_new
    LEFT JOIN thread_reads r ON r.thread_id = t_new.id AND r.user_id = ?
-   WHERE t_new.board_id = b.id AND ? IS NOT NULL
+   WHERE t_new.board_id = b.id AND t_new.is_deleted = 0 AND ? IS NOT NULL
      AND EXISTS (
        SELECT 1 FROM posts p_new
-       WHERE p_new.thread_id = t_new.id
+       WHERE p_new.thread_id = t_new.id AND p_new.is_deleted = 0
          AND p_new.id > COALESCE(r.last_read_post_id, 0)
      ))`;
 
@@ -855,11 +873,11 @@ const boardStatsQuery = `
     COUNT(p.id) AS post_count,
     ${newTopicCountQuery} AS new_topic_count,
     MAX(t.last_post_at) AS last_post_at,
-    (SELECT t2.id FROM threads t2 WHERE t2.board_id = b.id ORDER BY t2.last_post_at DESC LIMIT 1) AS last_thread_id,
-    (SELECT t2.title FROM threads t2 WHERE t2.board_id = b.id ORDER BY t2.last_post_at DESC LIMIT 1) AS last_thread_title
+    (SELECT t2.id FROM threads t2 WHERE t2.board_id = b.id AND t2.is_deleted = 0 ORDER BY t2.last_post_at DESC LIMIT 1) AS last_thread_id,
+    (SELECT t2.title FROM threads t2 WHERE t2.board_id = b.id AND t2.is_deleted = 0 ORDER BY t2.last_post_at DESC LIMIT 1) AS last_thread_title
   FROM boards b
-  LEFT JOIN threads t ON t.board_id = b.id
-  LEFT JOIN posts p ON p.thread_id = t.id
+  LEFT JOIN threads t ON t.board_id = b.id AND t.is_deleted = 0
+  LEFT JOIN posts p ON p.thread_id = t.id AND p.is_deleted = 0
   WHERE b.id = ?
   GROUP BY b.id`;
 
@@ -869,7 +887,7 @@ export async function getBoardIndex(
 ): Promise<CategorySection[]> {
   const { results: categories } = await db
     .prepare(
-      "SELECT id, name, description FROM boards WHERE parent_id IS NULL ORDER BY sort_order, id",
+      "SELECT id, name, description FROM boards WHERE parent_id IS NULL AND is_archived = 0 ORDER BY sort_order, id",
     )
     .all<{ id: number; name: string; description: string }>();
 
@@ -877,7 +895,7 @@ export async function getBoardIndex(
   for (const category of categories ?? []) {
     const { results: children } = await db
       .prepare(
-        "SELECT id FROM boards WHERE parent_id = ? ORDER BY sort_order, id",
+        "SELECT id FROM boards WHERE parent_id = ? AND is_archived = 0 ORDER BY sort_order, id",
       )
       .bind(category.id)
       .all<{ id: number }>();
@@ -903,14 +921,14 @@ export async function getCategory(
 ): Promise<CategorySection | null> {
   const category = await db
     .prepare(
-      "SELECT id, name, description FROM boards WHERE id = ? AND parent_id IS NULL",
+      "SELECT id, name, description FROM boards WHERE id = ? AND parent_id IS NULL AND is_archived = 0",
     )
     .bind(id)
     .first<{ id: number; name: string; description: string }>();
   if (!category) return null;
 
   const { results: children } = await db
-    .prepare("SELECT id FROM boards WHERE parent_id = ? ORDER BY sort_order, id")
+    .prepare("SELECT id FROM boards WHERE parent_id = ? AND is_archived = 0 ORDER BY sort_order, id")
     .bind(id)
     .all<{ id: number }>();
 
@@ -943,7 +961,7 @@ export async function getBoard(
               ${newTopicCountQuery} AS new_topic_count
        FROM boards b
        LEFT JOIN boards p ON p.id = b.parent_id
-       WHERE b.id = ?`,
+       WHERE b.id = ? AND b.is_archived = 0 AND (b.parent_id IS NULL OR p.is_archived = 0)`,
     )
     .bind(userId, userId, id)
     .first<{
@@ -968,11 +986,11 @@ export async function getThreads(
   const { results } = await db
     .prepare(
       `SELECT
-        t.id, t.title, t.created_at, t.last_post_at, t.reply_count,
+        t.id, t.title, t.created_at, t.last_post_at, t.reply_count, t.is_locked, t.is_pinned,
         (SELECT p.author FROM posts p WHERE p.thread_id = t.id ORDER BY p.created_at ASC LIMIT 1) AS author
       FROM threads t
-      WHERE t.board_id = ?
-      ORDER BY t.last_post_at DESC
+      WHERE t.board_id = ? AND t.is_deleted = 0
+      ORDER BY t.is_pinned DESC, t.last_post_at DESC, t.id DESC
       LIMIT 100`,
     )
     .bind(boardId)
@@ -983,11 +1001,13 @@ export async function getThreads(
 export async function getThread(
   db: D1Database,
   id: number,
-): Promise<{ id: number; board_id: number; title: string } | null> {
+): Promise<{ id: number; board_id: number; title: string; is_locked: number } | null> {
   return db
-    .prepare("SELECT id, board_id, title FROM threads WHERE id = ?")
+    .prepare(`SELECT t.id, t.board_id, t.title, t.is_locked FROM threads t
+      JOIN boards b ON b.id=t.board_id JOIN boards c ON c.id=b.parent_id
+      WHERE t.id = ? AND t.is_deleted=0 AND b.is_archived=0 AND c.is_archived=0`)
     .bind(id)
-    .first<{ id: number; board_id: number; title: string }>();
+    .first<{ id: number; board_id: number; title: string; is_locked: number }>();
 }
 
 export async function getPosts(
@@ -996,7 +1016,7 @@ export async function getPosts(
 ): Promise<PostRow[]> {
   const { results } = await db
     .prepare(
-      "SELECT id, parent_id, author, body, created_at FROM posts WHERE thread_id = ? ORDER BY created_at ASC, id ASC",
+      "SELECT id, parent_id, author, CASE WHEN is_deleted = 1 THEN 'Post deleted' ELSE body END AS body, created_at, is_deleted FROM posts WHERE thread_id = ? ORDER BY created_at ASC, id ASC",
     )
     .bind(threadId)
     .all<PostRow>();
@@ -1021,13 +1041,13 @@ export async function getPostInThread(
   db: D1Database,
   threadId: number,
   postId: number,
-): Promise<{ id: number; parent_id: number | null } | null> {
+): Promise<{ id: number; parent_id: number | null; is_deleted: number } | null> {
   return db
     .prepare(
-      "SELECT id, parent_id FROM posts WHERE id = ? AND thread_id = ?",
+      "SELECT id, parent_id, is_deleted FROM posts WHERE id = ? AND thread_id = ?",
     )
     .bind(postId, threadId)
-    .first<{ id: number; parent_id: number | null }>();
+    .first<{ id: number; parent_id: number | null; is_deleted: number }>();
 }
 
 /** Depth of a post in the reply tree (opening post = 0). */
@@ -1102,30 +1122,24 @@ export async function createThread(
   author: string,
   body: string,
   title: string,
-): Promise<number> {
+): Promise<number | null> {
   const now = Math.floor(Date.now() / 1000);
-  const cleanTitle = title.trim().slice(0, 120);
-  const cleanBody = body.trim().slice(0, 10000);
-
-  const thread = await db
-    .prepare(
-      "INSERT INTO threads (board_id, title, created_at, last_post_at, reply_count) VALUES (?, ?, ?, ?, 0) RETURNING id",
-    )
-    .bind(boardId, cleanTitle, now, now)
-    .first<{ id: number }>();
-
-  if (!thread) throw new Error("Failed to create thread");
-
-  await db
-    .prepare(
-      "INSERT INTO posts (thread_id, parent_id, user_id, author, body, created_at) VALUES (?, NULL, ?, ?, ?, ?)",
-    )
-    .bind(thread.id, userId, author, cleanBody, now)
-    .run();
-
-  await awardActivity(db, userId, "new_thread");
-
-  return thread.id;
+  const results = await db.batch<{ id: number }>([
+    db.prepare(`INSERT INTO threads (board_id, title, created_at, last_post_at, reply_count)
+      SELECT ?, ?, ?, ?, 0 WHERE EXISTS (
+        SELECT 1 FROM boards b JOIN boards p ON p.id=b.parent_id
+        WHERE b.id=? AND b.is_archived=0 AND p.is_archived=0
+      ) AND EXISTS (SELECT 1 FROM users WHERE id=? AND is_banned=0) RETURNING id`)
+      .bind(boardId, title.trim().slice(0, 120), now, now, boardId, userId),
+    // D1 batch keeps these statements in one transaction on the same connection.
+    db.prepare(`INSERT INTO posts (thread_id, parent_id, user_id, author, body, created_at)
+      SELECT last_insert_rowid(), NULL, ?, ?, ?, ? WHERE changes()>0`)
+      .bind(userId, author, body.trim().slice(0, 10000), now),
+    db.prepare("UPDATE users SET points=points+? WHERE id=? AND changes()>0").bind(pointsForAction("new_thread"), userId),
+  ]);
+  const id = results[0].results[0]?.id ?? null;
+  if (id !== null) await syncUserBadges(db, userId);
+  return id;
 }
 
 export async function createReply(
@@ -1135,26 +1149,23 @@ export async function createReply(
   author: string,
   body: string,
   parentId: number,
-): Promise<number> {
+): Promise<number | null> {
   const now = Math.floor(Date.now() / 1000);
-  const cleanBody = body.trim().slice(0, 10000);
-
-  const inserted = await db
-    .prepare(
-      "INSERT INTO posts (thread_id, parent_id, user_id, author, body, created_at) VALUES (?, ?, ?, ?, ?, ?) RETURNING id",
-    )
-    .bind(threadId, parentId, userId, author, cleanBody, now)
-    .first<{ id: number }>();
-
-  if (!inserted) throw new Error("Failed to create reply");
-
-  await db
-    .prepare(
-      "UPDATE threads SET last_post_at = ?, reply_count = reply_count + 1 WHERE id = ?",
-    )
-    .bind(now, threadId)
-    .run();
-
-  await awardActivity(db, userId, "reply");
-  return inserted.id;
+  const results = await db.batch<{ id: number }>([
+    db.prepare(`INSERT INTO posts (thread_id, parent_id, user_id, author, body, created_at)
+      SELECT ?, ?, ?, ?, ?, ? WHERE EXISTS (
+        SELECT 1 FROM threads t JOIN boards b ON b.id=t.board_id JOIN boards c ON c.id=b.parent_id
+        WHERE t.id=? AND t.is_deleted=0 AND t.is_locked=0 AND b.is_archived=0 AND c.is_archived=0
+      ) AND EXISTS (SELECT 1 FROM users WHERE id=? AND is_banned=0)
+        AND EXISTS (SELECT 1 FROM posts WHERE id=? AND thread_id=? AND is_deleted=0) RETURNING id`)
+      .bind(threadId, parentId, userId, author, body.trim().slice(0, 10000), now, threadId, userId, parentId, threadId),
+    db.prepare("UPDATE users SET points=points+? WHERE id=? AND changes()>0").bind(pointsForAction("reply"), userId),
+    db.prepare(`UPDATE threads SET
+      reply_count=MAX(0,(SELECT COUNT(*) FROM posts WHERE thread_id=threads.id AND is_deleted=0)-1),
+      last_post_at=COALESCE((SELECT MAX(created_at) FROM posts WHERE thread_id=threads.id AND is_deleted=0),created_at)
+      WHERE id=? AND changes()>0`).bind(threadId),
+  ]);
+  const id = results[0].results[0]?.id ?? null;
+  if (id !== null) await syncUserBadges(db, userId);
+  return id;
 }

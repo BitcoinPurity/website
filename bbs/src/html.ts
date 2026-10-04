@@ -314,7 +314,7 @@ const STYLES = `
 
 function navBar(user: SessionUser | null): string {
   const authLinks = user
-    ? `<span class="nav-user"><a href="/user/${escapeHtml(user.username)}">${escapeHtml(user.username)}</a> · ${escapeHtml(user.level)} · ${user.points} pts &nbsp;|&nbsp; <a href="/logout">Logout</a></span>`
+    ? `<span class="nav-user"><a href="/user/${escapeHtml(user.username)}">${escapeHtml(user.username)}</a> · ${escapeHtml(user.level)} · ${user.points} pts &nbsp;|&nbsp; ${user.role === "admin" ? '<a href="/admin">Admin</a> &nbsp;|&nbsp; ' : ""}<a href="/logout">Logout</a></span>`
     : `<span class="nav-user"><a href="/login">Login</a> &nbsp;|&nbsp; <a href="/register">Register</a></span>`;
 
   return `<div class="nav">
@@ -497,6 +497,8 @@ export type ThreadRow = {
   created_at: number;
   last_post_at: number;
   reply_count: number;
+  is_locked?: number;
+  is_pinned?: number;
 };
 
 export function threadListPage(
@@ -515,7 +517,7 @@ export function threadListPage(
           .map((t, i) => {
             const replies = t.reply_count > 0 ? t.reply_count : 0;
             return `<tr class="${i % 2 ? "alt" : ""}">
-          <td class="thread-title"><a href="/thread/${t.id}">${escapeHtml(t.title)}</a></td>
+          <td class="thread-title"><a href="/thread/${t.id}">${escapeHtml(t.title)}</a>${t.is_pinned ? " · Pinned" : ""}${t.is_locked ? " · Locked" : ""}</td>
           <td>${escapeHtml(t.author)}</td>
           <td class="stats">${replies}</td>
           <td class="lastpost">${formatDate(t.last_post_at)}</td>
@@ -554,6 +556,7 @@ export type PostRow = {
   parent_id: number | null;
   author: string;
   body: string;
+  is_deleted?: number;
   created_at: number;
 };
 
@@ -590,6 +593,7 @@ function renderCommentNode(
   depth: number,
   isOp: boolean,
   replyToId: number | null,
+  repliesEnabled = true,
 ): string {
   const profile = authorProfiles.get(node.author.toLowerCase());
   const profileHref = profile
@@ -617,14 +621,14 @@ function renderCommentNode(
     : `<div class="${avatarClass}">${avatarLetter(node.author)}</div>`;
 
   const isReplyingHere = replyToId === node.id;
-  const replyAction = user
+  const replyAction = node.is_deleted || !repliesEnabled ? "" : user
     ? isReplyingHere
       ? `<a href="/thread/${threadId}#post-${node.id}">Cancel</a>`
       : `<a href="/thread/${threadId}?reply_to=${node.id}#reply-${node.id}">Reply</a>`
     : `<a href="/login">Reply</a>`;
 
   const replyComposer =
-    user && isReplyingHere
+    user && repliesEnabled && !node.is_deleted && isReplyingHere
       ? `<div class="fb-inline-reply" id="reply-${node.id}">
           <div class="fb-avatar sm">${avatarLetter(user.username)}</div>
           <form method="post" action="/thread/${threadId}/reply" style="flex:1">
@@ -648,6 +652,7 @@ function renderCommentNode(
               depth + 1,
               false,
               replyToId,
+              repliesEnabled,
             ),
           )
           .join("")}</div>`
@@ -691,7 +696,7 @@ function renderCommentNode(
 
 export function threadPage(
   board: { id: number; name: string; parent_id: number; parent_name: string | null },
-  thread: { id: number; title: string },
+  thread: { id: number; title: string; is_locked?: number },
   posts: PostRow[],
   user: SessionUser | null,
   authorProfiles: Map<string, AuthorDisplay>,
@@ -702,20 +707,22 @@ export function threadPage(
   const op = tree[0] ?? null;
   const nested =
     op != null
-      ? renderCommentNode(op, thread.id, user, authorProfiles, 0, true, replyToId)
+      ? renderCommentNode(op, thread.id, user, authorProfiles, 0, true, replyToId, !thread.is_locked)
       : `<p style="color:#888">No posts yet.</p>`;
 
   // Orphan roots (should be rare) render as top-level comments under the thread.
   const orphans = tree
     .slice(1)
     .map((node) =>
-      renderCommentNode(node, thread.id, user, authorProfiles, 1, false, replyToId),
+      renderCommentNode(node, thread.id, user, authorProfiles, 1, false, replyToId, !thread.is_locked),
     )
     .join("");
 
   const errorHtml = error ? `<div class="error">${escapeHtml(error)}</div>` : "";
 
-  const loginHint = user
+  const loginHint = thread.is_locked
+    ? '<div class="notice">This topic is locked.</div>'
+    : user
     ? ""
     : `<div class="notice" style="margin-top:12px"><a href="/login">Login</a> or <a href="/register">register</a> to reply.</div>`;
 

@@ -1,5 +1,6 @@
 import { getCookie } from "hono/cookie";
 import { Hono } from "hono";
+import admin from "./admin";
 import {
   clearSessionCookie,
   createSessionToken,
@@ -200,7 +201,9 @@ app.post("/register", async (c) => {
 
   const token = createSessionToken();
   const expiresAt = sessionExpiry();
-  await createSession(c.env.DB, token, userId, expiresAt);
+  if (!await createSession(c.env.DB, token, userId, expiresAt)) {
+    return c.html(registerPage("Account unavailable. Contact an administrator."), 403);
+  }
   setSessionCookie(c, token, expiresAt);
   return c.redirect("/", 303);
 });
@@ -232,13 +235,15 @@ app.post("/login", async (c) => {
   }
 
   const account = await getUserByUsername(c.env.DB, username);
-  if (!account || !(await verifyPassword(password, account.password_hash))) {
+  if (!account || account.is_banned || !(await verifyPassword(password, account.password_hash))) {
     return c.html(loginPage("Invalid username or password.", next), 401);
   }
 
   const token = createSessionToken();
   const expiresAt = sessionExpiry();
-  await createSession(c.env.DB, token, account.id, expiresAt);
+  if (!await createSession(c.env.DB, token, account.id, expiresAt)) {
+    return c.html(loginPage("Invalid username or password.", next), 401);
+  }
   setSessionCookie(c, token, expiresAt);
   return c.redirect(next, 303);
 });
@@ -411,6 +416,7 @@ app.post("/board/:id/new", async (c) => {
     body,
     title,
   );
+  if (threadId === null) return c.html(errorPage("Posting is no longer available. Reload the page.", user), 409);
   return c.redirect(`/thread/${threadId}`, 303);
 });
 
@@ -461,6 +467,8 @@ app.post("/thread/:id/reply", async (c) => {
   const thread = await getThread(c.env.DB, threadId);
   if (!thread) return c.html(errorPage("Thread not found.", user), 404);
 
+  if (thread.is_locked) return c.html(errorPage("This topic is locked.", user), 403);
+
   const board = await getBoard(c.env.DB, thread.board_id);
   if (!board) return c.html(errorPage("Board not found.", user), 404);
   if (!isLeafBoard(board)) {
@@ -506,7 +514,7 @@ app.post("/thread/:id/reply", async (c) => {
 
   let parentId = parentIdRaw;
   const parent = await getPostInThread(c.env.DB, threadId, parentId);
-  if (!parent) {
+  if (!parent || parent.is_deleted) {
     return renderThreadError(
       "Reply target not found in this thread.",
       400,
@@ -516,10 +524,13 @@ app.post("/thread/:id/reply", async (c) => {
 
   // Cap nesting: deeper replies become siblings under the deepest allowed parent.
   let depth = await getPostDepth(c.env.DB, threadId, parentId);
-  while (depth >= MAX_REPLY_DEPTH && parentId != null) {
-    const current = await getPostInThread(c.env.DB, threadId, parentId);
-    if (!current?.parent_id) break;
+  let current = parent;
+  while (depth >= MAX_REPLY_DEPTH || current.is_deleted) {
+    if (!current.parent_id) break;
     parentId = current.parent_id;
+    const ancestor = await getPostInThread(c.env.DB, threadId, parentId);
+    if (!ancestor) break;
+    current = ancestor;
     depth = await getPostDepth(c.env.DB, threadId, parentId);
   }
 
@@ -541,7 +552,10 @@ app.post("/thread/:id/reply", async (c) => {
     body,
     parentId,
   );
+  if (newPostId === null) return c.html(errorPage("Replying is no longer available. Reload the page.", user), 409);
   return c.redirect(`/thread/${threadId}#post-${newPostId}`, 303);
 });
+
+app.route("/admin", admin);
 
 export default app;

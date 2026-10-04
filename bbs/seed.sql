@@ -1,3 +1,5 @@
+CREATE TABLE IF NOT EXISTS bbs_migrations (name TEXT PRIMARY KEY);
+
 -- Top-level categories (parent_id NULL)
 INSERT OR IGNORE INTO boards (id, parent_id, name, description, sort_order) VALUES
   (1, NULL, 'Bitcoin Purity', 'Protocol, consensus, and the Purity vision.', 1),
@@ -22,10 +24,13 @@ SELECT category.id, 'Announcement',
        'Official announcements, releases, and project updates.', 0
 FROM boards AS category
 WHERE category.parent_id IS NULL AND category.name = 'Bitcoin Purity'
+  AND NOT EXISTS (SELECT 1 FROM bbs_migrations WHERE name = 'announcement')
   AND NOT EXISTS (
     SELECT 1 FROM boards
     WHERE parent_id = category.id AND name = 'Announcement'
   );
+
+INSERT OR IGNORE INTO bbs_migrations (name) VALUES ('announcement'), ('board_hierarchy');
 
 INSERT OR IGNORE INTO badges (id, name, description, sort_order) VALUES
   ('registered', 'Registered', 'Joined the Bitcoin Purity BBS.', 1),

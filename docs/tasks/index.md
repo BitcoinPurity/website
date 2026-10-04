@@ -5,3 +5,4 @@
 - [TASK-003：BBS Announcement 公告版](TASK-003.md)
 - [TASK-004：BBS 未读主题计数](TASK-004.md)
 - [TASK-005：BBS 标签页图标](TASK-005.md)
+- [TASK-006：BBS 后台管理](TASK-006.md)

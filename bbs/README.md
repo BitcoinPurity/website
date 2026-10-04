@@ -29,7 +29,7 @@ npm run dev
 
 Open http://localhost:8787. Local D1 is created automatically; boards are seeded on first request.
 
-Run board initialization and migration tests with Node.js 24:
+Run board initialization, moderation, permissions and migration tests with Node.js 24:
 
 ```bash
 npm test
@@ -46,7 +46,7 @@ npx wrangler d1 create bitcoinpurity-bbs
 
 Copy the `database_id` into `wrangler.jsonc`.
 
-2. Apply schema and seed to production:
+2. For a **new installation only**, apply schema and seed to production:
 
 ```bash
 npm run db:migrate:remote
@@ -57,6 +57,12 @@ npm run db:seed:remote
 
 ```bash
 npm run deploy
+```
+
+The existing production Worker is named `bbs` and serves `bbs.bitcoinpurity.org/*`. To update that installation, override the default Worker name:
+
+```bash
+npm run deploy -- --name bbs
 ```
 
 4. In Cloudflare DNS, add a CNAME or route `bbs.bitcoinpurity.org` to the worker. In the Cloudflare dashboard, add a custom domain or route:
@@ -74,3 +80,32 @@ npm run deploy
 - Mining
 - Development
 - Meta
+
+## Administration
+
+`/admin` uses the existing forum login. Only administrators see the Admin navigation link or can access the management routes. It provides totals, topic/reply moderation, user bans and administrator access, and two-level category/board management. Lists have 50 results per page.
+
+Topics can be deleted/restored, locked/unlocked, pinned/unpinned, or moved to an active board. Deleted replies show a placeholder while retaining their descendants; deleting the opening post deletes the topic. Original content remains available in the administration view and cannot be edited. Activity points, badges and reading progress are retained. Locked topics reject replies from everyone. Archived categories hide their boards; restoring a category preserves each board's individual archive status.
+
+Bans revoke existing sessions and prevent login and posting. Banned users may browse public pages as guests. Administrators must be demoted before banning; administrators cannot change their own access or remove the final administrator. POST forms require a session-bound CSRF token and, when supplied, a matching Origin.
+
+### Existing database upgrade and first administrator
+
+For an existing installation, deploy the Worker and open the forum once. Runtime migration adds the new columns and records completed default-board upgrades without changing existing content. Do not reinitialize the existing database with schema/seed commands as an upgrade procedure.
+
+During the first administration deployment, inspect the earliest existing account (smallest ID):
+
+```bash
+cd bbs
+npx wrangler d1 execute bitcoinpurity-bbs --remote --command "SELECT id, username, is_banned FROM users ORDER BY id LIMIT 1;"
+```
+
+Grant this account administrator access when no administrator exists:
+
+```bash
+npx wrangler d1 execute bitcoinpurity-bbs --remote --command "UPDATE users SET role = 'admin' WHERE id = (SELECT MIN(id) FROM users) AND is_banned = 0 AND NOT EXISTS (SELECT 1 FROM users WHERE role = 'admin');"
+```
+
+This command is explicitly part of deployment, not automatic registration behavior. It does nothing for an empty database, a banned first account, or a database that already has an administrator. Verify the first account and resolve those conditions before running it; do not repeat bootstrap to override later access decisions. Sign in with that account and open `/admin`, then grant additional administrators through Users.
+
+For local validation, replace `--remote` with `--local` and use the same `--persist-to` directory as `wrangler dev`, if specified. Production migration, bootstrap and deployment require separate execution; local tests do not apply them.

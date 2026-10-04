@@ -14,6 +14,7 @@ export type SessionUser = {
   username: string;
   points: number;
   level: string;
+  role: "user" | "admin";
 };
 
 export function isValidEmail(email: string): boolean {
@@ -96,13 +97,13 @@ export async function getSessionUser(
   const now = Math.floor(Date.now() / 1000);
   const row = await db
     .prepare(
-      `SELECT u.id, u.email, u.username, u.points
+      `SELECT u.id, u.email, u.username, u.points, u.role
        FROM sessions s
        JOIN users u ON u.id = s.user_id
-       WHERE s.token = ? AND s.expires_at > ?`,
+       WHERE s.token = ? AND s.expires_at > ? AND u.is_banned = 0`,
     )
     .bind(token, now)
-    .first<{ id: number; email: string | null; username: string; points: number }>();
+    .first<{ id: number; email: string | null; username: string; points: number; role: "user" | "admin" }>();
   if (!row) return null;
   return {
     ...row,

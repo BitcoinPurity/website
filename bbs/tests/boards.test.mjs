@@ -36,7 +36,12 @@ function d1(sqlite) {
           return { results: sqlite.prepare(sql).all(...values) };
         },
         async run() {
-          return sqlite.prepare(sql).run(...values);
+          if (/RETURNING/i.test(sql)) {
+            const results = sqlite.prepare(sql).all(...values);
+            return { results, meta: { changes: results.length } };
+          }
+          const result = sqlite.prepare(sql).run(...values);
+          return { meta: { changes: Number(result.changes) } };
         },
       };
       return statement;
@@ -78,7 +83,7 @@ test("existing BBS databases gain one Announcement without changing boards or to
   try {
     sqlite.exec(schema);
     sqlite.exec(seed);
-    sqlite.exec("DELETE FROM boards WHERE name = 'Announcement'");
+    sqlite.exec("DELETE FROM boards WHERE name = 'Announcement'; DELETE FROM bbs_migrations");
     sqlite.exec("BEGIN; PRAGMA defer_foreign_keys = ON; UPDATE boards SET id = 101 WHERE id = 1; UPDATE boards SET parent_id = 101 WHERE parent_id = 1; COMMIT");
     sqlite.exec("INSERT INTO threads (id, board_id, title, created_at, last_post_at) VALUES (1, 11, 'Existing topic', 1, 1)");
     sqlite.exec("INSERT INTO posts (id, thread_id, author, body, created_at) VALUES (1, 1, 'guest', 'Existing post', 1)");
@@ -101,7 +106,7 @@ test("existing BBS databases gain one Announcement without changing boards or to
   }
 });
 
-test("SQL seeding adds Announcement once on fresh and already seeded databases", () => {
+test("SQL seeding adds Announcement once and preserves subsequent administrator changes", () => {
   const sqlite = new DatabaseSync(":memory:");
   try {
     sqlite.exec(schema);
@@ -111,10 +116,11 @@ test("SQL seeding adds Announcement once on fresh and already seeded databases",
     assert.equal(announcements.length, 1);
     assert.equal(announcements[0].parent_id, 1);
     assert.equal(announcements[0].sort_order, 0);
-    sqlite.exec("DELETE FROM boards WHERE name = 'Announcement'");
+    sqlite.exec("UPDATE boards SET name = 'Renamed announcement', parent_id=2, sort_order=8 WHERE name = 'Announcement'");
     sqlite.exec(seed);
     announcements = sqlite.prepare("SELECT * FROM boards WHERE name = 'Announcement'").all();
-    assert.equal(announcements.length, 1);
+    assert.equal(announcements.length, 0);
+    assert.equal(sqlite.prepare("SELECT parent_id FROM boards WHERE name = 'Renamed announcement'").get().parent_id, 2);
   } finally {
     sqlite.close();
   }
@@ -216,7 +222,7 @@ test("a reply arriving after posts are fetched stays unread and older reads cann
   let injected = false;
   db.prepare = (sql) => {
     const statement = prepare(sql);
-    if (sql.startsWith("SELECT id, parent_id, author, body, created_at FROM posts WHERE thread_id")) {
+    if (sql.includes("AS body, created_at, is_deleted FROM posts WHERE thread_id")) {
       const all = statement.all;
       statement.all = async () => {
         const result = await all();
