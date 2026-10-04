@@ -1,5 +1,11 @@
 # 网站需求
 
+## Contact 社区链接
+
+- 首页 Contact 和全站页脚 Contact 添加 Discord server：`https://discord.gg/yjyz9JcZT`。
+- 同一位置提供 BBS：`https://bbs.bitcoinpurity.org/`，保留已有入口并统一 Contact 链接地址。
+- 英文、简体中文与正体中文页面均显示上述外部链接。
+
 ## BBS 分类与版块 slug 地址
 
 - 公开版块地址使用 `/board/:slug`，发帖地址使用 `/board/:slug/new`；所有版块入口、面包屑和表单使用 slug。

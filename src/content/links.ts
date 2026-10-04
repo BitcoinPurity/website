@@ -8,8 +8,10 @@ export const CONTACT = {
   xHref: "https://x.com/Bitcoin_Purity",
   telegram: "@bitcoinpurity",
   telegramHref: "https://t.me/bitcoinpurity",
+  discord: "discord.gg/yjyz9JcZT",
+  discordHref: "https://discord.gg/yjyz9JcZT",
   bbs: "bbs.bitcoinpurity.org",
-  bbsHref: "https://bbs.bitcoinpurity.org",
+  bbsHref: "https://bbs.bitcoinpurity.org/",
 } as const;
 
 export const SERVICES = {

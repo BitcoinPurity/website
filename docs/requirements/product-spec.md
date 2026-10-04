@@ -1,5 +1,7 @@
 # 产品规格
 
+首页及全站页脚的 Contact 在英文、简体和正体中文页面提供 Discord server（`https://discord.gg/yjyz9JcZT`）与 BBS（`https://bbs.bitcoinpurity.org/`），使用现有外部链接样式和新标签页行为。
+
 BBS 分类地址使用 `/category/:slug`，公开版块地址使用 `/board/:slug`，发帖地址使用 `/board/:slug/new`，分类及版块链接、面包屑和发帖表单统一使用 slug。slug 根据名称生成并保存，全局唯一，重名追加数字后缀，纯数字名称加 `board-` 前缀；改名及移动分类不改变地址。旧数字 GET 地址永久跳转并保留查询参数，旧发帖 POST 保持可用。主题继续使用 `/thread/:id`，后台内部 ID 保持原样。新库、已有库升级和后台新增分类与版块均生成 slug，保留原有内容与阅读进度，归档分类与版块访问仍返回 404。
 
 BBS 所有页面使用独立标签页图标：深蓝圆角底、白色对话气泡和金色 ₿，与官网的金色圆形 Bitcoin 图标区分。公共模板引用 BBS 同源提供的 SVG、ICO 与 16×16、32×32 PNG，主站图标保持原样。

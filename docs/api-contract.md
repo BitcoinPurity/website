@@ -1,5 +1,7 @@
 # 路由契约
 
+Contact 的 Discord server 指向 `https://discord.gg/yjyz9JcZT`，BBS 指向 `https://bbs.bitcoinpurity.org/`；各语言使用同一外部地址，无新增 API 或站内路由。
+
 BBS 公共模板通过 `rel="icon"` 加载同源独立图标。`GET /favicon.svg` 返回 `image/svg+xml`，`GET /favicon.ico` 返回 `image/vnd.microsoft.icon`，`GET /favicon-16.png` 与 `GET /favicon-32.png` 返回 `image/png`，由 Worker 静态资产提供，不要求登录或访问数据库。未命中静态资产的页面请求仍由原有 Hono 路由处理。
 
 无新增 API。英文页面维持原 URL。中文页面为 `/zh-CN/<page>/` 和 `/zh-TW/<page>/`，首页为对应前缀根路径。页面集合来自 `src/content/nav.ts` 的 routes；不支持的语言或页面返回 404。

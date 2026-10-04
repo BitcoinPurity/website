@@ -63,6 +63,16 @@ export function Footer({ locale = "en" }: LocalizedProps = {}) {
               </ExternalLink>
             </p>
             <p>
+              <span className="text-muted">Discord server · </span>
+              <ExternalLink
+                locale={locale}
+                href={CONTACT.discordHref}
+                className="text-ink hover:text-gold"
+              >
+                {CONTACT.discord}
+              </ExternalLink>
+            </p>
+            <p>
               <span className="text-muted">{t("BBS · ")}</span>
               <ExternalLink
                 locale={locale}

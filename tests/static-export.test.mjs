@@ -12,6 +12,32 @@ const sitemap = readFileSync(
   "utf8",
 );
 
+test("Contact shows Discord server and BBS links on every localized homepage and footer", () => {
+  for (const locale of locales) {
+    for (const route of routes) {
+      const path = localePath(route, locale).replace(/\/$/, "");
+      const html = readFileSync(
+        new URL(`../out${path}/index.html`, import.meta.url),
+        "utf8",
+      ).replace(/<script[\s\S]*?<\/script>/g, "");
+      const sections = [html.match(/<footer\b[\s\S]*?<\/footer>/)?.[0]];
+      if (route === "/") {
+        sections.push(html.match(/<div id="contact"[\s\S]*?<\/section>/)?.[0]);
+      }
+      for (const section of sections) {
+        assert.ok(section, `${path}: Contact section`);
+        for (const href of [
+          "https://discord.gg/yjyz9JcZT",
+          "https://bbs.bitcoinpurity.org/",
+        ]) {
+          assert.ok(section.includes(`href="${href}"`), `${path}: ${href}`);
+        }
+        assert.ok(section.includes("Discord server"), `${path}: Discord label`);
+      }
+    }
+  }
+});
+
 test("all languages show v1.0.0 as the latest stable release and use its download and source tag", () => {
   for (const [locale, stable, latest] of [
     ["en", "stable release", "Latest release"],

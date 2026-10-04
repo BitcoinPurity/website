@@ -701,6 +701,20 @@ export function HomePage({ locale = "en" }: LocalizedProps = {}) {
             </div>
             <div>
               <dt className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
+                Discord server
+              </dt>
+              <dd className="mt-3">
+                <ExternalLink
+                  locale={locale}
+                  href={CONTACT.discordHref}
+                  className="text-lg text-ink hover:text-gold"
+                >
+                  {CONTACT.discord}
+                </ExternalLink>
+              </dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
                 {t("BBS")}
               </dt>
               <dd className="mt-3">
