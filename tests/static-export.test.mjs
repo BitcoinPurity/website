@@ -38,7 +38,7 @@ test("Contact shows Discord server and BBS links on every localized homepage and
   }
 });
 
-test("all languages show v1.0.0 as the latest stable release and use its download and source tag", () => {
+test("all languages show v1.0.1 as the latest stable release and use its download and source tag", () => {
   for (const [locale, stable, latest] of [
     ["en", "stable release", "Latest release"],
     ["zh-CN", "正式版", "最新版本"],
@@ -56,7 +56,7 @@ test("all languages show v1.0.0 as the latest stable release and use its downloa
         `${path}: obsolete release candidate`,
       );
       if (["/", "/run", "/miners", "/developers", "/faq"].includes(route)) {
-        assert.ok(text.includes("v1.0.0"), path);
+        assert.ok(text.includes("v1.0.1"), path);
         assert.ok(text.toLowerCase().includes(stable), path);
         assert.ok(
           !/\(release candidate\)|（候选发布版）|（候選發布版）/.test(text),
@@ -66,16 +66,29 @@ test("all languages show v1.0.0 as the latest stable release and use its downloa
       if (["/", "/run", "/miners"].includes(route)) {
         assert.ok(text.includes(latest), path);
         assert.ok(
-          text.includes('href="https://github.com/saltduck/bitcoinpurity/releases/tag/v1.0.0"'),
+          text.includes('href="https://github.com/saltduck/bitcoinpurity/releases/tag/v1.0.1"'),
           path,
         );
         assert.ok(
-          text.includes('href="https://github.com/saltduck/bitcoinpurity/tree/v1.0.0"'),
+          text.includes('href="https://github.com/saltduck/bitcoinpurity/tree/v1.0.1"'),
           path,
         );
       }
       if (route === "/run") {
-        assert.ok(text.includes("git checkout v1.0.0"), path);
+        assert.ok(text.includes("git checkout v1.0.1"), path);
+      }
+      assert.ok(
+        !/https:\/\/github\.com\/saltduck\/bitcoinpurity\/(?:releases\/tag|tree)\/v1\.0\.0\b|git checkout v1\.0\.0\b|\/Purity:1\.0\.0\//.test(text),
+        `${path}: obsolete release link, command or node identifier`,
+      );
+      if (route === "/faq") {
+        assert.ok(text.includes("/Satoshi:29.4/Purity:1.0.1/"), path);
+      }
+      if (route === "/users") {
+        assert.ok(
+          text.includes('href="https://github.com/BitcoinPurity/PurityWallet/releases/tag/1.0.0"'),
+          path,
+        );
       }
     }
   }
