@@ -6,6 +6,10 @@ BBS 动态响应新增 `Server-Timing`：`init;dur=<毫秒>,total;dur=<毫秒>;d
 
 Worker Smart Placement 仅改变平台选择的执行位置，现有路由、状态码、缓存头及账号规则不变；部署后保留上述计时指标用于同位置比较，不新增应用 API。
 
+`GET /` 的分类、版块和统计批量获取，页面数据及排序保持不变；未读计数按当前账号隔离，保留 `private, no-store`，不写入阅读记录。主页 `Server-Timing` 增加 `session` 与 `index` 阶段，以区分登录检查和索引查询。
+
+`GET /category/:slug` 批量获取分类及子版块统计，保留排序、空分类、审核过滤及账号未读计数；响应增加 `session` 与 `category` 计时。不存在、归档或非根分类返回 404；旧数字地址仍 301 跳转并保留查询参数，保留 `private, no-store`，不写入阅读记录。
+
 Contact 的 Discord server 指向 `https://discord.gg/yjyz9JcZT`，BBS 指向 `https://bbs.bitcoinpurity.org/`；各语言使用同一外部地址，无新增 API 或站内路由。
 
 BBS 公共模板通过 `rel="icon"` 加载同源独立图标。`GET /favicon.svg` 返回 `image/svg+xml`，`GET /favicon.ico` 返回 `image/vnd.microsoft.icon`，`GET /favicon-16.png` 与 `GET /favicon-32.png` 返回 `image/png`，由 Worker 静态资产提供，不要求登录或访问数据库。未命中静态资产的页面请求仍由原有 Hono 路由处理。

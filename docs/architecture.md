@@ -18,6 +18,10 @@ Hono 内置 `timing()` 和 `wrapTime()` 在响应头输出请求自身的阶段�
 
 `bbs/wrangler.jsonc` 设置 `placement.mode: smart`，Cloudflare 按观测到的请求耗时及转发成本决定是否将 fetch 处理移到更合适的位置。目的是减少远端 Worker 到 D1 的多次往返；不硬编码尚未确认的数据库位置。资产服务仍就近返回静态图标。首次分析可能需要约 15 分钟及来自多个位置的持续请求，线上效果需结合阶段计时和平台 placement 状态验证。
 
+`getBoardIndex()` 使用一个 D1 batch：第一条 SELECT 按排序读取正常分类及版块层级，第二条 SELECT 一次性按版块聚合正常分类下的正常版块统计。内存中按 ID 将统计归入有序分类，保留空分类及原有统计字段；不再逐个分类/版块访问 D1。共用统计 SELECT 仍用于分类详情页，过滤与未读计数语义一致。主页单独计时 `session`、`index`，完成初始化后的游客/登录请求分别为 2/3 次数据库往返。
+
+`getCategory()` 同样使用一个 D1 batch：第一条 SELECT 按 ID 或 slug 读取正常根分类，第二条使用分类子查询限定正常子版块并批量聚合统计，按 sort_order/id 排序。不再逐版块查询；缺失、归档或非根分类返回空结果，由路由保持 404。分类页计时 `session`、`category`，完成初始化后的游客/登录请求为 2/3 次数据库往返。
+
 `boards.slug` 保存分类与可发帖版块的公开地址标识，唯一索引防止重名。运行时幂等添加字段并为缺少 slug 的分类及版块按 ID 顺序回填，保留已有版块 slug；初始化和后台新增分类与版块调用同一逻辑。slug 由名称 Unicode 规范化、转小写并以连字符连接生成，重名追加数字后缀，纯数字名称加 `board-` 前缀。现有 slug 在改名及移动后保持稳定，Unicode 地址输出时编码。分类及版块公开路由按 slug 查找，旧数字 GET 地址 301 跳转；数字 POST 直接处理。主题地址、数据库关联和后台管理继续使用 ID。
 
 BBS 公共 HTML 模板统一声明独立标签页图标，引用同源 `/favicon.svg`、`/favicon.ico`、`/favicon-16.png` 和 `/favicon-32.png`。矢量源与兼容格式位于 `bbs/public/`，由 Wrangler 的 `assets.directory` 提供；命中图标的请求直接返回静态资产，不进入论坛数据库初始化。SVG 不依赖字体或外部资源，PNG 和 ICO 由同一矢量源生成。主站品牌资产保持原样。

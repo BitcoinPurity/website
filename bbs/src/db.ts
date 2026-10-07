@@ -945,41 +945,35 @@ const boardStatsQuery = `
     (SELECT t2.title FROM threads t2 WHERE t2.board_id = b.id AND t2.is_deleted = 0 ORDER BY t2.last_post_at DESC LIMIT 1) AS last_thread_title
   FROM boards b
   LEFT JOIN threads t ON t.board_id = b.id AND t.is_deleted = 0
-  LEFT JOIN posts p ON p.thread_id = t.id AND p.is_deleted = 0
-  WHERE b.id = ?
-  GROUP BY b.id`;
+  LEFT JOIN posts p ON p.thread_id = t.id AND p.is_deleted = 0`;
 
 export async function getBoardIndex(
   db: D1Database,
   userId: number | null = null,
 ): Promise<CategorySection[]> {
-  const { results: categories } = await db
-    .prepare(
-      "SELECT id, slug, name, description FROM boards WHERE parent_id IS NULL AND is_archived = 0 ORDER BY sort_order, id",
-    )
-    .all<{ id: number; slug: string; name: string; description: string }>();
-
-  const sections: CategorySection[] = [];
-  for (const category of categories ?? []) {
-    const { results: children } = await db
-      .prepare(
-        "SELECT id FROM boards WHERE parent_id = ? AND is_archived = 0 ORDER BY sort_order, id",
-      )
-      .bind(category.id)
-      .all<{ id: number }>();
-
-    const boards: BoardStats[] = [];
-    for (const child of children ?? []) {
-      const stats = await db
-        .prepare(boardStatsQuery)
-        .bind(userId, userId, child.id)
-        .first<BoardStats>();
-      if (stats) boards.push(stats);
+  const [hierarchy, stats] = await db.batch([
+    db.prepare("SELECT id, parent_id, slug, name, description FROM boards WHERE is_archived = 0 ORDER BY sort_order, id"),
+    db.prepare(`${boardStatsQuery}
+      WHERE b.parent_id IS NOT NULL AND b.is_archived = 0 AND EXISTS (
+        SELECT 1 FROM boards category WHERE category.id = b.parent_id
+          AND category.parent_id IS NULL AND category.is_archived = 0
+      ) GROUP BY b.id`).bind(userId, userId),
+  ]);
+  const boards = hierarchy.results as (Omit<CategorySection, "boards"> & { parent_id: number | null })[];
+  const sections = new Map<number, CategorySection>();
+  for (const board of boards) {
+    if (board.parent_id === null) {
+      sections.set(board.id, { id: board.id, slug: board.slug, name: board.name, description: board.description, boards: [] });
     }
-
-    sections.push({ ...category, boards });
   }
-  return sections;
+  const statsByBoard = new Map((stats.results as BoardStats[]).map((board) => [board.id, board]));
+  for (const board of boards) {
+    if (board.parent_id === null) continue;
+    const section = sections.get(board.parent_id);
+    const boardStats = statsByBoard.get(board.id);
+    if (section && boardStats) section.boards.push(boardStats);
+  }
+  return [...sections.values()];
 }
 
 export async function getCategory(
@@ -987,29 +981,19 @@ export async function getCategory(
   id: number | string,
   userId: number | null = null,
 ): Promise<CategorySection | null> {
-  const category = await db
-    .prepare(
-      `SELECT id, slug, name, description FROM boards WHERE ${typeof id === "number" ? "id" : "slug"} = ? AND parent_id IS NULL AND is_archived = 0`,
-    )
-    .bind(id)
-    .first<{ id: number; slug: string; name: string; description: string }>();
+  const column = typeof id === "number" ? "id" : "slug";
+  const [categories, boards] = await db.batch([
+    db.prepare(`SELECT id, slug, name, description FROM boards
+      WHERE ${column} = ? AND parent_id IS NULL AND is_archived = 0`).bind(id),
+    db.prepare(`${boardStatsQuery}
+      WHERE b.is_archived = 0 AND b.parent_id = (
+        SELECT id FROM boards WHERE ${column} = ? AND parent_id IS NULL AND is_archived = 0
+      ) GROUP BY b.id ORDER BY b.sort_order, b.id`).bind(userId, userId, id),
+  ]);
+  const category = (categories.results as Omit<CategorySection, "boards">[])[0];
   if (!category) return null;
 
-  const { results: children } = await db
-    .prepare("SELECT id FROM boards WHERE parent_id = ? AND is_archived = 0 ORDER BY sort_order, id")
-    .bind(category.id)
-    .all<{ id: number }>();
-
-  const boards: BoardStats[] = [];
-  for (const child of children ?? []) {
-    const stats = await db
-      .prepare(boardStatsQuery)
-      .bind(userId, userId, child.id)
-      .first<BoardStats>();
-    if (stats) boards.push(stats);
-  }
-
-  return { ...category, boards };
+  return { ...category, boards: boards.results as BoardStats[] };
 }
 
 export async function getBoard(

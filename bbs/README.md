@@ -37,6 +37,10 @@ Dynamic responses include `Server-Timing` for initialization and total Worker ha
 
 Smart Placement is enabled in `wrangler.jsonc` to reduce repeated Worker-to-D1 round trips. After deployment, Cloudflare may need up to 15 minutes and consistent traffic from multiple locations to choose a placement. Check the Worker placement status in Cloudflare and compare `Server-Timing` from the same client location before and after; a local dry run cannot confirm a production placement decision.
 
+The board index fetches the visible hierarchy and statistics in one D1 batch, preserving category/board ordering, empty categories, moderation filters, and account-specific unread counts. After initialization, homepage requests require two database round trips for guests or three for signed-in users, regardless of board count. Homepage timing includes `session` and `index` stages.
+
+Category pages also fetch category metadata and all child-board statistics in one D1 batch. After initialization, they require two database round trips for guests or three for signed-in users, regardless of child-board count. Their timing includes `session` and `category` stages; browsing does not update reading progress.
+
 Run board initialization, moderation, permissions and migration tests with Node.js 24:
 
 ```bash

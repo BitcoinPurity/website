@@ -120,17 +120,17 @@ app.get("/user/:username", async (c) => {
 
 app.get("/", async (c) => {
   c.header("Cache-Control", "private, no-store");
-  const user = await readSessionUser(c);
-  const sections = await getBoardIndex(c.env.DB, user?.id ?? null);
+  const user = await wrapTime(c, "session", readSessionUser(c));
+  const sections = await wrapTime(c, "index", getBoardIndex(c.env.DB, user?.id ?? null));
   return c.html(boardIndexPage(sections, user));
 });
 
 app.get("/category/:slug", async (c) => {
   c.header("Cache-Control", "private, no-store");
-  const user = await readSessionUser(c);
+  const user = await wrapTime(c, "session", readSessionUser(c));
   const slug = c.req.param("slug");
   const legacyId = /^\d+$/.test(slug) ? Number(slug) : null;
-  const section = await getCategory(c.env.DB, legacyId ?? slug, user?.id ?? null);
+  const section = await wrapTime(c, "category", getCategory(c.env.DB, legacyId ?? slug, user?.id ?? null));
   if (!section) return c.html(errorPage("Category not found.", user), 404);
   if (legacyId !== null) {
     return c.redirect(`/category/${encodeURIComponent(section.slug)}${new URL(c.req.url).search}`, 301);
