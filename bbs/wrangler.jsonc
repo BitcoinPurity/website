@@ -2,6 +2,9 @@
   "name": "bitcoinpurity-bbs",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-19",
+  "placement": {
+    "mode": "smart"
+  },
   "assets": {
     "directory": "./public"
   },

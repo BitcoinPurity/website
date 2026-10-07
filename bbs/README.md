@@ -35,6 +35,8 @@ Initialization saves a version marker in `bbs_migrations` only after schema upgr
 
 Dynamic responses include `Server-Timing` for initialization and total Worker handler time. Topic responses also report session, thread, board, posts, authors, and signed-in reading-progress stages. Compare these milliseconds with Chrome's Waiting for server response to distinguish handler waits from delays outside the handler. Workers timers advance with I/O, so these metrics identify I/O waits rather than precise CPU duration. Headers contain no account, session, or SQL content.
 
+Smart Placement is enabled in `wrangler.jsonc` to reduce repeated Worker-to-D1 round trips. After deployment, Cloudflare may need up to 15 minutes and consistent traffic from multiple locations to choose a placement. Check the Worker placement status in Cloudflare and compare `Server-Timing` from the same client location before and after; a local dry run cannot confirm a production placement decision.
+
 Run board initialization, moderation, permissions and migration tests with Node.js 24:
 
 ```bash

@@ -4,6 +4,8 @@ BBS 页面地址、参数及响应不变。数据库升级完成后的页面请�
 
 BBS 动态响应新增 `Server-Timing`：`init;dur=<毫秒>,total;dur=<毫秒>;desc="Worker handler"`。成功帖子响应另含 `session`、`thread`、`board`、`posts`、`authors`，登录且展示帖子时含 `read`；错误路径只报告实际执行阶段。没有新增公开端点或查询，指标仅包含固定名称和毫秒耗时，不开放 `Timing-Allow-Origin`。计时覆盖 Worker 内部 I/O 等待，不包含外部网络与进入 Worker 前的等待。
 
+Worker Smart Placement 仅改变平台选择的执行位置，现有路由、状态码、缓存头及账号规则不变；部署后保留上述计时指标用于同位置比较，不新增应用 API。
+
 Contact 的 Discord server 指向 `https://discord.gg/yjyz9JcZT`，BBS 指向 `https://bbs.bitcoinpurity.org/`；各语言使用同一外部地址，无新增 API 或站内路由。
 
 BBS 公共模板通过 `rel="icon"` 加载同源独立图标。`GET /favicon.svg` 返回 `image/svg+xml`，`GET /favicon.ico` 返回 `image/vnd.microsoft.icon`，`GET /favicon-16.png` 与 `GET /favicon-32.png` 返回 `image/png`，由 Worker 静态资产提供，不要求登录或访问数据库。未命中静态资产的页面请求仍由原有 Hono 路由处理。

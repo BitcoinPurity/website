@@ -16,6 +16,8 @@
 
 Hono 内置 `timing()` 和 `wrapTime()` 在响应头输出请求自身的阶段指标，不增加数据库查询。所有动态响应包含 `init` 与 `total`，帖子页按执行路径增加 `session`、`thread`、`board`、`posts`、`authors`、`read`。无跨域计时授权或数据内容输出；静态图标仍直接由资产服务返回。Workers 的时钟随 I/O 推进，此指标适合定位数据库等待，不包含 Worker 外部网络、调度或精确 CPU 耗时。
 
+`bbs/wrangler.jsonc` 设置 `placement.mode: smart`，Cloudflare 按观测到的请求耗时及转发成本决定是否将 fetch 处理移到更合适的位置。目的是减少远端 Worker 到 D1 的多次往返；不硬编码尚未确认的数据库位置。资产服务仍就近返回静态图标。首次分析可能需要约 15 分钟及来自多个位置的持续请求，线上效果需结合阶段计时和平台 placement 状态验证。
+
 `boards.slug` 保存分类与可发帖版块的公开地址标识，唯一索引防止重名。运行时幂等添加字段并为缺少 slug 的分类及版块按 ID 顺序回填，保留已有版块 slug；初始化和后台新增分类与版块调用同一逻辑。slug 由名称 Unicode 规范化、转小写并以连字符连接生成，重名追加数字后缀，纯数字名称加 `board-` 前缀。现有 slug 在改名及移动后保持稳定，Unicode 地址输出时编码。分类及版块公开路由按 slug 查找，旧数字 GET 地址 301 跳转；数字 POST 直接处理。主题地址、数据库关联和后台管理继续使用 ID。
 
 BBS 公共 HTML 模板统一声明独立标签页图标，引用同源 `/favicon.svg`、`/favicon.ico`、`/favicon-16.png` 和 `/favicon-32.png`。矢量源与兼容格式位于 `bbs/public/`，由 Wrangler 的 `assets.directory` 提供；命中图标的请求直接返回静态资产，不进入论坛数据库初始化。SVG 不依赖字体或外部资源，PNG 和 ICO 由同一矢量源生成。主站品牌资产保持原样。
