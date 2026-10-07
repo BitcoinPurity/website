@@ -10,6 +10,10 @@
 
 ## BBS
 
+请求中间件调用 `initializeDatabase()`，先从 `bbs_migrations` 读取当前数据库版本的完成标记。只有新库或缺少标记的旧库才执行原有 `ensureSchema()` 和 `seedBoardsIfEmpty()`，成功后保存标记；其他数据库错误直接向上抛出。标记存于 D1，新的 Worker 实例和绑定对象同样可以走快速路径，无进程缓存依赖。今后修改 schema、默认版块或回填逻辑时须更新 `DATABASE_VERSION`。
+
+帖子作者列表作为单个 JSON 参数传给 SQLite `json_each()`，避免多作者超出绑定参数数量限制。资料及公开活动计数、历史徽章使用两条 SELECT 组成一次 D1 batch；按账号 ID 关联徽章，再按规范化用户名提供给现有模板。完成初始化的游客帖子请求为 5 次数据库往返；有效登录会话与阅读进度更新额外各一次。
+
 `boards.slug` 保存分类与可发帖版块的公开地址标识，唯一索引防止重名。运行时幂等添加字段并为缺少 slug 的分类及版块按 ID 顺序回填，保留已有版块 slug；初始化和后台新增分类与版块调用同一逻辑。slug 由名称 Unicode 规范化、转小写并以连字符连接生成，重名追加数字后缀，纯数字名称加 `board-` 前缀。现有 slug 在改名及移动后保持稳定，Unicode 地址输出时编码。分类及版块公开路由按 slug 查找，旧数字 GET 地址 301 跳转；数字 POST 直接处理。主题地址、数据库关联和后台管理继续使用 ID。
 
 BBS 公共 HTML 模板统一声明独立标签页图标，引用同源 `/favicon.svg`、`/favicon.ico`、`/favicon-16.png` 和 `/favicon-32.png`。矢量源与兼容格式位于 `bbs/public/`，由 Wrangler 的 `assets.directory` 提供；命中图标的请求直接返回静态资产，不进入论坛数据库初始化。SVG 不依赖字体或外部资源，PNG 和 ICO 由同一矢量源生成。主站品牌资产保持原样。

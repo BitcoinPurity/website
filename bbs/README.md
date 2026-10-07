@@ -31,6 +31,8 @@ npm run dev
 
 Open http://localhost:8787. Local D1 is created automatically; boards are seeded on first request.
 
+Initialization saves a version marker in `bbs_migrations` only after schema upgrades and board seeding succeed. Subsequent page requests read that marker once instead of repeating migration work, including on fresh Worker instances. Bump `DATABASE_VERSION` in `src/db.ts` whenever schema, default boards, or backfills change. Topic author profiles and badges are fetched in one D1 batch, regardless of author count.
+
 Run board initialization, moderation, permissions and migration tests with Node.js 24:
 
 ```bash

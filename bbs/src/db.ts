@@ -36,6 +36,23 @@ export type UserProfile = AuthorProfile & {
 const POST_WINDOW_SECONDS = 60;
 const POST_LIMIT_PER_WINDOW = 5;
 
+// Bump this marker when the schema, default boards or backfills need another upgrade.
+const DATABASE_VERSION = "schema_2026_10_07";
+
+export async function initializeDatabase(db: D1Database): Promise<void> {
+  try {
+    const completed = await db.prepare("SELECT name FROM bbs_migrations WHERE name = ?")
+      .bind(DATABASE_VERSION).first();
+    if (completed) return;
+  } catch (error) {
+    if (!(error instanceof Error) || !error.message.includes("no such table: bbs_migrations")) throw error;
+  }
+  await ensureSchema(db);
+  await seedBoardsIfEmpty(db);
+  await db.prepare("INSERT OR IGNORE INTO bbs_migrations (name) VALUES (?)")
+    .bind(DATABASE_VERSION).run();
+}
+
 export async function ensureSchema(db: D1Database): Promise<void> {
   await db.batch([
     db.prepare(`CREATE TABLE IF NOT EXISTS users (
@@ -711,19 +728,42 @@ export async function getAuthorProfiles(
   const map = new Map<string, AuthorProfile>();
   if (usernames.length === 0) return map;
 
-  const unique = [...new Set(usernames)];
-  for (const username of unique) {
-    const profile = await getUserProfile(db, username);
-    if (profile) {
-      map.set(username.toLowerCase(), {
-        username: profile.username,
-        points: profile.points,
-        level: profile.level,
-        post_count: profile.post_count,
-        thread_count: profile.thread_count,
-        badges: profile.badges,
-      });
-    }
+  const requestedAuthors = JSON.stringify([...new Set(usernames)]);
+  const [profiles, badges] = await db.batch([
+    db.prepare(`SELECT u.id, u.username, u.points,
+      (SELECT COUNT(*) FROM posts p WHERE p.user_id=u.id AND p.is_deleted=0 AND EXISTS (
+        SELECT 1 FROM threads t JOIN boards b ON b.id=t.board_id JOIN boards c ON c.id=b.parent_id
+        WHERE t.id=p.thread_id AND t.is_deleted=0 AND b.is_archived=0 AND c.is_archived=0
+      )) AS post_count,
+      (SELECT COUNT(*) FROM threads t WHERE (
+        SELECT p.user_id FROM posts p WHERE p.thread_id=t.id ORDER BY p.created_at,p.id LIMIT 1
+      )=u.id AND t.is_deleted=0 AND EXISTS (
+        SELECT 1 FROM boards b JOIN boards c ON c.id=b.parent_id
+        WHERE b.id=t.board_id AND b.is_archived=0 AND c.is_archived=0
+      )) AS thread_count
+      FROM users u WHERE u.username COLLATE NOCASE IN (SELECT value FROM json_each(?))`)
+      .bind(requestedAuthors),
+    db.prepare(`SELECT u.id AS user_id, b.id, b.name, b.description, ub.earned_at
+      FROM users u JOIN user_badges ub ON ub.user_id=u.id JOIN badges b ON b.id=ub.badge_id
+      WHERE u.username COLLATE NOCASE IN (SELECT value FROM json_each(?))
+      ORDER BY b.sort_order, ub.earned_at`).bind(requestedAuthors),
+  ]);
+  const badgesByUser = new Map<number, UserBadge[]>();
+  for (const row of badges.results as (UserBadge & { user_id: number })[]) {
+    const { user_id, ...badge } = row;
+    const list = badgesByUser.get(user_id) ?? [];
+    list.push(badge);
+    badgesByUser.set(user_id, list);
+  }
+  for (const profile of profiles.results as (Omit<AuthorProfile, "level" | "badges"> & { id: number })[]) {
+    map.set(profile.username.toLowerCase(), {
+      username: profile.username,
+      points: profile.points,
+      level: levelFromPoints(profile.points),
+      post_count: profile.post_count,
+      thread_count: profile.thread_count,
+      badges: badgesByUser.get(profile.id) ?? [],
+    });
   }
   return map;
 }

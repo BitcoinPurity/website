@@ -23,7 +23,7 @@ function d1(sqlite) {
         async first() { return sqlite.prepare(sql).get(...values) ?? null; },
         async all() { return { results: sqlite.prepare(sql).all(...values) }; },
         run() {
-          if (/RETURNING/i.test(sql)) {
+          if (/^\s*SELECT|RETURNING/i.test(sql)) {
             const results = sqlite.prepare(sql).all(...values);
             return { success: true, results, meta: { changes: results.length } };
           }

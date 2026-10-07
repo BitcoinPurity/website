@@ -23,7 +23,6 @@ import {
   createUser,
   deletePasswordResetToken,
   deleteSession,
-  ensureSchema,
   getAuthorProfiles,
   getBoard,
   getBoardIndex,
@@ -37,10 +36,10 @@ import {
   getUserByEmail,
   getUserByUsername,
   getUserProfile,
+  initializeDatabase,
   isLeafBoard,
   MAX_REPLY_DEPTH,
   markThreadRead,
-  seedBoardsIfEmpty,
   updateUserPassword,
   type Env,
 } from "./db";
@@ -65,8 +64,7 @@ const app = new Hono<{ Bindings: Env }>();
 const RESET_TOKEN_HOURS = 1;
 
 app.use("*", async (c, next) => {
-  await ensureSchema(c.env.DB);
-  await seedBoardsIfEmpty(c.env.DB);
+  await initializeDatabase(c.env.DB);
   await next();
 });
 
