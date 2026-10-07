@@ -155,3 +155,30 @@ test("thread request round trips stay bounded with 120 authors and account readi
   }
   assert.equal(sqlite.prepare("SELECT last_read_post_id FROM thread_reads WHERE user_id=1 AND thread_id=1").get().last_read_post_id, 120);
 });
+
+test("Server-Timing reports thread phases without exposing account data or adding database calls", async (t) => {
+  const { db } = await fixture(t);
+  await initializeDatabase(db);
+  for (const signedIn of [false, true]) {
+    db.calls.length = 0;
+    const response = await app.request("https://bbs.example/thread/1", {
+      headers: signedIn ? { cookie: "bbs_session=reader" } : {},
+    }, { DB: db });
+    assert.equal(response.status, 200);
+    const timing = response.headers.get("server-timing");
+    assert.ok(timing);
+    const phases = ["init", "session", "thread", "board", "posts", "authors", "total"];
+    if (signedIn) phases.push("read");
+    for (const phase of phases) assert.match(timing, new RegExp(`(?:^|,)${phase};dur=\\d+(?:\\.\\d+)?(?:;|,|$)`));
+    assert.doesNotMatch(timing, /author-1|author-2|bbs_session|reader|SELECT|Visible message/);
+    if (!signedIn) assert.doesNotMatch(timing, /(?:^|,)read;/);
+    assert.equal(db.calls.length, signedIn ? 7 : 5);
+    assert.equal(response.headers.get("timing-allow-origin"), null);
+  }
+  for (const path of ["/login", "/thread/999"]) {
+    const response = await app.request(`https://bbs.example${path}`, {}, { DB: db });
+    assert.equal(response.status, path === "/login" ? 200 : 404);
+    assert.match(response.headers.get("server-timing"), /(?:^|,)init;dur=/);
+    assert.match(response.headers.get("server-timing"), /(?:^|,)total;dur=/);
+  }
+});

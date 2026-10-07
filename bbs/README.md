@@ -33,6 +33,8 @@ Open http://localhost:8787. Local D1 is created automatically; boards are seeded
 
 Initialization saves a version marker in `bbs_migrations` only after schema upgrades and board seeding succeed. Subsequent page requests read that marker once instead of repeating migration work, including on fresh Worker instances. Bump `DATABASE_VERSION` in `src/db.ts` whenever schema, default boards, or backfills change. Topic author profiles and badges are fetched in one D1 batch, regardless of author count.
 
+Dynamic responses include `Server-Timing` for initialization and total Worker handler time. Topic responses also report session, thread, board, posts, authors, and signed-in reading-progress stages. Compare these milliseconds with Chrome's Waiting for server response to distinguish handler waits from delays outside the handler. Workers timers advance with I/O, so these metrics identify I/O waits rather than precise CPU duration. Headers contain no account, session, or SQL content.
+
 Run board initialization, moderation, permissions and migration tests with Node.js 24:
 
 ```bash

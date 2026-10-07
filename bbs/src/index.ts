@@ -1,5 +1,6 @@
 import { getCookie } from "hono/cookie";
 import { Hono } from "hono";
+import { timing, wrapTime } from "hono/timing";
 import admin from "./admin";
 import {
   clearSessionCookie,
@@ -63,8 +64,9 @@ import {
 const app = new Hono<{ Bindings: Env }>();
 const RESET_TOKEN_HOURS = 1;
 
+app.use("*", timing({ totalDescription: "Worker handler" }));
 app.use("*", async (c, next) => {
-  await initializeDatabase(c.env.DB);
+  await wrapTime(c, "init", initializeDatabase(c.env.DB));
   await next();
 });
 
@@ -412,23 +414,23 @@ app.post("/board/:slug/new", async (c) => {
 
 app.get("/thread/:id", async (c) => {
   c.header("Cache-Control", "private, no-store");
-  const user = await readSessionUser(c);
+  const user = await wrapTime(c, "session", readSessionUser(c));
   const threadId = Number(c.req.param("id"));
   if (!Number.isInteger(threadId) || threadId < 1) {
     return c.html(errorPage("Invalid thread.", user), 400);
   }
 
-  const thread = await getThread(c.env.DB, threadId);
+  const thread = await wrapTime(c, "thread", getThread(c.env.DB, threadId));
   if (!thread) return c.html(errorPage("Thread not found.", user), 404);
 
-  const board = await getBoard(c.env.DB, thread.board_id);
+  const board = await wrapTime(c, "board", getBoard(c.env.DB, thread.board_id));
   if (!board) return c.html(errorPage("Board not found.", user), 404);
   if (!isLeafBoard(board)) {
     return c.html(errorPage("Board not found.", user), 404);
   }
 
-  const posts = await getPosts(c.env.DB, threadId);
-  const authorProfiles = await authorProfilesForPosts(c.env.DB, posts);
+  const posts = await wrapTime(c, "posts", getPosts(c.env.DB, threadId));
+  const authorProfiles = await wrapTime(c, "authors", authorProfilesForPosts(c.env.DB, posts));
   const replyToRaw = Number(c.req.query("reply_to"));
   const replyToId =
     Number.isInteger(replyToRaw) &&
@@ -440,7 +442,7 @@ app.get("/thread/:id", async (c) => {
   if (user && posts.length > 0) {
     // Mark only the displayed snapshot so replies arriving during this request stay unread.
     const lastReadPostId = posts.reduce((latest, post) => Math.max(latest, post.id), 0);
-    await markThreadRead(c.env.DB, user.id, threadId, lastReadPostId);
+    await wrapTime(c, "read", markThreadRead(c.env.DB, user.id, threadId, lastReadPostId));
   }
   return c.html(html);
 });
