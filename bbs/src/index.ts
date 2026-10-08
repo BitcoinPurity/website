@@ -42,12 +42,14 @@ import {
   MAX_REPLY_DEPTH,
   markThreadRead,
   updateUserPassword,
+  updateThread,
   type Env,
 } from "./db";
 import {
   boardIndexPage,
   categoryPage,
   errorPage,
+  editThreadPage,
   forgotPasswordPage,
   forgotPasswordSentPage,
   loginPage,
@@ -445,6 +447,53 @@ app.get("/thread/:id", async (c) => {
     await wrapTime(c, "read", markThreadRead(c.env.DB, user.id, threadId, lastReadPostId));
   }
   return c.html(html);
+});
+
+app.on(["GET", "POST"], "/thread/:id/edit", async (c) => {
+  c.header("Cache-Control", "private, no-store");
+  const user = await readSessionUser(c);
+  const path = new URL(c.req.url).pathname;
+  if (!user) return c.redirect(`/login?next=${encodeURIComponent(path)}`, 303);
+
+  const threadId = Number(c.req.param("id"));
+  if (!Number.isSafeInteger(threadId) || threadId < 1) {
+    return c.html(errorPage("Invalid thread.", user), 400);
+  }
+  const thread = await getThread(c.env.DB, threadId);
+  if (!thread) return c.html(errorPage("Thread not found.", user), 404);
+  const post = (await getPosts(c.env.DB, threadId))[0];
+  if (!post || post.is_deleted) return c.html(errorPage("Post not found.", user), 404);
+  if (post.user_id !== user.id || post.parent_id !== null) {
+    return c.html(errorPage("Only the topic owner can edit the opening post.", user), 403);
+  }
+
+  const sessionToken = getCookie(c, SESSION_COOKIE)!;
+  if (c.req.method === "GET") {
+    await c.env.DB.prepare("UPDATE sessions SET csrf_token = COALESCE(csrf_token, ?) WHERE token = ?")
+      .bind(createSessionToken(), sessionToken).run();
+  }
+  const session = await c.env.DB.prepare("SELECT csrf_token FROM sessions WHERE token = ?")
+    .bind(sessionToken).first<{ csrf_token: string | null }>();
+  const csrf = session?.csrf_token ?? "";
+  if (c.req.method === "GET") return c.html(editThreadPage(thread, post, user, csrf));
+
+  const form = await c.req.parseBody();
+  const origin = c.req.header("Origin");
+  if (!csrf || form.csrf_token !== csrf || (origin !== undefined && origin !== new URL(c.req.url).origin)) {
+    return c.html(errorPage("Invalid request. Reload the page and try again.", user), 403);
+  }
+  const title = String(form.title ?? "").trim();
+  const body = String(form.body ?? "").trim();
+  if (!title || !body || title.length > 120 || body.length > 10000) {
+    return c.html(editThreadPage({ ...thread, title: String(form.title ?? "") },
+      { ...post, body: String(form.body ?? "") }, user, csrf,
+      "Subject and message are required. Subject must be at most 120 characters and message at most 10000 characters."), 400);
+  }
+  if (title === thread.title && body === post.body) return c.redirect(`/thread/${threadId}#post-${post.id}`, 303);
+  if (!await updateThread(c.env.DB, threadId, user.id, title, body)) {
+    return c.html(errorPage("Editing is no longer available. Reload the page.", user), 409);
+  }
+  return c.redirect(`/thread/${threadId}#post-${post.id}`, 303);
 });
 
 app.post("/thread/:id/reply", async (c) => {

@@ -127,6 +127,8 @@ const STYLES = `
     word-wrap: break-word;
     margin-top: 6px;
   }
+  .fb-edit-history { margin-top: 24px; color: #65676b; font-size: 11px; }
+  .fb-edit-history ul { list-style: none; padding: 0; margin: 0; }
   .fb-comments { margin-top: 4px; }
   .fb-comment {
     display: flex;
@@ -556,6 +558,8 @@ export function threadListPage(
 
 export type PostRow = {
   id: number;
+  user_id?: number | null;
+  edit_times?: number[];
   parent_id: number | null;
   author: string;
   body: string;
@@ -662,6 +666,10 @@ function renderCommentNode(
       : "";
 
   if (isOp) {
+    const editAction = user && node.user_id === user.id && node.parent_id === null && !node.is_deleted
+      ? `<span class="sep">·</span><a href="/thread/${threadId}/edit">Edit</a>` : "";
+    const editHistory = !node.is_deleted && node.edit_times?.length
+      ? `<div class="fb-edit-history" aria-label="Edit history"><ul>${node.edit_times.map((ts) => `<li>Edited: ${formatDate(ts)}</li>`).join("")}</ul></div>` : "";
     return `<div class="fb-op" id="post-${node.id}">
       ${avatar}
       <div class="fb-main">
@@ -672,7 +680,9 @@ function renderCommentNode(
           <span>${formatDate(node.created_at)}</span>
           <span class="sep">·</span>
           ${replyAction}
+          ${editAction}
         </div>
+        ${editHistory}
         ${replyComposer}
         ${childrenHtml}
       </div>
@@ -783,6 +793,34 @@ export function newThreadPage(
       </form>
     </div>
   `,
+    user,
+  );
+}
+
+export function editThreadPage(
+  thread: { id: number; title: string },
+  post: PostRow,
+  user: SessionUser,
+  csrf: string,
+  error?: string,
+): string {
+  return layout(
+    `Edit topic — ${thread.title}`,
+    `
+    ${breadcrumb([{ label: "Board index", href: "/" }, { label: thread.title, href: `/thread/${thread.id}` }, { label: "Edit topic" }])}
+    <h2 class="page-title">Edit topic</h2>
+    ${error ? `<div class="error">${escapeHtml(error)}</div>` : ""}
+    <div class="formbox">
+      <form method="post" action="/thread/${thread.id}/edit">
+        <input type="hidden" name="csrf_token" value="${escapeHtml(csrf)}">
+        <label for="edit-title">Subject</label>
+        <input id="edit-title" type="text" name="title" required maxlength="120" value="${escapeHtml(thread.title)}">
+        <label for="edit-body">Message</label>
+        <textarea id="edit-body" name="body" required maxlength="10000">${escapeHtml(post.body)}</textarea>
+        <button type="submit" class="btn">Save changes</button>
+        <a href="/thread/${thread.id}#post-${post.id}">Cancel</a>
+      </form>
+    </div>`,
     user,
   );
 }

@@ -37,7 +37,7 @@ const POST_WINDOW_SECONDS = 60;
 const POST_LIMIT_PER_WINDOW = 5;
 
 // Bump this marker when the schema, default boards or backfills need another upgrade.
-const DATABASE_VERSION = "schema_2026_10_07";
+const DATABASE_VERSION = "schema_2026_10_09";
 
 export async function initializeDatabase(db: D1Database): Promise<void> {
   try {
@@ -106,6 +106,12 @@ export async function ensureSchema(db: D1Database): Promise<void> {
       is_deleted INTEGER NOT NULL DEFAULT 0,
       created_at INTEGER NOT NULL
     )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS post_edits (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      post_id INTEGER NOT NULL REFERENCES posts(id),
+      edited_at INTEGER NOT NULL
+    )`),
+    db.prepare(`CREATE INDEX IF NOT EXISTS idx_post_edits_post ON post_edits(post_id, id)`),
     db.prepare(`CREATE TABLE IF NOT EXISTS thread_reads (
       user_id INTEGER NOT NULL REFERENCES users(id),
       thread_id INTEGER NOT NULL REFERENCES threads(id),
@@ -1072,11 +1078,51 @@ export async function getPosts(
 ): Promise<PostRow[]> {
   const { results } = await db
     .prepare(
-      "SELECT id, parent_id, author, CASE WHEN is_deleted = 1 THEN 'Post deleted' ELSE body END AS body, created_at, is_deleted FROM posts WHERE thread_id = ? ORDER BY created_at ASC, id ASC",
+      `WITH opening_post AS (
+         SELECT id FROM posts WHERE thread_id = ? ORDER BY created_at, id LIMIT 1
+       )
+       SELECT p.id, p.parent_id, p.user_id, p.author,
+        CASE WHEN p.is_deleted = 1 THEN 'Post deleted' ELSE p.body END AS body,
+        p.created_at, p.is_deleted,
+        CASE WHEN p.id = (SELECT id FROM opening_post) AND p.is_deleted = 0 THEN
+          (SELECT json_group_array(edited_at) FROM (
+            SELECT edited_at FROM post_edits WHERE post_id = (SELECT id FROM opening_post) ORDER BY id
+          ))
+        ELSE '[]' END AS edit_times_json
+       FROM posts p WHERE p.thread_id = ? ORDER BY p.created_at ASC, p.id ASC`,
     )
-    .bind(threadId)
-    .all<PostRow>();
-  return results ?? [];
+    .bind(threadId, threadId)
+    .all<PostRow & { edit_times_json: string }>();
+  return (results ?? []).map(({ edit_times_json, ...post }) => ({
+    ...post, edit_times: JSON.parse(edit_times_json) as number[],
+  }));
+}
+
+export async function updateThread(
+  db: D1Database,
+  threadId: number,
+  userId: number,
+  title: string,
+  body: string,
+): Promise<boolean> {
+  const results = await db.batch<{ id: number }>([
+    db.prepare(`INSERT INTO post_edits (post_id, edited_at)
+      SELECT p.id, ? FROM posts p
+      JOIN threads t ON t.id=p.thread_id
+      JOIN boards b ON b.id=t.board_id JOIN boards c ON c.id=b.parent_id
+      JOIN users u ON u.id=p.user_id
+      WHERE t.id=? AND p.user_id=? AND p.parent_id IS NULL
+        AND p.id=(SELECT id FROM posts WHERE thread_id=t.id ORDER BY created_at,id LIMIT 1)
+        AND p.is_deleted=0 AND t.is_deleted=0 AND b.is_archived=0 AND c.is_archived=0 AND u.is_banned=0
+        AND (t.title<>? OR p.body<>?) RETURNING id`)
+      .bind(Math.floor(Date.now() / 1000), threadId, userId, title, body),
+    // The audit insert authorizes this edit; all three statements commit together.
+    db.prepare(`UPDATE posts SET body=? WHERE thread_id=? AND changes()>0
+      AND id=(SELECT post_id FROM post_edits WHERE id=last_insert_rowid())`)
+      .bind(body, threadId),
+    db.prepare("UPDATE threads SET title=? WHERE id=? AND changes()>0").bind(title, threadId),
+  ]);
+  return results[0].results.length > 0;
 }
 
 export async function markThreadRead(

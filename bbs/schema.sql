@@ -55,6 +55,14 @@ CREATE TABLE IF NOT EXISTS posts (
   created_at INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS post_edits (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  post_id INTEGER NOT NULL REFERENCES posts(id),
+  edited_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_post_edits_post ON post_edits(post_id, id);
+
 CREATE TABLE IF NOT EXISTS thread_reads (
   user_id INTEGER NOT NULL REFERENCES users(id),
   thread_id INTEGER NOT NULL REFERENCES threads(id),

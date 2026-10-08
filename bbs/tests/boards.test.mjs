@@ -348,7 +348,7 @@ test("a reply arriving after posts are fetched stays unread and older reads cann
   let injected = false;
   db.prepare = (sql) => {
     const statement = prepare(sql);
-    if (sql.includes("AS body, created_at, is_deleted FROM posts WHERE thread_id")) {
+    if (sql.includes("FROM posts p WHERE p.thread_id = ? ORDER BY p.created_at ASC, p.id ASC")) {
       const all = statement.all;
       statement.all = async () => {
         const result = await all();
@@ -362,6 +362,7 @@ test("a reply arriving after posts are fetched stays unread and older reads cann
     return statement;
   };
   const html = await request("/thread/1");
+  assert.ok(injected, "reply is inserted after fetching the displayed snapshot");
   assert.ok(!html.includes("Arrived during reading"));
   assert.equal((await getBoard(db, 11, 1)).new_topic_count, 1);
   await request("/thread/1");
