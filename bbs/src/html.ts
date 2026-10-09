@@ -1,3 +1,4 @@
+import { LIVE_INTERVAL_MS, LIVE_RETRY_MS, LIVE_TIMEOUT_MS } from "./live-config";
 import type { SessionUser } from "./auth";
 
 export type AuthorDisplay = {
@@ -319,7 +320,7 @@ function navBar(user: SessionUser | null): string {
     ? `<span class="nav-user"><a href="/user/${escapeHtml(user.username)}">${escapeHtml(user.username)}</a> · ${escapeHtml(user.level)} · ${user.points} pts &nbsp;|&nbsp; ${user.role === "admin" ? '<a href="/admin">Admin</a> &nbsp;|&nbsp; ' : ""}<a href="/logout">Logout</a></span>`
     : `<span class="nav-user"><a href="/login">Login</a> &nbsp;|&nbsp; <a href="/register">Register</a></span>`;
 
-  return `<div class="nav">
+  return `<div class="nav" id="live-navigation">
     <a href="/">Board index</a>
     &nbsp;|&nbsp;
     Registration required to post
@@ -327,10 +328,13 @@ function navBar(user: SessionUser | null): string {
   </div>`;
 }
 
+type LivePageOptions = { kind: "index" | "category" | "board" | "thread"; key?: string | number; lastPostId?: number; locked?: boolean };
+
 export function layout(
   title: string,
   body: string,
   user: SessionUser | null = null,
+  live?: LivePageOptions,
 ): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -344,7 +348,7 @@ export function layout(
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
   <style>${STYLES}</style>
 </head>
-<body>
+<body${live ? ` data-live-kind="${live.kind}" data-live-key="${escapeHtml(String(live.key ?? ""))}" data-live-interval="${LIVE_INTERVAL_MS}" data-live-retry="${LIVE_RETRY_MS.join(",")}" data-live-timeout="${LIVE_TIMEOUT_MS}" data-live-viewer="${user?.id ?? ""}" data-live-last-post="${live.lastPostId ?? 0}" data-live-locked="${live.locked ? "1" : "0"}" data-live-csrf="${escapeHtml(user?.csrf_token ?? "")}"` : ""}>
   <div class="topbar">
     <strong>Bitcoin Purity BBS</strong>
     &nbsp;·&nbsp;
@@ -352,13 +356,15 @@ export function layout(
     &nbsp;·&nbsp;
     <a href="https://bitcoinpurity.org">bitcoinpurity.org</a>
   </div>
-  ${navBar(user)}
-  <div class="wrap">
+  <!--live:navigation:start-->${navBar(user)}<!--live:navigation:end-->
+  <!--live:content:start--><div class="wrap" id="live-content">
     ${body}
-  </div>
+  </div><!--live:content:end-->
+  ${live ? '<div class="wrap"><div id="live-status" class="notice" role="status" hidden></div></div>' : ""}
   <div class="footer">
     Bitcoin Purity BBS · Username login · Optional email for password reset
   </div>
+  ${live ? '<script type="module" src="/live-refresh.js"></script>' : ""}
 </body>
 </html>`;
 }
@@ -422,11 +428,11 @@ export function boardIndexPage(
           : section.boards
               .map(
                 (b, i) =>
-                  `<tr class="${i % 2 ? "alt" : ""}">${boardStatsCells(b, user != null)}</tr>`,
+                  `<tr id="live-board-${b.id}" class="${i % 2 ? "alt" : ""}">${boardStatsCells(b, user != null)}</tr>`,
               )
               .join("");
 
-      return `<table class="forum">
+      return `<table id="live-category-${section.id}" class="forum">
       <tr class="category-head">
         <td colspan="3">
           <a href="/category/${encodeURIComponent(section.slug)}">${escapeHtml(section.name)}</a>
@@ -455,6 +461,7 @@ export function boardIndexPage(
     ${tables}
   `,
     user,
+    { kind: "index" },
   );
 }
 
@@ -468,7 +475,7 @@ export function categoryPage(
       : section.boards
           .map(
             (b, i) =>
-              `<tr class="${i % 2 ? "alt" : ""}">${boardStatsCells(b, user != null)}</tr>`,
+              `<tr id="live-board-${b.id}" class="${i % 2 ? "alt" : ""}">${boardStatsCells(b, user != null)}</tr>`,
           )
           .join("");
 
@@ -492,6 +499,7 @@ export function categoryPage(
     </table>
   `,
     user,
+    { kind: "category", key: section.slug },
   );
 }
 
@@ -521,7 +529,7 @@ export function threadListPage(
       : threads
           .map((t, i) => {
             const replies = t.reply_count > 0 ? t.reply_count : 0;
-            return `<tr class="${i % 2 ? "alt" : ""}">
+            return `<tr id="live-topic-${t.id}" class="${i % 2 ? "alt" : ""}">
           <td class="thread-title"><a href="/thread/${t.id}">${escapeHtml(t.title)}</a>${t.is_pinned ? " · Pinned" : ""}${t.is_locked ? " · Locked" : ""}</td>
           <td>${escapeHtml(t.author)}</td>
           <td class="stats">${replies}</td>
@@ -553,6 +561,7 @@ export function threadListPage(
     </table>
   `,
     user,
+    { kind: "board", key: board.slug },
   );
 }
 
@@ -636,7 +645,7 @@ function renderCommentNode(
 
   const replyComposer =
     user && repliesEnabled && !node.is_deleted && isReplyingHere
-      ? `<div class="fb-inline-reply" id="reply-${node.id}">
+      ? `<div class="fb-inline-reply" data-live-preserve="reply-${node.id}" id="reply-${node.id}">
           <div class="fb-avatar sm">${avatarLetter(user.username)}</div>
           <form method="post" action="/thread/${threadId}/reply" style="flex:1">
             <input type="hidden" name="parent_id" value="${node.id}">
@@ -670,7 +679,7 @@ function renderCommentNode(
       ? `<span class="sep">·</span><a href="/thread/${threadId}/edit">Edit</a>` : "";
     const editHistory = !node.is_deleted && node.edit_times?.length
       ? `<div class="fb-edit-history" aria-label="Edit history"><ul>${node.edit_times.map((ts) => `<li>Edited: ${formatDate(ts)}</li>`).join("")}</ul></div>` : "";
-    return `<div class="fb-op" id="post-${node.id}">
+    return `<div class="fb-op" data-post-deleted="${node.is_deleted ? "1" : "0"}" id="post-${node.id}">
       ${avatar}
       <div class="fb-main">
         <div class="fb-author-line">${nameHtml}${levelHtml}</div>
@@ -689,7 +698,7 @@ function renderCommentNode(
     </div>`;
   }
 
-  return `<div class="fb-comment depth-${Math.min(depth, 5)}" id="post-${node.id}">
+  return `<div class="fb-comment depth-${Math.min(depth, 5)}" data-post-deleted="${node.is_deleted ? "1" : "0"}" id="post-${node.id}">
     ${avatar}
     <div class="fb-main">
       <div class="fb-bubble">
@@ -759,6 +768,7 @@ export function threadPage(
     </div>
   `,
     user,
+    { kind: "thread", key: thread.id, lastPostId: posts.reduce((max, post) => Math.max(max, post.id), 0), locked: !!thread.is_locked },
   );
 }
 

@@ -1,5 +1,14 @@
 # 路由契约
 
+## BBS 定时局部刷新
+
+- `GET /api/live?kind=index|category|board|thread&key=...`：index 不需要 key，category/board 使用 slug，thread 使用正安全整数 ID；thread 可带 `reply_to` 保持回复入口状态。其他 kind 或非法目标参数返回 400，不存在/删除主题或归档分类/版块返回 404。
+- 200 JSON：`title`、`viewerId`（访客为 null）、`regions: [{id, html, hash}]`、`lastPostId`、`locked`、`posts: [{id, parentId, deleted}]`。regions 为 `live-navigation`/`live-content`，HTML 与普通页面使用同一模板，包含稳定分类/版块/主题/帖子 ID。非 thread 的 posts 为空、lastPostId 为 0。
+- 响应提供整体 SHA-256 ETag；`If-None-Match` 相同返回无正文 304。200/304/错误均 `private, no-store`。每轮两次 D1 往返：初始化标记及一次只读 batch；304 仍需读取，不写阅读记录、修改记录或 CSRF。
+- `POST /thread/:id/read`：JSON `lastPostId`、`csrf_token`，Origin 必须与服务同源。204 表示有效确认（含重复或旧进度，不实际更新）；非法 ID/进度/JSON 为 400，未登录为 401，CSRF/Origin 为 403，不可见主题为 404。帖子 ID 必须属于当前主题；批处理中再次校验所有条件，进度只能增加。响应 `private, no-store`。
+- 新会话创建时保存 CSRF；旧会话首次 thread HTML 请求缺失时只补建一次。客户端仅对成功展示的新帖子确认，不为轮询、仅正文变化或渲染失败标记已读；失败后可重试尚未确认的展示进度。
+- 当前账号改变或主题不可见时客户端停止刷新并禁用操作，不自动跳转；不可见内容隐藏，原回复草稿节点保留。正常网络错误保留内容并退避，原有页面 URL、提交表单及禁用 JavaScript 的使用方式保持可用。
+
 ## BBS 主贴编辑
 
 - `GET /thread/:id/edit`：仅主贴作者获取预填标题、正文及会话 `csrf_token` 的编辑表单；取消返回 `/thread/:id#post-<首帖ID>`，不写阅读进度或修改记录。

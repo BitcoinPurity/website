@@ -61,7 +61,7 @@ async function fixture(t, authorCount = 2) {
     sqlite.prepare("INSERT INTO users(id,username,password_hash,points,created_at) VALUES(?,?,'unused',60,1)").run(id, `author-${id}`);
     sqlite.prepare("INSERT INTO posts(id,thread_id,parent_id,user_id,author,body,created_at) VALUES(?,1,?,?,?,'Visible message',?)").run(id, id === 1 ? null : 1, id, `author-${id}`, id);
   }
-  sqlite.exec("INSERT INTO sessions(token,user_id,expires_at) VALUES('reader',1,9999999999)");
+  sqlite.exec("INSERT INTO sessions(token,user_id,csrf_token,expires_at) VALUES('reader',1,'reader-csrf',9999999999)");
   return { sqlite, db };
 }
 

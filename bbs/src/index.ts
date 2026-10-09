@@ -1,3 +1,4 @@
+import { acknowledgeRead, digest, readLivePage, type LiveKind } from "./live";
 import { getCookie } from "hono/cookie";
 import { Hono } from "hono";
 import { timing, wrapTime } from "hono/timing";
@@ -414,6 +415,37 @@ app.post("/board/:slug/new", async (c) => {
   return c.redirect(`/thread/${threadId}`, 303);
 });
 
+app.get("/api/live", async (c) => {
+  c.header("Cache-Control", "private, no-store");
+  const kind = c.req.query("kind") as LiveKind;
+  const key = c.req.query("key") ?? "";
+  if (!["index", "category", "board", "thread"].includes(kind)
+    || ((kind === "category" || kind === "board") && !key)
+    || (kind === "thread" && (!Number.isSafeInteger(Number(key)) || Number(key) < 1))) {
+    return c.json({ error: "Invalid page." }, 400);
+  }
+  const replyTo = Number(c.req.query("reply_to"));
+  const snapshot = await wrapTime(c, "snapshot", readLivePage(c.env.DB, kind, key, getCookie(c, SESSION_COOKIE),
+    Number.isSafeInteger(replyTo) && replyTo > 0 ? replyTo : null));
+  if (!snapshot) return c.json({ error: "This page is no longer available." }, 404);
+  const etag = `"${await digest(JSON.stringify(snapshot))}"`;
+  c.header("ETag", etag);
+  if (c.req.header("If-None-Match") === etag) return c.body(null, 304);
+  return c.json(snapshot);
+});
+
+app.post("/thread/:id/read", async (c) => {
+  c.header("Cache-Control", "private, no-store");
+  if (c.req.header("Origin") !== new URL(c.req.url).origin) return c.json({ error: "Invalid origin." }, 403);
+  const id = Number(c.req.param("id"));
+  const form = await c.req.json().catch(() => null);
+  if (!Number.isSafeInteger(id) || id < 1 || !form || !Number.isSafeInteger(form.lastPostId) || form.lastPostId < 1) {
+    return c.json({ error: "Invalid read progress." }, 400);
+  }
+  const status = await acknowledgeRead(c.env.DB, id, form.lastPostId, getCookie(c, SESSION_COOKIE), String(form.csrf_token ?? ""));
+  return status === 204 ? c.body(null, 204) : c.json({ error: "Unable to update reading progress." }, status);
+});
+
 app.get("/thread/:id", async (c) => {
   c.header("Cache-Control", "private, no-store");
   const user = await wrapTime(c, "session", readSessionUser(c));
@@ -432,6 +464,11 @@ app.get("/thread/:id", async (c) => {
   }
 
   const posts = await wrapTime(c, "posts", getPosts(c.env.DB, threadId));
+  if (user && !user.csrf_token) {
+    const session = await c.env.DB.prepare("UPDATE sessions SET csrf_token=COALESCE(csrf_token,?) WHERE token=? RETURNING csrf_token")
+      .bind(createSessionToken(), getCookie(c, SESSION_COOKIE)!).first<{ csrf_token: string }>();
+    user.csrf_token = session?.csrf_token;
+  }
   const authorProfiles = await wrapTime(c, "authors", authorProfilesForPosts(c.env.DB, posts));
   const replyToRaw = Number(c.req.query("reply_to"));
   const replyToId =
