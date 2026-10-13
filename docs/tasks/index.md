@@ -12,3 +12,4 @@
 - [TASK-010：BBS 帖子打开延迟修复](TASK-010.md)
 - [TASK-011：BBS 主贴编辑](TASK-011.md)
 - [TASK-012：BBS 定时局部刷新](TASK-012.md)
+- [TASK-013：v1.0.2 正式版同步](TASK-013.md)
