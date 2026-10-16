@@ -56,6 +56,12 @@ Bitcoin Purity 最新正式版本为 `v1.0.2`。全部语言的版本展示、�
 
 每个页面包含当前语言的 HTML `lang`、标题、描述、canonical、三种语言的 hreflang；sitemap 包含全部 33 个页面。外部白皮书 PDF 与仓库文档保持其原始语言，页面应说明。
 
+## 矿池目录与挖矿手册
+
+`/miners` 在“Mining options”内的自托管 DATUM 选项之后展示合作矿池目录。每个第三方矿池只显示网站链接和简要说明，不展示 Stratum 地址。Competitiously 标注为首个社区矿池，提供 SOLO 与 PPLNS；Mole 标注为目前最大的矿池；Crypto-Éire 使用 `https://crypto-eire.com/#btc1`，标注为首个 DATUM TIDES 矿池。
+
+在 Mining options 的介绍段落后提供完整挖矿手册链接。简体中文页面使用 `https://downloads.bitcoinpurity.org/docs/Bitcoin_Purity_Mining_Manual_v0.9.2_zh.pdf`，正体中文页面使用 `https://downloads.bitcoinpurity.org/docs/Bitcoin_Purity_Mining_Manual_v0.9.2_zh-Hant.pdf`，英文页面使用 `https://downloads.bitcoinpurity.org/docs/Bitcoin_Purity_Mining_Manual_v0.9.2_en.pdf`。本规格当前支持的页面语言为英文、简体中文和正体中文。
+
 ## BBS 后台管理
 
 - 在 BBS 服务提供 `/admin`，复用论坛登录与英文样式，仅管理员可访问。

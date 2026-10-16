@@ -27,22 +27,31 @@ export const SERVICES = {
   },
 } as const;
 
-/** Third-party solo pools listed on the For Miners page. */
+/** Third-party mining pools listed on the For Miners page. */
 export const PARTNER_POOLS = [
   {
-    name: "Competitiously solo pool",
+    name: "Competitiously community pool",
     website: "https://competitiously.com",
-    stratum: ["stratum+tcp://stratum.competitiously.com:4444"] as const,
+    description:
+      "The first community pool, offering SOLO and PPLNS mining.",
   },
   {
     name: "Mole solo pool",
     website: "https://btc1.molepool.com/",
-    stratum: [
-      "stratum+tcp://ru.molepool.com:5021",
-      "stratum+tcp://eu.molepool.com:5021",
-    ] as const,
+    description: "Currently the largest pool.",
+  },
+  {
+    name: "Crypto-Éire DATUM TIDES pool",
+    website: "https://crypto-eire.com/#btc1",
+    description: "The first DATUM TIDES pool.",
   },
 ] as const;
+
+export const MINING_MANUALS = {
+  en: "https://downloads.bitcoinpurity.org/docs/Bitcoin_Purity_Mining_Manual_v0.9.2_en.pdf",
+  zhCN: "https://downloads.bitcoinpurity.org/docs/Bitcoin_Purity_Mining_Manual_v0.9.2_zh.pdf",
+  zhTW: "https://downloads.bitcoinpurity.org/docs/Bitcoin_Purity_Mining_Manual_v0.9.2_zh-Hant.pdf",
+} as const;
 
 export const WHITEPAPER_PDF =
   "https://downloads.bitcoinpurity.org/whitepaper.pdf" as const;

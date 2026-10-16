@@ -7,7 +7,7 @@ import { LaunchPanel } from "@/components/LaunchPanel";
 import { PageHeader } from "@/components/PageHeader";
 import { ScrollToId } from "@/components/ScrollToId";
 import { StatusBadge } from "@/components/StatusBadge";
-import { PARTNER_POOLS } from "@/content/links";
+import { MINING_MANUALS, PARTNER_POOLS } from "@/content/links";
 import { protocol } from "@/content/protocol";
 
 export default function MinersPage({ locale = "en" }: LocalizedProps = {}) {
@@ -117,53 +117,6 @@ export default function MinersPage({ locale = "en" }: LocalizedProps = {}) {
             </dd>
           </div>
         </dl>
-        <section id="partner-pools" className="scroll-mt-24">
-          <h2 className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
-            {t("Partner pools")}
-          </h2>
-          <p className="mt-3 max-w-2xl text-lg leading-relaxed text-muted">
-            {t(
-              "Independent solo pools that operators may point SHA256d hardware at. These are third-party services — verify each endpoint independently before committing hash rate.",
-            )}
-          </p>
-          <div className="mt-8 grid gap-10 sm:grid-cols-2">
-            {PARTNER_POOLS.map((pool) => (
-              <div key={pool.name} className="space-y-4 font-mono text-sm">
-                <h3 className="font-sans text-xl text-ink">{pool.name}</h3>
-                <dl className="space-y-4">
-                  <div>
-                    <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">
-                      {t("Website")}
-                    </dt>
-                    <dd className="mt-2">
-                      <ExternalLink
-                        locale={locale}
-                        href={pool.website}
-                        className="text-gold"
-                      >
-                        {pool.website
-                          .replace(/^https?:\/\//, "")
-                          .replace(/\/$/, "")}
-                      </ExternalLink>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-[11px] tracking-[0.14em] text-muted uppercase">
-                      {t("Stratum")}
-                    </dt>
-                    <dd className="mt-2 space-y-2 text-ink">
-                      {pool.stratum.map((url) => (
-                        <div key={url}>
-                          <CopyableMono locale={locale} value={url} />
-                        </div>
-                      ))}
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-            ))}
-          </div>
-        </section>
         <section className="space-y-6" aria-labelledby="mining-options-title">
           <div>
             <h2
@@ -176,6 +129,21 @@ export default function MinersPage({ locale = "en" }: LocalizedProps = {}) {
               {t(
                 "Choose a hosted pool or let your own Purity node build work for your miners.",
               )}
+            </p>
+            <p className="mt-3 text-sm">
+              <ExternalLink
+                locale={locale}
+                href={
+                  locale === "zh-CN"
+                    ? MINING_MANUALS.zhCN
+                    : locale === "zh-TW"
+                      ? MINING_MANUALS.zhTW
+                      : MINING_MANUALS.en
+                }
+                className="text-gold"
+              >
+                {t("Read the full mining manual")} →
+              </ExternalLink>
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -292,6 +260,45 @@ export default function MinersPage({ locale = "en" }: LocalizedProps = {}) {
               </ExternalLink>
             </article>
           </div>
+          <section
+            id="partner-pools"
+            className="scroll-mt-24 border-t border-line pt-8"
+          >
+            <h3 className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
+              {t("Partner pools")}
+            </h3>
+            <p className="mt-3 max-w-2xl leading-relaxed text-muted">
+              {t(
+                "Independent mining pools for SHA256d hardware. These are third-party services — review each pool and its terms before committing hash rate.",
+              )}
+            </p>
+            <div className="mt-8 grid gap-10 sm:grid-cols-2">
+              {PARTNER_POOLS.map((pool) => (
+                <div key={pool.name} className="space-y-3 font-mono text-sm">
+                  <h4 className="font-sans text-xl text-ink">{pool.name}</h4>
+                  <div>
+                    <p className="text-[11px] tracking-[0.14em] text-muted uppercase">
+                      {t("Website")}
+                    </p>
+                    <p className="mt-2">
+                      <ExternalLink
+                        locale={locale}
+                        href={pool.website}
+                        className="text-gold"
+                      >
+                        {pool.website
+                          .replace(/^https?:\/\//, "")
+                          .replace(/\/$/, "")}
+                      </ExternalLink>
+                    </p>
+                  </div>
+                  <p className="font-sans leading-relaxed text-muted">
+                    {t(pool.description)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
         </section>
         <div className="flex flex-wrap gap-4">
           <ExternalLink

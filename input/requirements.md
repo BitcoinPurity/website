@@ -90,3 +90,10 @@
 - 站内导航保持当前语言；外部服务、仓库文档、白皮书 PDF、命令、协议参数与服务地址保持原值。
 - 本地化 HTML 语言属性、页面标题、描述与社交元数据，提供 canonical、hreflang 与 sitemap。
 - 与现有 Next.js 静态导出及 Cloudflare Worker 资产路径兼容。
+
+## 矿池目录与挖矿手册
+
+- `/miners` 将合作矿池目录放在“Mining options”内的自托管 DATUM 选项之后；条目只展示网站和简要说明，不展示 Stratum 地址。
+- Competitiously 标注为首个社区矿池，提供 SOLO 与 PPLNS；Mole 标注为目前最大的矿池；Crypto-Éire 链接到 `https://crypto-eire.com/#btc1`，标注为首个 DATUM TIDES 矿池。
+- 在 Mining options 的介绍段落后提供完整挖矿手册链接：简体中文页面使用 `https://downloads.bitcoinpurity.org/docs/Bitcoin_Purity_Mining_Manual_v0.9.2_zh.pdf`，正体中文页面使用 `https://downloads.bitcoinpurity.org/docs/Bitcoin_Purity_Mining_Manual_v0.9.2_zh-Hant.pdf`，英文页面使用 `https://downloads.bitcoinpurity.org/docs/Bitcoin_Purity_Mining_Manual_v0.9.2_en.pdf`。
+- 不新增 API 或站内路由。当前官网支持英文、简体中文及正体中文；尚无葡萄牙语页面。

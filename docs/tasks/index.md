@@ -13,3 +13,4 @@
 - [TASK-011：BBS 主贴编辑](TASK-011.md)
 - [TASK-012：BBS 定时局部刷新](TASK-012.md)
 - [TASK-013：v1.0.2 正式版同步](TASK-013.md)
+- [TASK-014：矿池目录与挖矿手册](TASK-014.md)
