@@ -36,7 +36,7 @@ BBS 公共模板通过 `rel="icon"` 加载同源独立图标。`GET /favicon.svg
 
 Bitcoin Purity 最新正式版本下载地址为 `https://github.com/saltduck/bitcoinpurity/releases/tag/v1.0.2`，对应源码为 `https://github.com/saltduck/bitcoinpurity/tree/v1.0.2`。源码构建命令检出 `v1.0.2`；其他外部地址不变，无新增 API 或路由。
 
-矿工页的合作矿池及挖矿手册均为静态外部链接，不新增 API 或站内路由。简体中文、正体中文和英文页面分别链接对应语言的手册 PDF；当前路由不支持葡萄牙语页面。
+矿工页的合作矿池（Competitiously、Mole、Crypto-Éire、ArgfaMining）及挖矿手册均为静态外部链接，不新增 API 或站内路由。ArgfaMining 标注为首个 PROP 矿池，并注明也提供 SOLO 挖矿。简体中文、正体中文和英文页面分别链接对应语言的手册 PDF；当前路由不支持葡萄牙语页面。
 
 BBS 的 Announcement 复用现有 `/board/:slug`、`/board/:slug/new` 与帖子回复路由；版块 slug 持久保存，入口从首页与 Bitcoin Purity 分类页生成。发帖仍遵循已有登录和限流规则，无新增 API。
 

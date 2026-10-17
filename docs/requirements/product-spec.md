@@ -58,7 +58,7 @@ Bitcoin Purity 最新正式版本为 `v1.0.2`。全部语言的版本展示、�
 
 ## 矿池目录与挖矿手册
 
-`/miners` 在“Mining options”内的自托管 DATUM 选项之后展示合作矿池目录。每个第三方矿池只显示网站链接和简要说明，不展示 Stratum 地址。Competitiously 标注为首个社区矿池，提供 SOLO 与 PPLNS；Mole 标注为目前最大的矿池；Crypto-Éire 使用 `https://crypto-eire.com/#btc1`，标注为首个 DATUM TIDES 矿池。
+`/miners` 在“Mining options”内的自托管 DATUM 选项之后展示合作矿池目录。每个第三方矿池只显示网站链接和简要说明，不展示 Stratum 地址。Competitiously 标题不含“community”，并标注为首个社区矿池，提供 SOLO 与 PPLNS；Mole 标注为目前最大的矿池；Crypto-Éire 使用 `https://crypto-eire.com/#btc1`，标注为首个 DATUM TIDES 矿池并注明提供 SOLO 挖矿；ArgfaMining 使用 `https://argfamining.com/solo_btc1.html`，标注为首个 PROP 矿池并注明也提供 SOLO 挖矿。
 
 在 Mining options 的介绍段落后提供完整挖矿手册链接。简体中文页面使用 `https://downloads.bitcoinpurity.org/docs/Bitcoin_Purity_Mining_Manual_v0.9.2_zh.pdf`，正体中文页面使用 `https://downloads.bitcoinpurity.org/docs/Bitcoin_Purity_Mining_Manual_v0.9.2_zh-Hant.pdf`，英文页面使用 `https://downloads.bitcoinpurity.org/docs/Bitcoin_Purity_Mining_Manual_v0.9.2_en.pdf`。本规格当前支持的页面语言为英文、简体中文和正体中文。
 

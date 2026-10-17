@@ -30,7 +30,7 @@ export const SERVICES = {
 /** Third-party mining pools listed on the For Miners page. */
 export const PARTNER_POOLS = [
   {
-    name: "Competitiously community pool",
+    name: "Competitiously pool",
     website: "https://competitiously.com",
     description:
       "The first community pool, offering SOLO and PPLNS mining.",
@@ -43,7 +43,12 @@ export const PARTNER_POOLS = [
   {
     name: "Crypto-Éire DATUM TIDES pool",
     website: "https://crypto-eire.com/#btc1",
-    description: "The first DATUM TIDES pool.",
+    description: "The first DATUM TIDES pool, also offering SOLO mining.",
+  },
+  {
+    name: "ArgfaMining",
+    website: "https://argfamining.com/solo_btc1.html",
+    description: "The first PROP pool, also offering SOLO mining.",
   },
 ] as const;
 
