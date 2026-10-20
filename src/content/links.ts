@@ -41,14 +41,14 @@ export const PARTNER_POOLS = [
     description: "Currently the largest pool.",
   },
   {
-    name: "Crypto-Éire DATUM TIDES pool",
-    website: "https://crypto-eire.com/#btc1",
-    description: "The first DATUM TIDES pool, also offering SOLO mining.",
-  },
-  {
     name: "ArgfaMining",
     website: "https://argfamining.com/solo_btc1.html",
     description: "The first PROP pool, also offering SOLO mining.",
+  },
+  {
+    name: "Rabid Mining",
+    website: "https://pool.rabidmining.com/btc1#pool",
+    description: "YouTuber-run mining pool. Supports PPLNS and SOLO mining.",
   },
 ] as const;
 

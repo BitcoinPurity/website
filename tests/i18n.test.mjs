@@ -7,6 +7,28 @@ import {
   locales,
   launchDate,
 } from "../src/lib/i18n.ts";
+import { PARTNER_POOLS } from "../src/content/links.ts";
+
+test("partner pools replace Crypto-Éire with Rabid Mining at the end", () => {
+  assert.deepEqual(
+    PARTNER_POOLS.map((pool) => pool.name),
+    ["Competitiously pool", "Mole solo pool", "ArgfaMining", "Rabid Mining"],
+  );
+  const rabid = PARTNER_POOLS.at(-1);
+  assert.equal(rabid.website, "https://pool.rabidmining.com/btc1#pool");
+  assert.equal(
+    rabid.description,
+    "YouTuber-run mining pool. Supports PPLNS and SOLO mining.",
+  );
+  assert.equal(
+    translator("zh-CN")(rabid.description),
+    "由 YouTuber 运营的矿池，支持 PPLNS 和 SOLO 挖矿。",
+  );
+  assert.equal(
+    translator("zh-TW")(rabid.description),
+    "由 YouTuber 營運的礦池，支援 PPLNS 和 SOLO 挖礦。",
+  );
+});
 
 test("localized links retain anchors and leave external and asset paths intact", () => {
   assert.equal(
