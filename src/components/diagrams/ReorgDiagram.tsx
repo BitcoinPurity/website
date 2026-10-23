@@ -9,7 +9,7 @@ export function ReorgDiagram({ locale = "en" }: LocalizedProps = {}) {
       </div>
       <figcaption className="sr-only">
         {t(
-          "If connecting a block would rewind the active chain by more than six blocks, the node parks that block for operator review instead of automatically reorganizing. This is local policy, not a consensus rule.",
+          "If connecting a block would rewind the active chain by more than three blocks, the node parks that block for operator review instead of automatically reorganizing. This is local policy, not a consensus rule.",
         )}
       </figcaption>
       <pre
@@ -17,7 +17,7 @@ export function ReorgDiagram({ locale = "en" }: LocalizedProps = {}) {
         className="min-w-[34rem] font-mono text-[11px] leading-6 tracking-[0.04em] text-ink sm:text-xs"
       >
         {t(
-          "ACTIVE CHAIN\nA → B → C → D → E → F → G\n\nCOMPETING CHAIN\nA → B → C → X → Y → Z → ...\n\nREORG DEPTH > 6\n        ↓\n      PARK\n        ↓\nOPERATOR REVIEW",
+          "ACTIVE CHAIN\nA → B → C → D → E → F → G\n\nCOMPETING CHAIN\nA → B → C → X → Y → Z → ...\n\nREORG DEPTH > 3\n        ↓\n      PARK\n        ↓\nOPERATOR REVIEW",
         )}
       </pre>
     </figure>

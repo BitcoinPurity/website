@@ -7,7 +7,8 @@
 - `/miners` 的合作矿池数据和挖矿手册 PDF 地址由 `src/content/links.ts` 提供；矿池目录显示在 Mining options 的自托管 DATUM 选项后，仅呈现网站和本地化简介。合作矿池依次为 Competitiously、Mole、ArgfaMining 和 Rabid Mining。
 - Mining options 的介绍段落后显示手册链接；英文、简体和正体中文页面分别链接对应语言的 PDF。矿池入口为外部链接，不新增应用路由或 API。
 - Contact 的 Discord 与 BBS 地址由 `src/content/links.ts` 的 `CONTACT` 统一提供，首页和页脚复用 `ExternalLink` 展示。
-- 当前 Bitcoin Purity 版本由 `src/content/protocol.ts` 统一维护：`release: 1.0.2`、`releaseTag: v1.0.2`、`isReleaseCandidate: false`、`p2pUserAgent: /Satoshi:29.4/Purity:1.0.2/`。版本状态由公共组件和页面通过翻译词典显示。
+- 当前 Bitcoin Purity 版本由 `src/content/protocol.ts` 统一维护：`release: 1.1.0`、`releaseTag: v1.1.0`、`isReleaseCandidate: false`、`p2pUserAgent: /Satoshi:29.4/Purity:1.1.0/`。版本状态由公共组件和页面通过翻译词典显示。
+- `parking.depth: 3` 对应 v1.1.0 深度重组暂存的默认阈值；公共页面、图示和 FAQ 同步该数值，仍归类为本地策略。
 - 多语言元数据与 sitemap 共用路径规则。构建后的 CSS/复制脚本处理为所有语言生成 Worker 使用的平铺 HTML 别名。
 
 ## BBS

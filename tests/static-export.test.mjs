@@ -38,7 +38,7 @@ test("Contact shows Discord server and BBS links on every localized homepage and
   }
 });
 
-test("all languages show v1.0.2 as the latest stable release and use its download and source tag", () => {
+test("all languages show v1.1.0 as the latest stable release and use its download and source tag", () => {
   for (const [locale, stable, latest] of [
     ["en", "stable release", "Latest release"],
     ["zh-CN", "正式版", "最新版本"],
@@ -56,7 +56,7 @@ test("all languages show v1.0.2 as the latest stable release and use its downloa
         `${path}: obsolete release candidate`,
       );
       if (["/", "/run", "/miners", "/developers", "/faq"].includes(route)) {
-        assert.ok(text.includes("v1.0.2"), path);
+        assert.ok(text.includes("v1.1.0"), path);
         assert.ok(text.toLowerCase().includes(stable), path);
         assert.ok(
           !/\(release candidate\)|（候选发布版）|（候選發布版）/.test(text),
@@ -66,29 +66,59 @@ test("all languages show v1.0.2 as the latest stable release and use its downloa
       if (["/", "/run", "/miners"].includes(route)) {
         assert.ok(text.includes(latest), path);
         assert.ok(
-          text.includes('href="https://github.com/saltduck/bitcoinpurity/releases/tag/v1.0.2"'),
+          text.includes('href="https://github.com/saltduck/bitcoinpurity/releases/tag/v1.1.0"'),
           path,
         );
         assert.ok(
-          text.includes('href="https://github.com/saltduck/bitcoinpurity/tree/v1.0.2"'),
+          text.includes('href="https://github.com/saltduck/bitcoinpurity/tree/v1.1.0"'),
           path,
         );
       }
       if (route === "/run") {
-        assert.ok(text.includes("git checkout v1.0.2"), path);
+        assert.ok(text.includes("git checkout v1.1.0"), path);
       }
       assert.ok(
-        !/https:\/\/github\.com\/saltduck\/bitcoinpurity\/(?:releases\/tag|tree)\/v1\.0\.[01]\b|git checkout v1\.0\.[01]\b|\/Purity:1\.0\.[01]\//.test(text),
+        !/https:\/\/github\.com\/saltduck\/bitcoinpurity\/(?:releases\/tag|tree)\/v1\.0\.[0-2]\b|git checkout v1\.0\.[0-2]\b|\/Purity:1\.0\.[0-2]\//.test(text),
         `${path}: obsolete release link, command or node identifier`,
       );
       if (route === "/faq") {
-        assert.ok(text.includes("/Satoshi:29.4/Purity:1.0.2/"), path);
+        assert.ok(text.includes("/Satoshi:29.4/Purity:1.1.0/"), path);
       }
       if (route === "/users") {
         assert.ok(
           text.includes('href="https://github.com/BitcoinPurity/PurityWallet/releases/tag/1.0.0"'),
           path,
         );
+      }
+    }
+  }
+});
+
+test("v1.1.0 parking uses a three-block threshold in every language", () => {
+  for (const locale of locales) {
+    for (const route of ["/", "/safety", "/roadmap", "/faq"]) {
+      const path = localePath(route, locale).replace(/\/$/, "");
+      const text = readFileSync(
+        new URL(`../out${path}/index.html`, import.meta.url),
+        "utf8",
+      )
+        .replace(/<script[\s\S]*?<\/script>/g, "")
+        .replace(/<!--[\s\S]*?-->|<[^>]*>/g, "")
+        .replaceAll("&gt;", ">");
+      assert.ok(
+        !/six.block|six blocks|六[个個区區]|(?:REORG DEPTH|重组深度|重組深度) > 6|(?:deeper than|depth greater than|回退超过|回退超過|深度大于|深度大於|重组超过|重組超過|重组：|重組：)\s*6/.test(text),
+        `${path}: obsolete parking threshold`,
+      );
+      if (route === "/" || route === "/safety") {
+        assert.ok(/(?:REORG DEPTH|重组深度|重組深度) > 3/.test(text), path);
+        assert.ok(/(?:more than three blocks|回退超过三个区块|回退超過三個區塊)/.test(text), path);
+        assert.ok(/(?:deeper than|回退超过|回退超過|重组超过|重組超過)\s*3/.test(text), path);
+      }
+      if (route === "/roadmap") {
+        assert.ok(/(?:depth greater than|深度大于|深度大於)\s*3/.test(text), path);
+      }
+      if (route === "/faq") {
+        assert.ok(/three-block parking|三区块暂存|三區塊暫存/.test(text), path);
       }
     }
   }

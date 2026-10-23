@@ -6,10 +6,10 @@ export const protocol = {
   knotsBase: "29.4.0",
   coreConsensusBaseline: "29.4",
   version: {
-    release: "1.0.2",
+    release: "1.1.0",
     isReleaseCandidate: false,
     legacyReleaseTag: "v29.4.purity20260830rc2",
-    p2pUserAgent: "/Satoshi:29.4/Purity:1.0.2/",
+    p2pUserAgent: "/Satoshi:29.4/Purity:1.1.0/",
   },
   license: "MIT",
   binaries: ["bitcoind", "bitcoin-qt", "bitcoin-cli"] as const,
@@ -41,7 +41,7 @@ export const protocol = {
       startdiff: "500K",
       maxdiff: "1100K",
     },
-    releaseTag: "v1.0.2",
+    releaseTag: "v1.1.0",
   },
   rdts: {
     maxOutputScriptSize: 34,
@@ -58,7 +58,7 @@ export const protocol = {
     anchorHeight: 961632,
   },
   parking: {
-    depth: 6,
+    depth: 3,
     defaultEnabled: true,
     classification: "local-policy",
   },

@@ -34,7 +34,7 @@ BBS 公共模板通过 `rel="icon"` 加载同源独立图标。`GET /favicon.svg
 
 静态资产、下载地址、外部服务与协议端点维持原值。所有语言页面的 canonical 指向自身，hreflang 覆盖 `en`、`zh-CN`、`zh-TW`，`x-default` 指向英文。
 
-Bitcoin Purity 最新正式版本下载地址为 `https://github.com/saltduck/bitcoinpurity/releases/tag/v1.0.2`，对应源码为 `https://github.com/saltduck/bitcoinpurity/tree/v1.0.2`。源码构建命令检出 `v1.0.2`；其他外部地址不变，无新增 API 或路由。
+Bitcoin Purity 最新正式版本下载地址为 `https://github.com/saltduck/bitcoinpurity/releases/tag/v1.1.0`，对应源码为 `https://github.com/saltduck/bitcoinpurity/tree/v1.1.0`。源码构建命令检出 `v1.1.0`；其他外部地址不变，无新增 API 或路由。
 
 矿工页的合作矿池（Competitiously、Mole、ArgfaMining、Rabid Mining）及挖矿手册均为静态外部链接，不新增 API 或站内路由。ArgfaMining 标注为首个 PROP 矿池，并注明也提供 SOLO 挖矿；Rabid Mining 使用 BTC1 页面锚点链接，注明支持 PPLNS 和 SOLO。简体中文、正体中文和英文页面分别链接对应语言的手册 PDF；当前路由不支持葡萄牙语页面。
 

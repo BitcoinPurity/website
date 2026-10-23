@@ -91,7 +91,7 @@ export function getFaqItems(locale: Locale = "en") {
     },
     {
       id: "parking-51",
-      question: t("Does six-block parking make Purity immune to 51% attacks?"),
+      question: t("Does three-block parking make Purity immune to 51% attacks?"),
       answer: t(
         "No. Deep-reorg parking is local node policy requiring operator review. It is reorganization risk mitigation, not a consensus guarantee, and not 51% attack immunity. It does not make a majority-hash attack impossible.",
       ),
