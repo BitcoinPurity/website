@@ -128,7 +128,7 @@ export default function UsersPage({ locale = "en" }: LocalizedProps = {}) {
               </h3>
               <ol className="mt-4 list-decimal space-y-2 pl-5 text-muted">
                 <li>{t("Open Settings → Server.")}</li>
-                <li>{t("Choose Server Type: Public Electrum Server.")}</li>
+                <li>{t("Choose Server Type: Private Electrum.")}</li>
                 <li>
                   {t("Paste")}{" "}
                   <span className="font-mono text-ink">{electrum.url}</span>{" "}

@@ -235,7 +235,7 @@
   "Save and let the wallet sync.": "保存后等待钱包同步。",
   "Sparrow Wallet 2.5.3 or earlier": "Sparrow Wallet 2.5.3 或更早版本",
   "Open Settings → Server.": "打开 Settings → Server（设置 → 服务器）。",
-  "Choose Server Type: Public Electrum Server.": "选择 Server Type: Public Electrum Server（服务器类型：公共 Electrum 服务器）。",
+  "Choose Server Type: Private Electrum.": "选择 Server Type: Private Electrum（服务器类型：私有 Electrum）。",
   "Paste": "粘贴",
   "as the URL.": "作为 URL。",
   "Set Fee Rate Source to Server.": "将 Fee Rate Source 设置为 Server（费率来源：服务器）。",
