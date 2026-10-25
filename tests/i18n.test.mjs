@@ -9,12 +9,18 @@ import {
 } from "../src/lib/i18n.ts";
 import { PARTNER_POOLS } from "../src/content/links.ts";
 
-test("partner pools replace Crypto-Éire with Rabid Mining at the end", () => {
+test("partner pools include Mining Dutch after Rabid Mining", () => {
   assert.deepEqual(
     PARTNER_POOLS.map((pool) => pool.name),
-    ["Competitiously pool", "Mole solo pool", "ArgfaMining", "Rabid Mining"],
+    [
+      "Competitiously pool",
+      "Mole solo pool",
+      "ArgfaMining",
+      "Rabid Mining",
+      "Mining Dutch",
+    ],
   );
-  const rabid = PARTNER_POOLS.at(-1);
+  const rabid = PARTNER_POOLS.at(-2);
   assert.equal(rabid.website, "https://pool.rabidmining.com/btc1#pool");
   assert.equal(
     rabid.description,
@@ -27,6 +33,17 @@ test("partner pools replace Crypto-Éire with Rabid Mining at the end", () => {
   assert.equal(
     translator("zh-TW")(rabid.description),
     "由 YouTuber 營運的礦池，支援 PPLNS 和 SOLO 挖礦。",
+  );
+  const miningDutch = PARTNER_POOLS.at(-1);
+  assert.equal(miningDutch.website, "https://www.mining-dutch.nl/");
+  assert.equal(miningDutch.description, "The first PPS pool for Bitcoin Purity.");
+  assert.equal(
+    translator("zh-CN")(miningDutch.description),
+    "Bitcoin Purity 首个 PPS 矿池。",
+  );
+  assert.equal(
+    translator("zh-TW")(miningDutch.description),
+    "Bitcoin Purity 首個 PPS 礦池。",
   );
 });
 

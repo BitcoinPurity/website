@@ -50,6 +50,11 @@ export const PARTNER_POOLS = [
     website: "https://pool.rabidmining.com/btc1#pool",
     description: "YouTuber-run mining pool. Supports PPLNS and SOLO mining.",
   },
+  {
+    name: "Mining Dutch",
+    website: "https://www.mining-dutch.nl/",
+    description: "The first PPS pool for Bitcoin Purity.",
+  },
 ] as const;
 
 export const MINING_MANUALS = {
