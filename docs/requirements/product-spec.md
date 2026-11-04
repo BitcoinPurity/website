@@ -48,7 +48,7 @@ BBS 为登录用户在首页、分类页和各版主题列表展示 `new topics`
 
 BBS 在 Bitcoin Purity 分类首位提供 `Announcement` 版块，用于正式公告、版本发布和项目动态。该版块使用现有浏览、发帖和回复流程。新数据库初始化和已有数据库升级均补充该版块，重复执行不产生重复项，并保留已有内容。
 
-Bitcoin Purity 最新正式版本为 `v1.1.0`。全部语言的版本展示、下载入口和源码检出命令使用该标签；首页、主网状态、下载页、矿工页、开发者页和 FAQ 明确显示正式版（英文为 Stable release）。P2P 节点标识为 `/Satoshi:29.4/Purity:1.1.0/`。深度重组暂存默认阈值更新为超过 3 个区块，首页、安全页、路线图、图示及 FAQ 一致说明，保持本地策略而非共识保证的边界。候选版本编号与历史标签仅用于规则说明，PurityWallet 仍使用独立版本 `1.0.0`。
+Bitcoin Purity 最新正式版本为 `v1.1.0`。全部语言的版本展示、下载入口和源码检出命令使用该标签；首页、主网状态、下载页、矿工页、开发者页和 FAQ 明确显示正式版（英文为 Stable release）。P2P 节点标识为 `/Satoshi:29.4/Purity:1.1.0/`。深度重组暂存默认阈值更新为超过 3 个区块，首页、安全页、路线图、图示及 FAQ 一致说明，保持本地策略而非共识保证的边界。候选版本编号与历史标签仅用于规则说明，钱包版本独立于节点版本。
 
 官网提供英文、简体中文和正体中文。英文使用原有无前缀地址，中文使用 `/zh-CN/` 和 `/zh-TW/`。所有官网页面及公共组件提供相应语言的正文、导航、状态和交互文案。
 
@@ -77,3 +77,9 @@ Mining Dutch 使用 `https://www.mining-dutch.nl/`，标注为 Bitcoin Purity �
 - 后台响应禁止缓存，所有操作为 POST 并验证会话 CSRF token，有 Origin 时须同源。权限与关联状态在服务端校验，关联写入原子执行。
 - SQL 建表及运行时升级保持一致且幂等；默认版块升级使用持久完成标记，管理员调整后不得自动重建。
 - 验收包括自动回归、类型检查、变更 lint 和桌面/移动端浏览器验证；线上迁移、授权和部署另行执行。
+
+## 钱包推荐
+
+首页钱包入口与 `/users#wallet` 主推 PurityWallet，用户页先显示 Android 移动钱包和多平台 PC 钱包，分别提供 `https://github.com/PurityWallet/PurityWallet` 与 `https://github.com/PurityWallet/PurityWalletPC` 的源码和发布列表入口。主站不固定旧版钱包下载，也不继续内嵌旧版 Android 构建教程；构建说明由对应源码仓库维护。
+
+BlueWallet 与 Sparrow Wallet 分别列为移动端和桌面端备选，位于主推钱包之后。保留手动 Electrum 配置、Sparrow Wallet 2.5.3 或更早版本限制、Private Electrum 选择及安全指南。三种语言内容一致，原 `/users#wallet` 锚点定位至主推钱包。

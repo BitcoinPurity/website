@@ -1,6 +1,5 @@
 import { translator, localePath, type LocalizedProps } from "@/lib/i18n";
 import Link from "next/link";
-import { CodeBlock } from "@/components/CodeBlock";
 import { Container } from "@/components/Container";
 import { CopyableMono } from "@/components/CopyableMono";
 import { ExternalLink } from "@/components/ExternalLink";
@@ -8,7 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { SafetyCallout } from "@/components/SafetyCallout";
 import { ScrollToId } from "@/components/ScrollToId";
 import { ChainSplitDiagram } from "@/components/diagrams/ChainSplitDiagram";
-import { PURITY_WALLET, SERVICES } from "@/content/links";
+import { PURITY_WALLET, PURITY_WALLET_PC, SERVICES } from "@/content/links";
 import { protocol } from "@/content/protocol";
 
 const { electrum } = SERVICES;
@@ -33,12 +32,70 @@ export default function UsersPage({ locale = "en" }: LocalizedProps = {}) {
       </PageHeader>
       <Container className="space-y-16 py-16 sm:py-20">
         <section id="wallet" className="scroll-mt-24">
+          <h2 className="text-3xl text-ink">{t("Recommended wallets")}</h2>
+          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
+            {t(
+              "Use PurityWallet on Android or desktop to view balances and send on Purity mainnet.",
+            )}
+          </p>
+          <div className="mt-8 grid gap-6 md:grid-cols-2">
+            <div className="border border-gold bg-surface p-6 sm:p-8">
+              <h3 className="text-2xl text-ink">{t("PurityWallet · Android")}</h3>
+              <p className="mt-4 leading-relaxed text-muted">
+                {t(
+                  "The recommended Android wallet for Bitcoin Purity. Download the APK from the release page and verify its checksum before installing.",
+                )}
+              </p>
+              <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3">
+                <ExternalLink
+                  locale={locale}
+                  href={`${PURITY_WALLET}/releases`}
+                  className="text-gold"
+                >
+                  {t("Download Android wallet →")}
+                </ExternalLink>
+                <ExternalLink
+                  locale={locale}
+                  href={PURITY_WALLET}
+                  className="text-gold"
+                >
+                  {t("View source →")}
+                </ExternalLink>
+              </div>
+            </div>
+            <div className="border border-gold bg-surface p-6 sm:p-8">
+              <h3 className="text-2xl text-ink">{t("PurityWallet · Desktop")}</h3>
+              <p className="mt-4 leading-relaxed text-muted">
+                {t(
+                  "The recommended multi-platform desktop wallet for Bitcoin Purity. Choose the package for your operating system from the release page.",
+                )}
+              </p>
+              <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3">
+                <ExternalLink
+                  locale={locale}
+                  href={`${PURITY_WALLET_PC}/releases`}
+                  className="text-gold"
+                >
+                  {t("Download desktop wallet →")}
+                </ExternalLink>
+                <ExternalLink
+                  locale={locale}
+                  href={PURITY_WALLET_PC}
+                  className="text-gold"
+                >
+                  {t("View source →")}
+                </ExternalLink>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section id="alternative-wallets" className="scroll-mt-24">
           <h2 className="text-3xl text-ink">
-            {t("Connect your wallet to Purity")}
+            {t("Alternative wallets")}
           </h2>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
             {t(
-              "Bitcoin Purity uses the same addresses and transactions as Bitcoin. You do not need a separate Purity wallet — use BlueWallet, Sparrow, or any wallet that lets you point at a custom Electrum server. Your existing seed or keys work on Purity mainnet. Electrum desktop validates Bitcoin mainnet and cannot connect to Purity.",
+              "BlueWallet is a mobile alternative, and Sparrow Wallet 2.5.3 or earlier is a desktop alternative. Both require a custom Electrum server. Electrum desktop validates Bitcoin mainnet and cannot connect to Purity.",
             )}
           </p>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">
@@ -103,7 +160,7 @@ export default function UsersPage({ locale = "en" }: LocalizedProps = {}) {
           <div className="mt-10 grid gap-10 md:grid-cols-2">
             <div>
               <h3 className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
-                BlueWallet
+                {t("Mobile alternative")} · BlueWallet
               </h3>
               <ol className="mt-4 list-decimal space-y-2 pl-5 text-muted">
                 <li>{t("Open Settings → Network → Electrum Server.")}</li>
@@ -124,7 +181,7 @@ export default function UsersPage({ locale = "en" }: LocalizedProps = {}) {
             </div>
             <div>
               <h3 className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
-                {t("Sparrow Wallet 2.5.3 or earlier")}
+                {t("Desktop alternative")} · {t("Sparrow Wallet 2.5.3 or earlier")}
               </h3>
               <ol className="mt-4 list-decimal space-y-2 pl-5 text-muted">
                 <li>{t("Open Settings → Server.")}</li>
@@ -155,72 +212,6 @@ export default function UsersPage({ locale = "en" }: LocalizedProps = {}) {
             </Link>{" "}
             {t("— especially about replay and confirmation depth.")}
           </p>
-        </section>
-        <section>
-          <h2 className="text-3xl text-ink">PurityWallet</h2>
-          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
-            {t(
-              "PurityWallet is the official Android wallet published by Bitcoin Purity. The current release is 1.0.0. Download the APK and its SHA256SUMS file from the official release page, then verify the APK checksum before installing.",
-            )}
-          </p>
-          <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3">
-            <ExternalLink
-              locale={locale}
-              href={`${PURITY_WALLET}/releases/tag/1.0.0`}
-              className="text-gold"
-            >
-              {t("Download PurityWallet 1.0.0 →")}
-            </ExternalLink>
-            <ExternalLink
-              locale={locale}
-              href={`${PURITY_WALLET}/tree/1.0.0`}
-              className="text-gold"
-            >
-              {t("View source at tag 1.0.0 →")}
-            </ExternalLink>
-          </div>
-          <div className="mt-10 grid gap-10 md:grid-cols-2">
-            <div>
-              <h3 className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
-                {t("Build from source · Android")}
-              </h3>
-              <p className="mt-4 leading-relaxed text-muted">
-                {t(
-                  "Install Node.js 24, JDK 17, and Android SDK Platform 36 with Build Tools 36.0.0 and NDK 28.2.13676358. Then clone the published source tag and build a local debug APK:",
-                )}
-              </p>
-              <div className="mt-5">
-                <CodeBlock
-                  locale={locale}
-                  label={t("Clone and build")}
-                  code={`git clone --depth 1 --branch 1.0.0 ${PURITY_WALLET}.git\ncd PurityWallet\nnpm ci\ncd android\n./gradlew assembleDebug`}
-                />
-              </div>
-              <p className="mt-4 text-sm leading-relaxed text-muted">
-                {t("The APK is written to")}{" "}
-                <code className="font-mono text-ink">
-                  {"android/app/build/outputs/apk/debug/app-debug.apk"}
-                </code>
-                {t(
-                  ". This locally built debug APK is for testing and is separate from the official release APK.",
-                )}
-              </p>
-            </div>
-            <div className="border-l-2 border-gold bg-surface px-5 py-5 sm:px-6">
-              <h3 className="text-xl font-bold text-ink">
-                {t("Use the official release")}
-              </h3>
-              <p className="mt-3 leading-relaxed text-muted">
-                {t(
-                  "For normal installation, use the APK attached to the official release. Compare its SHA-256 value with the matching entry in the release's ",
-                )}
-                <code className="font-mono text-ink">{"SHA256SUMS"}</code>{" "}
-                {t(
-                  "file. A locally built debug APK uses a different signing key and cannot update the official installation.",
-                )}
-              </p>
-            </div>
-          </div>
         </section>
         <section>
           <h2 className="text-3xl text-ink">{t("Continuity")}</h2>

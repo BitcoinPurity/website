@@ -4,6 +4,7 @@
 - `(english)` 路由组保留英文页面；`[locale]/[[...slug]]` 生成简体与正体中文页面，限制为已支持的语言与页面。
 - 共用 SiteLayout 和页面视图，语言通过显式 props 传递；翻译词典与路径工具集中在 `src/lib/i18n.ts`。英文文案为词典键，动态值使用编号占位符。
 - 服务地址、版本、命令与协议参数仍来自现有内容模块。语言仅影响文案和站内路径。
+- 钱包源码地址集中在 `src/content/links.ts` 的 `PURITY_WALLET` 与 `PURITY_WALLET_PC`，发布列表从仓库地址派生。首页钱包入口跳转 `/users#wallet`；用户页先展示 Android 与多平台 PC 版 PurityWallet，再在 `#alternative-wallets` 展示 BlueWallet/Sparrow 备选及连接教程，三种语言共用视图。
 - `/miners` 的合作矿池数据和挖矿手册 PDF 地址由 `src/content/links.ts` 提供；矿池目录显示在 Mining options 的自托管 DATUM 选项后，仅呈现网站和本地化简介。合作矿池依次为 Competitiously、Mole、ArgfaMining、Rabid Mining 和 Mining Dutch。
 - Mining options 的介绍段落后显示手册链接；英文、简体和正体中文页面分别链接对应语言的 PDF。矿池入口为外部链接，不新增应用路由或 API。
 - Contact 的 Discord 与 BBS 地址由 `src/content/links.ts` 的 `CONTACT` 统一提供，首页和页脚复用 `ExternalLink` 展示。

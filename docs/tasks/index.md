@@ -15,3 +15,4 @@
 - [TASK-013：v1.0.2 正式版同步](TASK-013.md)
 - [TASK-014：矿池目录与挖矿手册](TASK-014.md)
 - [TASK-015：v1.1.0 正式版同步](TASK-015.md)
+- [TASK-016：PurityWallet 主推与备选钱包](TASK-016.md)

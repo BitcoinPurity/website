@@ -1,5 +1,11 @@
 # 路由契约
 
+## 钱包入口
+
+- 原 `/users#wallet` 及中文对应路径定位至 PurityWallet 主推区域；`#alternative-wallets` 定位至 BlueWallet/Sparrow 备选与 Electrum 设置。
+- Android 钱包源码与发布列表分别为 `https://github.com/PurityWallet/PurityWallet` 和其 `/releases`；PC 钱包分别为 `https://github.com/PurityWallet/PurityWalletPC` 和其 `/releases`。
+- 仅调整静态内容与外部链接，无新增 API。
+
 ## BBS 定时局部刷新
 
 - `GET /api/live?kind=index|category|board|thread&key=...`：index 不需要 key，category/board 使用 slug，thread 使用正安全整数 ID；thread 可带 `reply_to` 保持回复入口状态。其他 kind 或非法目标参数返回 400，不存在/删除主题或归档分类/版块返回 404。

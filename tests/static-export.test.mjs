@@ -84,13 +84,72 @@ test("all languages show v1.1.0 as the latest stable release and use its downloa
       if (route === "/faq") {
         assert.ok(text.includes("/Satoshi:29.4/Purity:1.1.0/"), path);
       }
-      if (route === "/users") {
-        assert.ok(
-          text.includes('href="https://github.com/BitcoinPurity/PurityWallet/releases/tag/1.0.0"'),
-          path,
-        );
-      }
     }
+  }
+});
+
+test("PurityWallet mobile and desktop precede alternative wallets in every language", () => {
+  for (const [locale, recommended, alternatives, mobile, desktop] of [
+    [
+      "en",
+      "Recommended wallets",
+      "Alternative wallets",
+      "Mobile alternative",
+      "Desktop alternative",
+    ],
+    ["zh-CN", "推荐钱包", "备选钱包", "移动端备选", "桌面端备选"],
+    ["zh-TW", "推薦錢包", "備選錢包", "行動端備選", "桌面端備選"],
+  ]) {
+    const path = localePath("/users", locale);
+    const html = readFileSync(
+      new URL(`../out${path}/index.html`, import.meta.url),
+      "utf8",
+    ).replace(/<script[\s\S]*?<\/script>/g, "");
+    const wallet = html.match(/<section id="wallet"[\s\S]*?<\/section>/)?.[0];
+    assert.ok(wallet?.includes(recommended), `${path}: primary wallet section`);
+    for (const repo of ["PurityWallet", "PurityWalletPC"]) {
+      const url = `https://github.com/PurityWallet/${repo}`;
+      assert.ok(wallet.includes(`href="${url}"`), `${path}: ${repo} source`);
+      assert.ok(
+        wallet.includes(`href="${url}/releases"`),
+        `${path}: ${repo} downloads`,
+      );
+    }
+    assert.ok(wallet.includes("Android"), `${path}: mobile platform`);
+    assert.ok(
+      !wallet.includes("BlueWallet") && !wallet.includes("Sparrow"),
+      `${path}: primary recommendations`,
+    );
+    const fallback = html.match(/<section id="alternative-wallets"[\s\S]*?<\/section>/)?.[0];
+    assert.ok(fallback?.includes(alternatives), `${path}: alternative section`);
+    assert.ok(
+      fallback.includes(mobile) && fallback.includes(desktop),
+      `${path}: alternative roles`,
+    );
+    assert.ok(
+      fallback.includes("BlueWallet") && fallback.includes("Sparrow Wallet 2.5.3"),
+      path,
+    );
+    assert.ok(
+      html.indexOf(wallet) < html.indexOf(fallback),
+      `${path}: recommendation order`,
+    );
+    assert.ok(
+      !html.includes("github.com/BitcoinPurity/PurityWallet"),
+      `${path}: old organization`,
+    );
+    assert.ok(!html.includes("/releases/tag/1.0.0"), `${path}: stale wallet version`);
+    const homePath = localePath("/", locale).replace(/\/$/, "");
+    const home = readFileSync(
+      new URL(`../out${homePath}/index.html`, import.meta.url),
+      "utf8",
+    ).replace(/<script[\s\S]*?<\/script>/g, "");
+    const entry = home.match(/<div class="border border-line p-6 sm:p-8">(?:(?!<\/div>)[\s\S])*PurityWallet[\s\S]*?<\/div>/)?.[0];
+    assert.ok(entry?.includes("Android"), `${locale}: homepage recommendations`);
+    assert.ok(
+      entry.includes(`href="${localePath("/users/#wallet", locale)}"`),
+      `${locale}: wallet anchor`,
+    );
   }
 });
 
@@ -210,8 +269,7 @@ test("Chinese wallet, mining and safety pages preserve compatibility boundaries 
     );
     assert.ok(wallet.includes("Sparrow Wallet 2.5.3"));
     assert.ok(wallet.includes("electrum.bitcoinpurity.org:50002:s"));
-    assert.ok(wallet.includes("app-debug.apk"));
-    assert.ok(wallet.includes("npm ci"));
+    assert.ok(wallet.includes("https://github.com/PurityWallet/PurityWalletPC/releases"));
     const miners = readFileSync(
       new URL(`../out/${locale}/miners/index.html`, import.meta.url),
       "utf8",

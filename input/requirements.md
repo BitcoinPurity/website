@@ -1,5 +1,12 @@
 # 网站需求
 
+## 钱包推荐
+
+- 首页和用户页主推 PurityWallet：Android 移动钱包使用 `https://github.com/PurityWallet/PurityWallet`，多平台 PC 钱包使用 `https://github.com/PurityWallet/PurityWalletPC`。
+- 用户页先展示两个主推钱包的下载与源码入口，下载指向各仓库的发布列表，不固定旧版 `1.0.0`。
+- BlueWallet 作为移动端备选，Sparrow Wallet 作为桌面端备选；保留现有 Electrum 设置、Sparrow 版本限制和安全说明。
+- 英文、简体中文和正体中文的推荐顺序与文案一致。
+
 ## BBS 定时局部刷新
 
 - 首页、分类页、版块列表及 thread 定时局部更新；统一源码配置默认 180 秒，首次加载不重复请求，后台暂停，返回检查一次，单请求在途。其他页面不启用。

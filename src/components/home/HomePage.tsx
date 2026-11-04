@@ -188,17 +188,17 @@ export function HomePage({ locale = "en" }: LocalizedProps = {}) {
               <h3 className="font-mono text-[11px] tracking-[0.2em] text-gold uppercase">
                 {t("For users")}
               </h3>
-              <p className="mt-3 text-2xl text-ink">{t("Wallet connection")}</p>
+              <p className="mt-3 text-2xl text-ink">{t("PurityWallet")}</p>
               <p className="mt-4 text-[1.02rem] leading-relaxed text-muted">
                 {t(
-                  "Connect BlueWallet, Sparrow, or any wallet that supports custom Electrum servers to view balances and send on Purity mainnet.",
+                  "Use PurityWallet for Android or multi-platform desktop. BlueWallet and Sparrow Wallet are available as mobile and desktop alternatives.",
                 )}
               </p>
               <Link
                 href={localePath("/users#wallet", locale)}
                 className="mt-6 inline-flex text-gold hover:text-ink"
               >
-                {t("Connection settings →")}
+                {t("Choose your wallet →")}
               </Link>
             </div>
           </div>
