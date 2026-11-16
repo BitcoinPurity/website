@@ -1,5 +1,6 @@
 import { translator, localePath, type LocalizedProps } from "@/lib/i18n";
 import Link from "next/link";
+import { CodeBlock } from "@/components/CodeBlock";
 import { Container } from "@/components/Container";
 import { CopyableMono } from "@/components/CopyableMono";
 import { ExternalLink } from "@/components/ExternalLink";
@@ -8,7 +9,21 @@ import { PageHeader } from "@/components/PageHeader";
 import { ScrollToId } from "@/components/ScrollToId";
 import { StatusBadge } from "@/components/StatusBadge";
 import { MINING_MANUALS, PARTNER_POOLS } from "@/content/links";
-import { protocol } from "@/content/protocol";
+import { protocol, sv2MiningGuideUrl } from "@/content/protocol";
+
+const sv2ConfigExample = `server=1
+datum=0
+sv2=1
+sv2listen=192.168.1.10
+sv2port=23334
+sv2pool=mining.example.com:3336
+sv2jds=jds.example.com:3337
+sv2poolkey=<MINING_AUTHORITY_PUBLIC_KEY>
+sv2jdskey=<JDS_AUTHORITY_PUBLIC_KEY>
+sv2identity=<POOL_ACCOUNT_IDENTITY>
+sv2auth=1
+sv2user=farm
+sv2password=<LOCAL_MINER_PASSWORD>`;
 
 export default function MinersPage({ locale = "en" }: LocalizedProps = {}) {
   const t = translator(locale);
@@ -41,6 +56,47 @@ export default function MinersPage({ locale = "en" }: LocalizedProps = {}) {
           className="max-w-2xl"
           showTrialSoloPool={false}
         />
+        <section
+          id="stratum-v2"
+          aria-labelledby="stratum-v2-title"
+          className="max-w-3xl scroll-mt-28 space-y-5 border border-gold p-5 leading-relaxed text-muted sm:p-8"
+        >
+          <div>
+            <p className="font-mono text-[11px] tracking-[0.16em] text-gold uppercase">
+              {t("New in {0}", protocol.launch.releaseTag)}
+            </p>
+            <h2 id="stratum-v2-title" className="mt-2 text-2xl font-bold text-ink">
+              {t("Built-in Stratum V2 Gateway")}
+            </h2>
+          </div>
+          <p className="border-l-2 border-gold pl-4 font-mono text-sm text-ink">
+            {t("Stratum V1 miner → Purity Node → Stratum V2 pool")}
+          </p>
+          <p>{t("Connect existing Stratum V1 miners to a compatible Stratum V2 pool. Your Purity node selects transactions and declares its own block template.")}</p>
+          <p>{t("The gateway only sends work after the pool confirms the custom job. No separate gateway or publicly exposed Template Provider port is needed.")}</p>
+          <ol className="list-decimal space-y-5 pl-5 marker:font-bold marker:text-gold">
+            <li className="space-y-2">
+              <h3 className="font-bold text-ink">{t("Check your node and pool")}</h3>
+              <p>{t("Use a synced Purity node built with {0}, the default build setting. The gateway is off until you set {1}. It supports mainnet and regtest only; Signet is unsupported. SV2 and DATUM Solo cannot run together.", "BUILD_SV2=ON", "sv2=1")}</p>
+              <p>{t("Ask your pool for both Mining and Full-Template Job Declaration Server (JDS) endpoints, the authority public key for each, and the gateway’s upstream account identity. A Mining endpoint alone is not enough; the pool must support this Full-Template protocol dialect. Verify compatibility with your pool before switching miners.")}</p>
+            </li>
+            <li className="space-y-3">
+              <h3 className="font-bold text-ink">{t("Configure and restart the node")}</h3>
+              <p>{t("Replace the example LAN address, endpoints, public keys, account identity and local miner password with your own values in bitcoin.conf. The default listener is {0}; for LAN miners, bind to the node’s LAN address and allow TCP {1} from the miner network only.", "127.0.0.1:23334", 23334)}</p>
+              <CodeBlock locale={locale} label="bitcoin.conf" code={sv2ConfigExample} />
+            </li>
+            <li className="space-y-3">
+              <h3 className="font-bold text-ink">{t("Connect a miner and verify work")}</h3>
+              <p>{t("With the example above, set the miner’s pool URL to the node’s LAN address below. Use {0} as the worker name and the value of {1} as the password. These local credentials are separate from {2}, the upstream account.", "farm.worker01", "sv2password", "sv2identity")}</p>
+              <CopyableMono locale={locale} value="stratum+tcp://192.168.1.10:23334" />
+              <CodeBlock locale={locale} label={t("Gateway status")} code="bitcoin-cli getsv2info" />
+              <p>{t("On the same node, look for {0} and {1} before mining. After connecting a miner, check {2}. Only shares acknowledged by the pool count toward {3}.", 'status="running"', "running=true", "authorized_clients", "accepted_shares")}</p>
+            </li>
+          </ol>
+          <ExternalLink locale={locale} href={sv2MiningGuideUrl} className="inline-flex text-gold hover:text-ink">
+            {t("Read the official Stratum V2 setup guide (English)")} →
+          </ExternalLink>
+        </section>
         <section className="max-w-2xl space-y-5 text-lg leading-relaxed text-muted">
           <p>
             <StatusBadge locale={locale} kind="unchanged" />
@@ -53,7 +109,7 @@ export default function MinersPage({ locale = "en" }: LocalizedProps = {}) {
           </p>
           <p>
             {t(
-              "Mining involves substantial technical and economic risk. This page does not promise returns. Miners can use the hosted trial solo pool, SmartPool, or run DATUM on their own Purity node. Verify the endpoint and payout settings before committing hash rate.",
+              "Mining involves substantial technical and economic risk. This page does not promise returns. Verify the endpoint and payout settings before committing hash rate.",
             )}
           </p>
           <p>

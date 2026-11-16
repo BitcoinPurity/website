@@ -1,4 +1,5 @@
 import { translator, type LocalizedProps } from "@/lib/i18n";
+import { protocol } from "@/content/protocol";
 export function ReorgDiagram({ locale = "en" }: LocalizedProps = {}) {
   const t = translator(locale);
 
@@ -9,7 +10,8 @@ export function ReorgDiagram({ locale = "en" }: LocalizedProps = {}) {
       </div>
       <figcaption className="sr-only">
         {t(
-          "If connecting a block would rewind the active chain by more than three blocks, the node parks that block for operator review instead of automatically reorganizing. This is local policy, not a consensus rule.",
+          "If connecting a block would rewind the active chain by more than {0} protected blocks, the node parks the competing branch for operator review. Only blocks connected after catch-up are protected. This is local policy, not a consensus rule.",
+          protocol.parking.depth,
         )}
       </figcaption>
       <pre
@@ -17,7 +19,8 @@ export function ReorgDiagram({ locale = "en" }: LocalizedProps = {}) {
         className="min-w-[34rem] font-mono text-[11px] leading-6 tracking-[0.04em] text-ink sm:text-xs"
       >
         {t(
-          "ACTIVE CHAIN\nA → B → C → D → E → F → G\n\nCOMPETING CHAIN\nA → B → C → X → Y → Z → ...\n\nREORG DEPTH > 3\n        ↓\n      PARK\n        ↓\nOPERATOR REVIEW",
+          "ACTIVE CHAIN\nA → B → C → D → E → F → G\n\nCOMPETING CHAIN\nA → B → C → X → Y → Z → ...\n\nREORG DEPTH > {0} (PROTECTED BLOCKS ONLY)\n        ↓\n      PARK\n        ↓\nOPERATOR REVIEW",
+          protocol.parking.depth,
         )}
       </pre>
     </figure>

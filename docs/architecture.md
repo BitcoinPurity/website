@@ -8,8 +8,9 @@
 - `/miners` 的合作矿池数据和挖矿手册 PDF 地址由 `src/content/links.ts` 提供；矿池目录显示在 Mining options 的自托管 DATUM 选项后，仅呈现网站和本地化简介。合作矿池依次为 Competitiously、Mole、ArgfaMining、Rabid Mining 和 Mining Dutch。
 - Mining options 的介绍段落后显示手册链接；英文、简体和正体中文页面分别链接对应语言的 PDF。矿池入口为外部链接，不新增应用路由或 API。
 - Contact 的 Discord 与 BBS 地址由 `src/content/links.ts` 的 `CONTACT` 统一提供，首页和页脚复用 `ExternalLink` 展示。
-- 当前 Bitcoin Purity 版本由 `src/content/protocol.ts` 统一维护：`release: 1.1.0`、`releaseTag: v1.1.0`、`isReleaseCandidate: false`、`p2pUserAgent: /Satoshi:29.4/Purity:1.1.0/`。版本状态由公共组件和页面通过翻译词典显示。
-- `parking.depth: 3` 对应 v1.1.0 深度重组暂存的默认阈值；公共页面、图示和 FAQ 同步该数值，仍归类为本地策略。
+- 当前 Bitcoin Purity 版本由 `src/content/protocol.ts` 统一维护：`release: 1.2.0`、`releaseTag: v1.2.0`、`isReleaseCandidate: false`、`p2pUserAgent: /Satoshi:29.4/Purity:1.2.0/`。版本状态由公共组件和页面通过翻译词典显示；SV2 指南链接使用相同标签。
+- 首页发布亮点链接到同语言的 `/miners/#stratum-v2`；`MinersPage` 复用现有代码复制组件。页面默认滚动保留，显式锚点优先。
+- `parking.depth: 3` 是深度重组暂存的默认阈值；v1.2.0 仅计入追赶后接入的受保护区块，页面及图示说明该限制，仍归类为本地策略。
 - 多语言元数据与 sitemap 共用路径规则。构建后的 CSS/复制脚本处理为所有语言生成 Worker 使用的平铺 HTML 别名。
 
 ## BBS

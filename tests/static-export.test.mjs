@@ -38,7 +38,7 @@ test("Contact shows Discord server and BBS links on every localized homepage and
   }
 });
 
-test("all languages show v1.1.0 as the latest stable release and use its download and source tag", () => {
+test("all languages show v1.2.0 as the latest stable release and use its download and source tag", () => {
   for (const [locale, stable, latest] of [
     ["en", "stable release", "Latest release"],
     ["zh-CN", "正式版", "最新版本"],
@@ -56,7 +56,7 @@ test("all languages show v1.1.0 as the latest stable release and use its downloa
         `${path}: obsolete release candidate`,
       );
       if (["/", "/run", "/miners", "/developers", "/faq"].includes(route)) {
-        assert.ok(text.includes("v1.1.0"), path);
+        assert.ok(text.includes("v1.2.0"), path);
         assert.ok(text.toLowerCase().includes(stable), path);
         assert.ok(
           !/\(release candidate\)|（候选发布版）|（候選發布版）/.test(text),
@@ -66,24 +66,51 @@ test("all languages show v1.1.0 as the latest stable release and use its downloa
       if (["/", "/run", "/miners"].includes(route)) {
         assert.ok(text.includes(latest), path);
         assert.ok(
-          text.includes('href="https://github.com/saltduck/bitcoinpurity/releases/tag/v1.1.0"'),
+          text.includes('href="https://github.com/saltduck/bitcoinpurity/releases/tag/v1.2.0"'),
           path,
         );
         assert.ok(
-          text.includes('href="https://github.com/saltduck/bitcoinpurity/tree/v1.1.0"'),
+          text.includes('href="https://github.com/saltduck/bitcoinpurity/tree/v1.2.0"'),
           path,
         );
       }
       if (route === "/run") {
-        assert.ok(text.includes("git checkout v1.1.0"), path);
+        assert.ok(text.includes("git checkout v1.2.0"), path);
       }
       assert.ok(
-        !/https:\/\/github\.com\/saltduck\/bitcoinpurity\/(?:releases\/tag|tree)\/v1\.0\.[0-2]\b|git checkout v1\.0\.[0-2]\b|\/Purity:1\.0\.[0-2]\//.test(text),
+        !/https:\/\/github\.com\/saltduck\/bitcoinpurity\/(?:releases\/tag|tree)\/v1\.(?:0\.[0-2]|1\.[0-2])\b|git checkout v1\.(?:0\.[0-2]|1\.[0-2])\b|\/Purity:1\.(?:0\.[0-2]|1\.[0-2])\//.test(text),
         `${path}: obsolete release link, command or node identifier`,
       );
       if (route === "/faq") {
-        assert.ok(text.includes("/Satoshi:29.4/Purity:1.1.0/"), path);
+        assert.ok(text.includes("/Satoshi:29.4/Purity:1.2.0/"), path);
       }
+    }
+  }
+});
+
+test("each homepage highlights SV2 and links to its localized miner setup guide", () => {
+  for (const [locale, title, boundary] of [
+    ["en", "Built-in Stratum V2 Gateway", "A Mining endpoint alone is not enough"],
+    ["zh-CN", "内置 Stratum V2 网关", "仅有 Mining 端点无法使用"],
+    ["zh-TW", "內建 Stratum V2 閘道", "只有 Mining 端點無法使用"],
+  ]) {
+    const root = localePath("/", locale).replace(/\/$/, "");
+    const home = readFileSync(new URL(`../out${root}/index.html`, import.meta.url), "utf8")
+      .replace(/<script[\s\S]*?<\/script>/g, "");
+    const hero = home.match(/<section\b[\s\S]*?<\/section>/)?.[0];
+    assert.ok(hero?.includes(title), `${locale}: release highlight`);
+    assert.ok(hero.includes(`href="${localePath("/miners/#stratum-v2", locale)}"`), locale);
+
+    const miners = readFileSync(new URL(`../out${root}/miners/index.html`, import.meta.url), "utf8");
+    const guide = miners.match(/<section\b[^>]*id="stratum-v2"[\s\S]*?<\/section>/)?.[0];
+    assert.ok(guide, `${locale}: SV2 guide`);
+    for (const term of [
+      title, boundary, "Full-Template", "BUILD_SV2=ON", "regtest", "Signet", "datum=0", "sv2=1",
+      "sv2pool=", "sv2jds=", "sv2poolkey=", "sv2jdskey=", "sv2identity=", "sv2auth=1",
+      "stratum+tcp://192.168.1.10:23334", "farm.worker01", "bitcoin-cli getsv2info", "accepted_shares",
+      'href="https://github.com/saltduck/bitcoinpurity/blob/v1.2.0/doc/sv2-mining.md"',
+    ]) {
+      assert.ok(guide.includes(term), `${locale}: ${term}`);
     }
   }
 });
@@ -153,7 +180,7 @@ test("PurityWallet mobile and desktop precede alternative wallets in every langu
   }
 });
 
-test("v1.1.0 parking uses a three-block threshold in every language", () => {
+test("parking applies the three-block threshold to protected history in every language", () => {
   for (const locale of locales) {
     for (const route of ["/", "/safety", "/roadmap", "/faq"]) {
       const path = localePath(route, locale).replace(/\/$/, "");
@@ -170,8 +197,8 @@ test("v1.1.0 parking uses a three-block threshold in every language", () => {
       );
       if (route === "/" || route === "/safety") {
         assert.ok(/(?:REORG DEPTH|重组深度|重組深度) > 3/.test(text), path);
-        assert.ok(/(?:more than three blocks|回退超过三个区块|回退超過三個區塊)/.test(text), path);
-        assert.ok(/(?:deeper than|回退超过|回退超過|重组超过|重組超過)\s*3/.test(text), path);
+        assert.ok(/(?:more than 3 protected blocks|回退超过\s*3\s*个受保护区块|回退超過\s*3\s*個受保護區塊)/.test(text), path);
+        assert.ok(/(?:Only blocks connected after catch-up are protected|仅保护追赶结束后接入的区块|僅保護追趕結束後接入的區塊)/.test(text), path);
       }
       if (route === "/roadmap") {
         assert.ok(/(?:depth greater than|深度大于|深度大於)\s*3/.test(text), path);

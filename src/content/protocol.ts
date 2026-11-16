@@ -6,10 +6,10 @@ export const protocol = {
   knotsBase: "29.4.0",
   coreConsensusBaseline: "29.4",
   version: {
-    release: "1.1.0",
+    release: "1.2.0",
     isReleaseCandidate: false,
     legacyReleaseTag: "v29.4.purity20260830rc2",
-    p2pUserAgent: "/Satoshi:29.4/Purity:1.1.0/",
+    p2pUserAgent: "/Satoshi:29.4/Purity:1.2.0/",
   },
   license: "MIT",
   binaries: ["bitcoind", "bitcoin-qt", "bitcoin-cli"] as const,
@@ -41,7 +41,7 @@ export const protocol = {
       startdiff: "500K",
       maxdiff: "1100K",
     },
-    releaseTag: "v1.1.0",
+    releaseTag: "v1.2.0",
   },
   rdts: {
     maxOutputScriptSize: 34,
@@ -80,6 +80,9 @@ export const releaseTagUrl = `${protocol.github}/tree/${protocol.launch.releaseT
 
 export const binaryReleaseUrl =
   `${protocol.github}/releases/tag/${protocol.launch.releaseTag}` as const;
+
+export const sv2MiningGuideUrl =
+  `${protocol.github}/blob/${protocol.launch.releaseTag}/doc/sv2-mining.md` as const;
 
 export const mainnetLaunchedAt =
   `${protocol.launch.timeLabel} on ${protocol.launch.dateLabel}` as const;

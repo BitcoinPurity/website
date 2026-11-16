@@ -92,7 +92,7 @@ export default function SafetyPage({ locale = "en" }: LocalizedProps = {}) {
             {t(
               "Bitcoin Purity currently uses operational defenses including 24-hour ASERT difficulty adjustment after activation, SHA256d remaining unchanged, and default parking of reorganizations deeper than",
             )}{" "}
-            {protocol.parking.depth} {t("blocks for operator review.")}
+            {protocol.parking.depth} {t("protected blocks for operator review.")}
           </p>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
             {t(
@@ -109,7 +109,7 @@ export default function SafetyPage({ locale = "en" }: LocalizedProps = {}) {
             {t("Blocks requiring a reorganization deeper than ")}
             {protocol.parking.depth}{" "}
             {t(
-              "blocks are parked rather than automatically reorganizing the active chain.",
+              "protected blocks are parked rather than automatically reorganizing the active chain. Only blocks connected after catch-up are protected.",
             )}
           </p>
           <div className="mt-4">

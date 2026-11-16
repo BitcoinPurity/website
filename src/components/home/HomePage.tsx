@@ -75,6 +75,17 @@ export function HomePage({ locale = "en" }: LocalizedProps = {}) {
               {t("now available.")}
             </Link>
           </h1>
+          <div className="mt-8 max-w-2xl border-l-2 border-gold bg-gold-dim px-5 py-4">
+            <SectionEyebrow>{t("New in {0}", protocol.launch.releaseTag)}</SectionEyebrow>
+            <h2 className="text-2xl font-bold text-ink">
+              <Link href={localePath("/miners/#stratum-v2", locale)} className="hover:text-gold">
+                {t("Built-in Stratum V2 Gateway")} →
+              </Link>
+            </h2>
+            <p className="mt-2 leading-relaxed text-muted">
+              {t("Connect existing Stratum V1 miners to a compatible Stratum V2 pool. Your Purity node selects transactions and declares its own block template.")}
+            </p>
+          </div>
           <LaunchPanel locale={locale} className="mt-8 max-w-2xl" />
           <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted">
             {t(
@@ -479,7 +490,7 @@ export function HomePage({ locale = "en" }: LocalizedProps = {}) {
             )}{" "}
             {protocol.parking.depth}{" "}
             {t(
-              "blocks, that block is parked rather than automatically reorganizing the active chain. This is local node policy, not a consensus guarantee. It is not 51% attack immunity.",
+              "protected blocks, the competing branch is parked. Only blocks connected after catch-up are protected. This is local node policy, not a consensus guarantee. It is not 51% attack immunity.",
             )}
           </p>
           <div className="mt-6">
@@ -562,7 +573,7 @@ export function HomePage({ locale = "en" }: LocalizedProps = {}) {
               {t("Reorganizations deeper than ")}
               {protocol.parking.depth}{" "}
               {t(
-                "blocks are parked for operator review by default. Local policy — not consensus.",
+                "protected blocks are parked for operator review by default. Local policy — not consensus.",
               )}
             </SpecificationRow>
             <SpecificationRow
