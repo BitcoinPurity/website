@@ -38,7 +38,7 @@ test("Contact shows Discord server and BBS links on every localized homepage and
   }
 });
 
-test("all languages show v1.2.0 as the latest stable release and use its download and source tag", () => {
+test("all languages show v1.2.1 as the latest stable release and use its download and source tag", () => {
   for (const [locale, stable, latest] of [
     ["en", "stable release", "Latest release"],
     ["zh-CN", "正式版", "最新版本"],
@@ -56,7 +56,7 @@ test("all languages show v1.2.0 as the latest stable release and use its downloa
         `${path}: obsolete release candidate`,
       );
       if (["/", "/run", "/miners", "/developers", "/faq"].includes(route)) {
-        assert.ok(text.includes("v1.2.0"), path);
+        assert.ok(text.includes("v1.2.1"), path);
         assert.ok(text.toLowerCase().includes(stable), path);
         assert.ok(
           !/\(release candidate\)|（候选发布版）|（候選發布版）/.test(text),
@@ -66,23 +66,23 @@ test("all languages show v1.2.0 as the latest stable release and use its downloa
       if (["/", "/run", "/miners"].includes(route)) {
         assert.ok(text.includes(latest), path);
         assert.ok(
-          text.includes('href="https://github.com/saltduck/bitcoinpurity/releases/tag/v1.2.0"'),
+          text.includes('href="https://github.com/saltduck/bitcoinpurity/releases/tag/v1.2.1"'),
           path,
         );
         assert.ok(
-          text.includes('href="https://github.com/saltduck/bitcoinpurity/tree/v1.2.0"'),
+          text.includes('href="https://github.com/saltduck/bitcoinpurity/tree/v1.2.1"'),
           path,
         );
       }
       if (route === "/run") {
-        assert.ok(text.includes("git checkout v1.2.0"), path);
+        assert.ok(text.includes("git checkout v1.2.1"), path);
       }
       assert.ok(
-        !/https:\/\/github\.com\/saltduck\/bitcoinpurity\/(?:releases\/tag|tree)\/v1\.(?:0\.[0-2]|1\.[0-2])\b|git checkout v1\.(?:0\.[0-2]|1\.[0-2])\b|\/Purity:1\.(?:0\.[0-2]|1\.[0-2])\//.test(text),
+        !/https:\/\/github\.com\/saltduck\/bitcoinpurity\/(?:releases\/tag|tree)\/v1\.(?:0\.[0-2]|1\.[0-2]|2\.0)\b|git checkout v1\.(?:0\.[0-2]|1\.[0-2]|2\.0)\b|\/Purity:1\.(?:0\.[0-2]|1\.[0-2]|2\.0)\//.test(text),
         `${path}: obsolete release link, command or node identifier`,
       );
       if (route === "/faq") {
-        assert.ok(text.includes("/Satoshi:29.4/Purity:1.2.0/"), path);
+        assert.ok(text.includes("/Satoshi:29.4/Purity:1.2.1/"), path);
       }
     }
   }
@@ -104,11 +104,14 @@ test("each homepage highlights SV2 and links to its localized miner setup guide"
     const miners = readFileSync(new URL(`../out${root}/miners/index.html`, import.meta.url), "utf8");
     const guide = miners.match(/<section\b[^>]*id="stratum-v2"[\s\S]*?<\/section>/)?.[0];
     assert.ok(guide, `${locale}: SV2 guide`);
+    const introduced = locale === "en" ? "New in v1.2.0" : "v1.2.0 新增";
+    assert.ok(hero.replace(/<!--[\s\S]*?-->/g, "").includes(introduced), `${locale}: SV2 introduction version`);
+    assert.ok(guide.replace(/<!--[\s\S]*?-->/g, "").includes(introduced), `${locale}: SV2 introduction version`);
     for (const term of [
       title, boundary, "Full-Template", "BUILD_SV2=ON", "regtest", "Signet", "datum=0", "sv2=1",
       "sv2pool=", "sv2jds=", "sv2poolkey=", "sv2jdskey=", "sv2identity=", "sv2auth=1",
       "stratum+tcp://192.168.1.10:23334", "farm.worker01", "bitcoin-cli getsv2info", "accepted_shares",
-      'href="https://github.com/saltduck/bitcoinpurity/blob/v1.2.0/doc/sv2-mining.md"',
+      'href="https://github.com/saltduck/bitcoinpurity/blob/v1.2.1/doc/sv2-mining.md"',
     ]) {
       assert.ok(guide.includes(term), `${locale}: ${term}`);
     }

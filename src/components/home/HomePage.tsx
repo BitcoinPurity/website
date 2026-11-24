@@ -76,7 +76,7 @@ export function HomePage({ locale = "en" }: LocalizedProps = {}) {
             </Link>
           </h1>
           <div className="mt-8 max-w-2xl border-l-2 border-gold bg-gold-dim px-5 py-4">
-            <SectionEyebrow>{t("New in {0}", protocol.launch.releaseTag)}</SectionEyebrow>
+            <SectionEyebrow>{t("New in {0}", "v1.2.0")}</SectionEyebrow>
             <h2 className="text-2xl font-bold text-ink">
               <Link href={localePath("/miners/#stratum-v2", locale)} className="hover:text-gold">
                 {t("Built-in Stratum V2 Gateway")} →

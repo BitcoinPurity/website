@@ -17,3 +17,4 @@
 - [TASK-015：v1.1.0 正式版同步](TASK-015.md)
 - [TASK-016：PurityWallet 主推与备选钱包](TASK-016.md)
 - [TASK-017：v1.2.0 正式版与内置 Stratum V2 Gateway](TASK-017.md)
+- [TASK-018：v1.2.1 版本同步](TASK-018.md)

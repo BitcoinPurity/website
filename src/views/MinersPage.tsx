@@ -63,7 +63,7 @@ export default function MinersPage({ locale = "en" }: LocalizedProps = {}) {
         >
           <div>
             <p className="font-mono text-[11px] tracking-[0.16em] text-gold uppercase">
-              {t("New in {0}", protocol.launch.releaseTag)}
+              {t("New in {0}", "v1.2.0")}
             </p>
             <h2 id="stratum-v2-title" className="mt-2 text-2xl font-bold text-ink">
               {t("Built-in Stratum V2 Gateway")}
